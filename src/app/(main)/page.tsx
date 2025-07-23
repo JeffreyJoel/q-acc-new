@@ -2,6 +2,7 @@
 
 import SearchComponent from "@/components/shared/Search";
 import ProjectCard from "@/components/project/ProjectCard";
+import HeroSection from "@/components/landing/HeroSection";
 import { useState, useMemo } from "react";
 import { useFetchAllProjects } from "@/hooks/useProjects";
 import { IProject } from "@/types/project.type";
@@ -69,37 +70,38 @@ export default function Home() {
     });
   }, [projects, searchText, selectedCategories, selectedSeasons]);
 
-  if (error) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-xl text-red-500">
-          Error loading projects: {error.message}
-        </p>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div className="flex justify-center items-center min-h-screen">
+  //       <p className="text-xl text-red-500">
+  //         Error loading projects: {error.message}
+  //       </p>
+  //     </div>
+  //   );
+  // }
 
   return (
     <>
-      <div className="mt-32 max-w-7xl mx-auto px-6 lg:px-4">
-        <div className="text-center flex flex-col gap-4 mt-20 mb-12">
-          <h1 className="text-4xl font-tusker-8 mt-12 font-bold  text-white ">
-            THE FUTURE OF <span className="text-peach-400">TOKENIZATION</span>
-          </h1>
-          <p className="text-xl max-w-xl mx-auto mt-4 text-neutral-300">
+      {/* Hero Section */}
+      <HeroSection />
+      
+      {/* Projects Section */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-4 py-20">
+        {/* <div className="text-center flex flex-col gap-4 mb-12">
+          <p className="text-xl max-w-xl mx-auto text-neutral-300">
             Browse through our portfolio of carefully selected Web3 startups
             participating in our Quadratic Accelerator program.
           </p>
-        </div>
-        <SearchComponent
+        </div> */}
+        {/* <SearchComponent
           searchText={searchText}
           setSearchText={setSearchText}
           selectedCategories={selectedCategories}
           setSelectedCategories={setSelectedCategories}
           selectedSeasons={selectedSeasons}
           setSelectedSeasons={setSelectedSeasons}
-        />
-        <div className="mt-16">
+        /> */}
+        {/* <div className="mt-16">
           <h2 className="text-xl font-medium font-tusker-8 text-white mb-6 flex items-center">
             All <span className="text-peach-300 ml-2">Projects</span>
           </h2>
@@ -126,7 +128,7 @@ export default function Home() {
               )}
             </>
           )}
-        </div>
+        </div> */}
 
         {/* Removing the separate "Launched Projects" section for now
         <div className="mt-16">

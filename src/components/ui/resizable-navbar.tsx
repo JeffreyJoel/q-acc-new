@@ -26,6 +26,7 @@ interface NavItemsProps {
   items: {
     name: string;
     link: string;
+    blank?: boolean;
   }[];
   className?: string;
   onItemClick?: () => void;
@@ -140,6 +141,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
           key={`link-${idx}`}
           href={item.link}
           prefetch={true}
+          target={item.blank ? "_blank" : "_self"}
         >
           {hovered === idx && (
             <motion.div

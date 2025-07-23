@@ -1,19 +1,26 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Anton, IBM_Plex_Sans, Inter } from "next/font/google";
 import "../globals.css";
 import ClientLayout from "../ClientLayout";
-import { NavBar } from "@/components/shared/NavBar";
+import { NavBar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 
-const geistSans = localFont({
-  src: "../fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
+const anton = Anton({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-anton",
 });
-const geistMono = localFont({
-  src: "../fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-inter",
+});
+
+const ibmPlexSans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-ibm-plex-sans",
 });
 
 const title = "Quadratic Acceleration";
@@ -53,14 +60,12 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased dark bg-neutral-900`}
+        className={`${anton.variable} ${ibmPlexSans.variable} ${inter.variable} font-ibm antialiased dark bg-qacc-black`}
       >
         <ClientLayout>
-          <NavBar/>
-          <div className="min-h-screen">
-          {children}
-          </div>
-          <Footer/>
+          <NavBar />
+          <div className="min-h-screen">{children}</div>
+          <Footer />
         </ClientLayout>
       </body>
     </html>

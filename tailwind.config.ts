@@ -14,6 +14,8 @@ const config: Config = {
         "peach-300": "#FCD1AA",
         "peach-200": "#FDE0C7 ",
         "peach-100": "#FEF0E3",
+        "qacc-black": "#131313",
+        "qacc-gray-light": "#91A0A1",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
@@ -67,7 +69,10 @@ const config: Config = {
 	  fontFamily: {
 		'tusker-4': ['"Tusker Grotesk 4000"', 'sans-serif'],
         'tusker-6': ['"Tusker Grotesk 6000"', 'sans-serif'],
+        'tusker-7': ['"Tusker Grotesk 7000"', 'sans-serif'],
         'tusker-8': ['"Tusker Grotesk 8000"', 'sans-serif'],
+        'anton': ['var(--font-anton)', 'sans-serif'],
+        'ibm': ['var(--font-ibm-plex-sans)', 'sans-serif'],
 	  },
       borderRadius: {
         lg: "var(--radius)",

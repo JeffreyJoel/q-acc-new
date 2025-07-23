@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useLogin, useLoginWithEmail, usePrivy } from "@privy-io/react-auth";
 import { WalletDisplay } from "./WalletDisplay";
 import { NavbarButton } from "../ui/resizable-navbar";
+import { Button } from "../ui/button";
 
 function WalletConnect() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -36,23 +37,24 @@ function WalletConnect() {
       ) : (
         <>
           {ready ? (
-            <NavbarButton
+            <Button
               disabled={isLoading}
+              size="lg"
               onClick={handleLogin}
-              variant="primary"
-              className={`rounded-full px-4 py-2 bg-peach-400 ${isLoading ? 'cursor-not-allowed opacity-50' : ''}`}
+              variant="default"
+              className={`rounded-xl px-4 py-3 bg-peach-400 ${isLoading ? 'cursor-not-allowed opacity-50' : ''}`}
             >
               {isLoading ? "Connecting..." : "Sign In"}
-            </NavbarButton>
+            </Button>
           ) : (
-            <NavbarButton
-              as="button"
+            <Button
               disabled={true}
-              variant="primary"
-              className="rounded-full px-4 py-2 bg-peach-400 disabled:opacity-50 disabled:cursor-not-allowed"
+              size="lg"
+              variant="default"
+              className="rounded-xl px-4 py-3 bg-peach-400 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Loading...
-            </NavbarButton>
+            </Button>
           )}
         </>
       )}
