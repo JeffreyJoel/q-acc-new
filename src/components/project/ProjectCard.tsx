@@ -3,184 +3,36 @@
 import Link from "next/link";
 import type React from "react";
 import { IProject } from "@/types/project.type";
-import { getMarketCap } from "@/services/tokenPrice.service";
-import { useEffect } from "react";
-import { useState } from "react";
-import { fetchProjectDonationsById } from "@/services/donation.service";
-import {
-  useFetchActiveRoundDetails,
-  useFetchAllRoundDetails,
-} from "@/hooks/useRounds";
-import {
-  calculateTotalDonations,
-  formatAmount,
-  formatNumber,
-} from "@/helpers/donations";
-import { useFetchPOLPriceSquid } from "@/hooks/useTokens";
+import { formatAmount, formatNumber } from "@/helpers/donations";
 import { Spinner } from "../loaders/Spinner";
-import { calculateCapAmount } from "@/helpers/round";
 import { getIpfsAddress } from "@/helpers/image";
-import { getUpcomingRound } from "@/helpers/date";
-import { getPoolAddressByPair } from "@/helpers/getTokensListedData";
-import config from "@/config/configuration";
 import Image from "next/image";
 import { SupportButton } from "./SupportButton";
+import { useProjectData } from "@/hooks/useProjectData";
 
 interface ProjectCardProps {
   project: IProject;
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
-  const [maxPOLCap, setMaxPOLCap] = useState(0);
-  const [totalPOLDonated, setTotalPOLDonated] = useState<number>(0);
-  const [isTokenListed, setIsTokenListed] = useState(false);
-  const [marketCap, setMarketCap] = useState<number>();
-  const [marketCapLoading, setMarketCapLoading] = useState(false);
-
-  const [amountDonatedInRound, setAmountDonatedInRound] = useState(0);
-  const [currentTokenPrice, setCurrentTokenPrice] = useState(0);
-  const [roundStatus, setRoundStatus] = useState("ended");
-
-  const { data: POLPrice } = useFetchPOLPriceSquid();
-  const { data: activeRoundDetails } = useFetchActiveRoundDetails();
-  const { data: allRounds } = useFetchAllRoundDetails();
-
-  const polPriceNumber = Number(POLPrice);
-
-  // Fetch pool address and token price
-  useEffect(() => {
-    if (!project?.abc?.issuanceTokenAddress) return;
-
-    const fetchPoolAddress = async () => {
-      try {
-        if (!project.abc?.issuanceTokenAddress) return;
-
-        const { price, isListed } = await getPoolAddressByPair(
-          project.abc.issuanceTokenAddress,
-          config.WPOL_TOKEN_ADDRESS
-        );
-
-        setIsTokenListed(isListed);
-
-        if (
-          project.abc.issuanceTokenAddress ===
-          "0x0b7a46e1af45e1eaadeed34b55b6fc00a85c7c68"
-        ) {
-          // Check for prismo token address only
-          setCurrentTokenPrice(Number(price));
-        } else {
-          setCurrentTokenPrice(1 / Number(price));
-        }
-      } catch (error) {
-        console.error("Error fetching pool address:", error);
-      }
-    };
-
-    fetchPoolAddress();
-  }, [project?.abc?.issuanceTokenAddress]);
-
-  // Fetch project donations and calculate market cap
-  useEffect(() => {
-    if (!project?.id) return;
-
-    setMarketCapLoading(true);
-    const fetchProjectDonations = async () => {
-      try {
-        const data = await fetchProjectDonationsById(
-          parseInt(project.id),
-          1000,
-          0
-        );
-
-        let donations: any[] = [];
-        if (data && project?.abc?.fundingManagerAddress) {
-          donations = data.donations || [];
-          setTotalPOLDonated(calculateTotalDonations(donations));
-        }
-
-        if (
-          project.abc?.issuanceTokenAddress &&
-          project.abc?.fundingManagerAddress
-        ) {
-          const marketCapData = await getMarketCap(
-            isTokenListed,
-            project.abc.issuanceTokenAddress,
-            project.abc.fundingManagerAddress,
-            donations
-          );
-
-          if (
-            typeof marketCapData === "number" &&
-            !isNaN(marketCapData) &&
-            marketCapData !== undefined &&
-            marketCapData > 0
-          ) {
-            if (isTokenListed) {
-              setMarketCap(marketCapData);
-            } else {
-              if (!isNaN(polPriceNumber) && polPriceNumber > 0) {
-                setMarketCap(marketCapData * polPriceNumber);
-              }
-            }
-            setMarketCapLoading(false);
-          } else {
-            console.warn("Invalid market cap data received:", marketCapData);
-            setMarketCapLoading(false);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching project donations:", error);
-        setMarketCapLoading(false);
-      }
-    };
-
-    fetchProjectDonations();
-  }, [polPriceNumber]);
-
-  // Calculate POL cap and donation amounts
-  useEffect(() => {
-    if (!activeRoundDetails || !project?.id) return;
-
-    const updatePOLCap = async () => {
-      try {
-        const { capAmount, totalDonationAmountInRound } =
-          await calculateCapAmount(
-            activeRoundDetails,
-            Number(project.id),
-            true
-          );
-
-        setMaxPOLCap(capAmount);
-        setAmountDonatedInRound(totalDonationAmountInRound);
-      } catch (error) {
-        console.error("Error calculating POL cap:", error);
-      }
-    };
-
-    updatePOLCap();
-  }, [activeRoundDetails, project?.id]);
-
-  // Calculate round status
-  useEffect(() => {
-    if (!allRounds) return;
-
-    const calcRoundStatus = async () => {
-      try {
-        const upcomingRound = await getUpcomingRound(allRounds);
-        setRoundStatus(upcomingRound?.startDate ? "starts" : "ended");
-      } catch (error) {
-        console.error("Error calculating round status:", error);
-      }
-    };
-
-    calcRoundStatus();
-  }, [allRounds]);
+  // Use the new aggregated hook
+  const projectData = useProjectData(project);
 
   const capitalizeFirstLetter = (str: string) => {
     return str
       .toLowerCase()
       .replace(/(?:^|\.\s*)([a-z])/g, (match) => match.toUpperCase());
   };
+
+  if (projectData.isLoading) {
+    return (
+      <div className="relative cursor-pointer p-4 w-full h-[650px] rounded-xl bg-neutral-800 overflow-hidden shadow-gray-200">
+        <div className="flex items-center justify-center h-full">
+          <Spinner />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative cursor-pointer p-4 w-full h-[650px] rounded-xl bg-neutral-800 overflow-hidden shadow-gray-200">
@@ -195,10 +47,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
           src={project.image || ""}
         />
 
-        {!activeRoundDetails
+        {!projectData.activeRoundDetails
           ? (project.seasonNumber !== 1 ||
               (project.batchNumbersWithSafeTransactions?.length != 0 &&
-                !isTokenListed)) && (
+                !projectData.isTokenListed)) && (
               <div className="absolute bg-[#262626]    right-[-2px] top-0   py-[2px]  pr-0 pl-2 rounded-tr-xl rounded-bl-2xl ">
                 <svg
                   className="absolute left-[-18px] top-[-1px]"
@@ -215,8 +67,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
                 </svg>
                 <span className=" text-white font-semibold">
                   {(project.batchNumbersWithSafeTransactions?.length !== 0 ||
-                    roundStatus === "ended") &&
-                  !isTokenListed
+                    projectData.roundStatus === "ended") &&
+                  !projectData.isTokenListed
                     ? " DEX listing soon"
                     : "New!"}
                 </span>
@@ -345,40 +197,27 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
             {/* Amount in this Round or Total Receieved */}
             <div className="p-2 flex justify-between items-center bg-neutral-700 rounded-lg">
               <div className="text-white font-medium text-sm">
-                {activeRoundDetails ? "Received this round" : "Total received"}
+                {projectData.activeRoundDetails ? "Received this round" : "Total received"}
               </div>
 
-              {activeRoundDetails ? (
+              {projectData.activeRoundDetails ? (
                 // Amount in this Round
                 <div className="flex flex-col">
                   <span className="text-white font-bold text-lg">
-                    {" "}
-                    ~ ${" "}
-                    {polPriceNumber
-                      ? `${
-                          " " +
-                          formatNumber(polPriceNumber * amountDonatedInRound)
-                        }`
-                      : ""}
+                    ~ $ {formatNumber(projectData.totalDonatedUSD)}
                   </span>
                   <span className="text-gray-400 font-medium text-right">
-                    {formatNumber(amountDonatedInRound)} POL
+                    {formatNumber(projectData.amountDonatedInRound)} POL
                   </span>
                 </div>
               ) : (
                 // Total Receieved
                 <div className="flex flex-col">
                   <span className="text-white font-bold text-lg">
-                    {" "}
-                    ~ ${" "}
-                    {polPriceNumber
-                      ? `${
-                          " " + formatNumber(polPriceNumber * totalPOLDonated)
-                        }`
-                      : ""}
+                    ~ $ {formatNumber(projectData.totalDonatedUSD)}
                   </span>
                   <span className="text-gray-400 font-medium text-right">
-                    {formatNumber(totalPOLDonated)} POL
+                    {formatNumber(projectData.totalDonatedPOL)} POL
                   </span>
                 </div>
               )}
@@ -396,26 +235,17 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
                   />
                 </div>
                 <span className="text-sm text-gray-300 font-bold">
-                  {" "}
                   {project?.abc?.tokenTicker} price on Quickswap
                 </span>
               </div>
               <div className="flex flex-col">
-                {isTokenListed ? (
+                {projectData.isTokenListed ? (
                   <>
                     <span className="text-white font-bold text-lg">
-                      {" "}
-                      ~ ${" "}
-                      {polPriceNumber
-                        ? `${
-                            " " +
-                            formatNumber(polPriceNumber * currentTokenPrice)
-                          }`
-                        : ""}
+                      ~ $ {formatNumber(projectData.priceUSD)}
                     </span>
                     <span className="text-gray-400 font-medium">
-                      {" "}
-                      {currentTokenPrice.toFixed(2)} POL
+                      {formatAmount(projectData.pricePOL, 4)} POL
                     </span>
                   </>
                 ) : (
@@ -435,10 +265,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
               </span>
               <div className="flex flex-col">
                 <span className="text-white font-bold text-lg text-right">
-                  {marketCapLoading ? (
+                  {projectData.isLoading ? (
                     <Spinner />
-                  ) : marketCap !== undefined ? (
-                    <span>$ {formatAmount(marketCap)}</span>
+                  ) : projectData.marketCapUSD > 0 ? (
+                    <span>$ {formatAmount(projectData.marketCapUSD)}</span>
                   ) : (
                     <span className="text-[#b2b5bc] font-semibold text-sm">
                       Data unavailable
@@ -455,13 +285,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
             >
               Review Project
             </Link>
-            {activeRoundDetails ? (
+            {projectData.activeRoundDetails ? (
               <SupportButton
                 project={project}
-                disabled={maxPOLCap === amountDonatedInRound}
+                disabled={projectData.maxPOLCap === projectData.amountDonatedInRound}
               />
             ) : (
-              isTokenListed && (
+              projectData.isTokenListed && (
                 <button
                   className="px-6 py-4 rounded-full text-sm font-bold items-center flex gap-2 bg-peach-400  text-black w-full justify-center "
                   onClick={(e) => {

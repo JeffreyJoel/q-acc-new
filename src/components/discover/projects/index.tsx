@@ -1,0 +1,89 @@
+"use client";
+
+import { ProjectsCarousel } from "./ProjectsCarousel";
+import { useFetchAllProjects } from "@/hooks/useProjects";
+import { ProjectTile } from "./ProjectTile";
+import ProjectsTable from "./ProjectsTable";
+import VestingSchedule from "./VestingSchedule";
+
+
+function Projects() {
+  const { data: allProjects, isLoading, error } = useFetchAllProjects();
+
+  const tips = (allProjects?.projects || []).slice(0, 4).map((project) => ({
+    text: project.title || "Untitled Project",
+    image: project.image || "/images/banners/banner-lg.jpg",
+    url: `/project/${project.slug}`,
+    description: project.descriptionSummary || "",
+    donations: project.totalDonations || 0,
+    supporters: project.countUniqueDonors || 0,
+    marketCap: project.abc && project.abc.tokenPrice && project.abc.totalSupply
+      ? project.abc.tokenPrice * project.abc.totalSupply
+      : 0,
+    season: project.seasonNumber || "",
+  }));
+
+
+  const tiles = (allProjects?.projects || []).slice(0, 8).map((project) => ({
+    text: project.title || "Untitled Project",
+    image: project.image || "/images/banners/banner-lg.jpg",
+    url: `/project/${project.slug}`,
+    description: project.descriptionSummary || "",
+    donations: project.totalDonations || 0,
+    supporters: project.countUniqueDonors || 0,
+    marketCap: project.abc && project.abc.tokenPrice && project.abc.totalSupply
+      ? project.abc.tokenPrice * project.abc.totalSupply
+      : 0,
+    season: project.seasonNumber || "",
+  }));
+
+
+  console.log(tips);
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto px-6 lg:px-12 py-20 flex flex-col justify-center items-center">
+        <h2 className="font-anton text-white text-[64px] mb-6 uppercase tracking-wide">Projects</h2>
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mx-auto px-6 lg:px-12 py-20 flex flex-col justify-center items-center">
+        <h2 className="font-anton text-white text-[64px] mb-6 uppercase tracking-wide">Projects</h2>
+        <div className="text-red-500">Error loading projects.</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto px-6 lg:px-12 py-20 flex flex-col justify-center">
+      <h2 className="font-anton text-white text-[64px] mb-6 uppercase tracking-wide">
+        Projects
+      </h2>
+      <div>
+        <ProjectsCarousel tips={tips} />
+
+        <div className="flex flex-row gap-4 mt-10 overflow-x-auto">
+          {tiles.map((tile) => (
+            <ProjectTile key={tile.text} title={tile.text} description={tile.description} image={tile.image} season={tile.season} />
+          ))}
+        </div>
+
+        <div className="flex flex-row justify-center mt-10">
+          <button className="w-1/4 rounded-xl px-6 py-2 uppercase border border-peach-400 text-peach-400 hover:bg-peach-400 hover:text-black transition-all duration-300 text-xs font-medium tracking-wide">
+            Show All Projects
+          </button> 
+        </div>
+
+        <ProjectsTable projects={allProjects?.projects || []} />
+
+        <VestingSchedule projects={allProjects?.projects || []} />
+      </div>
+    </div>
+  );
+}
+
+export default Projects;

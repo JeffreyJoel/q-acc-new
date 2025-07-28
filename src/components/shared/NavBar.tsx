@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import WalletConnect from "./WalletConnect";
 import Image from "next/image";
 
@@ -36,12 +36,20 @@ export function NavBar() {
   ];
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 0);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#131313] border-b border-neutral-800">
+    <nav className={`fixed top-0 left-0 right-0 z-50 bg-[#000000] ${scrolled ? "border-b border-neutral-800" : ""}`}>
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between">
-          {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
               <Image
@@ -54,7 +62,6 @@ export function NavBar() {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className=" flex items-baseline space-x-12">
               {navItems.map((item, idx) => (
@@ -62,7 +69,7 @@ export function NavBar() {
                   key={`nav-link-${idx}`}
                   href={item.link}
                   target={item.blank ? "_blank" : "_self"}
-                  className={`text-white hover:text-peach-400 text-sm font-medium transition-colors ${item.colored ? "text-peach-400" : ""}`}
+                  className={` hover:text-peach-400 text-sm font-medium transition-colors ${item.colored ? "text-peach-400" : "text-white"}`}
                 >
                   {item.name}
                 </Link>
@@ -70,17 +77,14 @@ export function NavBar() {
             </div>
           </div>
 
-          {/* Right side - Token info and Sign In */}
           <div className="hidden md:flex items-center space-x-3">
             <div className="px-4 py-3 flex items-center space-x-4 text-sm font-bold border border-peach-400/30 rounded-xl">
               <span className="text-white">Season 1 Token Claim In: 79 d</span>
               <span className="text-peach-400 ">Vesting Timeline</span>
-            </div>
-            
+            </div>      
             <WalletConnect />
           </div>
 
-          {/* Mobile menu button */}
           <div className="md:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -94,11 +98,9 @@ export function NavBar() {
         </div>
       </div>
 
-      {/* Mobile menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-[#0a0a0a] border-t border-neutral-800">
           <div className="px-2 pt-2 pb-3 space-y-1">
-            {/* Mobile Token Claim Info */}
             <div className="px-3 py-2 text-sm text-neutral-300 border-b border-neutral-700 mb-2">
               <div>Season 1 Token Claim In: 79 d</div>
               <div className="text-neutral-500">Vesting Timeline</div>

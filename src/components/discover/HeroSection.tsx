@@ -16,7 +16,7 @@ const HeroSection = () => {
   };
 
   return (
-    <div className="relative w-full min-h-screen flex items-center justify-center overflow-hidden">
+    <div className="bg-gradient-to-b from-[#000000] to-qacc-gray-dark relative w-full min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Vector */}
       <div className="mt-20 w-11/12 mx-auto opacity-80 absolute inset-0 flex items-center justify-center">
         <Image

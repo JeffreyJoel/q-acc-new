@@ -73,6 +73,7 @@ const config: Config = {
         'tusker-8': ['"Tusker Grotesk 8000"', 'sans-serif'],
         'anton': ['var(--font-anton)', 'sans-serif'],
         'ibm': ['var(--font-ibm-plex-sans)', 'sans-serif'],
+        'inter': ['var(--font-inter)', 'sans-serif'],
 	  },
       borderRadius: {
         lg: "var(--radius)",

@@ -105,27 +105,27 @@ export const Footer: React.FC = () => {
             <Link
               target="_blank"
               href={"https://x.com/theqacc"}
-              className="text-qacc-gray-light hover:text-qacc-gray-light"
+              className="text-qacc-gray-light hover:text-white"
             >
               <IconX color="#91A0A166" />
             </Link>
             <Link
               target="_blank"
               href={"https://warpcast.com/theqacc"}
-              className="text-qacc-gray-light hover:text-qacc-gray-light"
+              className="text-qacc-gray-light hover:text-white"
             >
               <IconFarcaster color="#91A0A166" />
             </Link>
             <Link
               target="_blank"
               href={"https://mirror.xyz/qacc.eth"}
-              className="text-qacc-gray-light hover:text-qacc-gray-light"
+              className="text-qacc-gray-light hover:text-white"
             >
               <IconMirror color="#91A0A166" />
             </Link>
             <Link
               target="_blank"
-              href={"mailto:hello@qacc.giveth.io"}
+              href={"mailto:info@qacc.xyz"}
               className="text-qacc-gray-light hover:text-qacc-gray-light"
             >
               <IconEmail color="#91A0A166" />

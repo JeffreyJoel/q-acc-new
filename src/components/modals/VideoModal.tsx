@@ -42,7 +42,7 @@ export const VideoModal = ({ isOpen, onClose }: VideoModalProps) => {
           >
             <X className="h-6 w-6 text-white" />
           </button>
-          <div className="w-full max-w-4xl mx-auto aspect-video relative flex items-center justify-center">
+          <div className="w-full bg-black max-w-4xl mx-auto aspect-video relative flex items-center justify-center">
             {loading && (
               <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/80 rounded-lg">
                 <Spinner size={64} color="#fff" secondaryColor="#222" />
