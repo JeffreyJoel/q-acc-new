@@ -2,15 +2,17 @@
 
 import HeroSection from "@/components/discover/HeroSection";
 import Projects from "@/components/discover/projects";
+import About from "@/components/discover/About";
+import FAQs from "@/components/discover/FAQs";
 
 export default function Home() {
 
   return (
     <>
-      {/* Hero Section */}
       <HeroSection />
       <Projects />
-    
+      <About />
+      <FAQs />
     </>
   );
 }
