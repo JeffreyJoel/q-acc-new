@@ -4,6 +4,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { shortenAddress } from "@/helpers/address";
 import { roundPoints } from "@/helpers/points";
 import type { LeaderboardUser } from "@/types/leaderboard";
+import { ArrowUpRight } from "lucide-react";
+import Image from "next/image";
 
 interface LeaderboardItemProps {
   user: LeaderboardUser;
@@ -13,49 +15,62 @@ interface LeaderboardItemProps {
 export function LeaderboardItem({ user, onUserClick }: LeaderboardItemProps) {
   return (
     <div
-      className="grid grid-cols-[40px_1fr_120px_120px] sm:grid-cols-[50px_1fr_150px_150px] gap-4 bg-neutral-800 rounded-3xl p-4 cursor-pointer items-center"
+      className="flex items-center justify-between bg-white/5 rounded-3xl p-6 cursor-pointer hover:bg-neutral-700 transition-colors"
       onClick={() => onUserClick?.(user.walletAddress)}
     >
-      <div className="flex justify-center">
-        <div
+      <div className="flex items-center justify-center">
+        <h2
           className={`
-            flex items-center justify-center 
-            w-8 h-8 sm:w-12 sm:h-12 rounded-full 
-            ${user.rank > 0 && user.rank <= 3 ? "bg-peach-400 text-black" : "bg-[#3a3a3a] text-white"}
-            font-bold ${user.rank > 0 ? "text-lg sm:text-2xl" : "text-xs sm:text-sm"}
-          `}
-        >
-          {user.rank > 0 ? user.rank : "N/A"}
+              font-anton text-4xl
+              ${
+                user.rank === 1
+                  ? "bg-gradient-to-b from-[#FFF6C4] to-[#DFAA00] bg-clip-text text-transparent"
+                  : user.rank === 2
+                  ? "bg-gradient-to-b from-[#D9DDEE] to-[#42444D] bg-clip-text text-transparent"
+                  : user.rank === 3
+                  ? "bg-gradient-to-b from-[#E0CFC3] to-[#753200] bg-clip-text text-transparent"
+                  : "text-white/30"
+              }
+            `}
+          >
+            {user.rank > 0 ? user.rank.toLocaleString() : "N/A"}
+          </h2>
         </div>
-      </div>
 
-      <div className="flex items-center gap-2 sm:gap-3">
-        <div className="relative">
-          <Avatar className="h-8 w-8 sm:h-12 sm:w-12 border-2 border-[#3a3a3a]">
-            <AvatarImage src={user.avatar ?? ''} />
-       
-              <AvatarFallback className="text-xs sm:text-base">{user.username?.charAt(0) || user.name?.charAt(0)}</AvatarFallback>
-            
-          </Avatar>
-        </div>
+      <div className="flex items-center gap-3 flex-1 ml-4">
+        <Avatar className="h-12 w-12 border-2 border-neutral-600">
+          <AvatarImage src={user.avatar ?? "/images/user.png"} />
+          <AvatarFallback className="text-base bg-neutral-600 text-white">
+            {user.username?.charAt(0) || user.name?.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
 
         <div className="flex flex-col">
-          <span className="font-medium text-sm sm:text-lg">{user?.username}</span>
-          <span className="text-xs sm:text-sm text-gray-400">{shortenAddress(user.walletAddress)}</span>
+          <span className="font-bold text-lg text-white">{user?.username}</span>
+          <div className="flex items-center gap-1">
+            <span className="text-base text-white/50 font-ibm-mono font-medium">
+              {shortenAddress(user.walletAddress)}
+            </span>
+            <ArrowUpRight className="w-3 h-3 text-white/40" />
+          </div>
         </div>
       </div>
 
-      <div className="text-right md:text-center">
-        <span className="text-lg sm:text-xl font-mono font-semibold">
+      {/* Points with star icon on the right */}
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 flex items-center justify-center">
+          <Image
+            src="/images/logos/round_logo.png"
+            alt="arrow-down"
+            width={32}
+            height={32}
+            className="w-full h-full "
+          />
+        </div>
+        <span className="text-xl font-semibold text-white">
           {roundPoints(user.qaccPoints)}
-        </span>
-      </div>
-
-      <div className="text-right md:text-center">
-        <span className="text-lg sm:text-xl font-mono font-semibold">
-          {user.projectsFundedCount}
         </span>
       </div>
     </div>
   );
-} 
+}

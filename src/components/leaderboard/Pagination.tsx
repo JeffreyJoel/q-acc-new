@@ -1,4 +1,5 @@
 'use client';
+import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
 import React from 'react';
 
 interface PaginationProps {
@@ -24,46 +25,29 @@ export const Pagination: React.FC<PaginationProps> = ({
   );
   const endPage = Math.min(totalPages, startPage + maxPagesToShow);
 
-  if (currentPage > 0) {
-    pages.push(
-      <button
-        key='prev'
-        onClick={() => onPageChange(currentPage - 1)}
-        className='text-neutral-400 hover:text-white'
-      >
-        ‹ Prev
-      </button>,
-    );
-  }
-
-  if (startPage > 0) {
-    pages.push(
-      <button
-        key={0}
-        onClick={() => onPageChange(0)}
-        className='text-neutral-400 hover:text-white px-2'
-      >
-        1
-      </button>,
-    );
-    if (startPage > 1) {
-      pages.push(
-        <span key='start-ellipsis' className='px-2'>
-          …
-        </span>,
-      );
-    }
-  }
+  pages.push(
+    <button
+      key='prev'
+      onClick={() => {
+        if(currentPage > 0) {
+          onPageChange(currentPage - 1);
+        }
+      }}
+      className={`h-11 w-11 flex items-center justify-center bg-white/5 rounded-[8px] ${currentPage === 0 ? 'text-white/30' : 'text-white hover:text-white'} `}
+    >
+      <ArrowLeftIcon/>
+    </button>
+  );
 
   for (let i = startPage; i < endPage; i++) {
     pages.push(
       <button
         key={i}
-        onClick={() => onPageChange(i)}
-        className={`px-2 ${
+        onClick={() => onPageChange(i)} 
+        className={` bg-white/5 rounded-[8px] px-3 text-lg font-medium h-11 w-11 flex items-center justify-center ${
           i === currentPage
-            ? 'text-white border-b-2 border-peach-400'
-            : 'text-neutral-400 hover:text-white'
+            ? 'text-peach-400'
+            : 'text-white/50 hover:text-white'
         }`}
       >
         {i + 1}
@@ -74,7 +58,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   if (endPage < totalPages) {
     if (endPage < totalPages - 1) {
       pages.push(
-        <span key='end-ellipsis' className='px-2'>
+        <span key='end-ellipsis' className='h-11 w-11 px-3 text-lg font-medium flex justify-center items-end'>
           …
         </span>,
       );
@@ -83,7 +67,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       <button
         key={totalPages - 1}
         onClick={() => onPageChange(totalPages - 1)}
-        className='text-neutral-400 hover:text-white px-2'
+        className='h-11 w-11 flex items-center justify-center bg-white/5 rounded-[8px] text-white hover:text-peach-400 px-3 text-lg font-medium'
       >
         {totalPages}
       </button>,
@@ -94,11 +78,16 @@ export const Pagination: React.FC<PaginationProps> = ({
     pages.push(
       <button
         key='next'
-        onClick={() => onPageChange(currentPage + 1)}
-        className='text-neutral-400 hover:text-white'
+        onClick={() => {
+          if (currentPage < totalPages - 1) {
+            onPageChange(currentPage + 1);
+          }
+        }}
+        className={`h-11 w-11 flex items-center justify-center bg-white/5 rounded-[8px] ${currentPage === totalPages - 1 ? 'text-white/30' : 'text-white hover:text-white'} `}
+        disabled={currentPage === totalPages - 1}
       >
-        Next ›
-      </button>,
+        <ArrowRightIcon/>
+      </button>
     );
   }
 

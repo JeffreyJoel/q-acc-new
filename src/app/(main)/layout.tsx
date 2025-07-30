@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Anton, IBM_Plex_Sans, Inter } from "next/font/google";
+import { Anton, IBM_Plex_Mono, IBM_Plex_Sans, Inter } from "next/font/google";
 import "../globals.css";
 import ClientLayout from "../ClientLayout";
 import { NavBar } from "@/components/shared/Navbar";
@@ -21,6 +21,12 @@ const ibmPlexSans = IBM_Plex_Sans({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
   variable: "--font-ibm-plex-sans",
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-ibm-plex-mono",
 });
 
 const title = "Quadratic Acceleration";
@@ -60,7 +66,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body
-        className={`${anton.variable} ${ibmPlexSans.variable} ${inter.variable} font-ibm antialiased dark bg-qacc-black`}
+        className={`${anton.variable} ${ibmPlexSans.variable} ${ibmPlexMono.variable} ${inter.variable} font-ibm antialiased dark bg-qacc-black`}
       >
         <ClientLayout>
           <NavBar />

@@ -23,26 +23,22 @@ export const UserInfo = () => {
     direction: "ASC",
   });
 
-  // Check if user is authenticated and has a connected wallet
+
   const shouldShowUserInfo = useMemo(() => {
     return authenticated && ConnectedUserAddress && user;
   }, [authenticated, ConnectedUserAddress, user]);
 
-  // Create user info object for display
   const userInfo = useMemo(() => {
     if (!shouldShowUserInfo || !user) return null;
 
-    // Try to find user in leaderboard data first
     const leaderboardUser = leaderboardInfo?.users.find(
       (lbUser) => lbUser.id === user.id
     );
 
     if (leaderboardUser) {
-      // User is in the leaderboard, use their actual ranking and data
       return leaderboardUser;
     }
 
-    // User is not in leaderboard, create fallback object
     return {
       id: user.id,
       name: user.fullName || 'Anonymous User',
@@ -52,7 +48,7 @@ export const UserInfo = () => {
       qaccPointsMultiplier: user.qaccPointsMultiplier || null,
       projectsFundedCount: user.projectsFundedCount || 0,
       walletAddress: user.walletAddress || ConnectedUserAddress,
-      rank: 0, // 0 means unranked - will show as "N/A" in LeaderboardItem
+      rank: 0,
       username: user.username,
     } as LeaderboardUser;
   }, [shouldShowUserInfo, user, leaderboardInfo?.users, ConnectedUserAddress]);
@@ -61,18 +57,16 @@ export const UserInfo = () => {
     router.push(`/profile/${userAddress}`);
   };
 
-  // Show user info if they're authenticated and we have user data
   if (shouldShowUserInfo && userInfo) {
     return (
-      <div className="my-6">
-        <h2 className="text-base font-medium mb-3 font-tusker-8">
-          Your Ranking
+      <div className="mb-6">
+        <h2 className="text-[22px] mb-3 font-anton uppercase text-white/40 tracking-wide">
+          Your Rank
         </h2>
         <LeaderboardItem user={userInfo as LeaderboardUser} onUserClick={handleUserClick} />
       </div>
     );
   }
 
-  // Don't render anything if user is not authenticated or no user data
   return null;
 };

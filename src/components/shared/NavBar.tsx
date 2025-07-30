@@ -47,7 +47,7 @@ export function NavBar() {
   }, []);
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 bg-[#000000] ${scrolled ? "border-b border-neutral-800" : ""}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 bg-transparentra ${scrolled ? "bg-black border-b border-neutral-800" : ""}`}>
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
