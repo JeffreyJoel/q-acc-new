@@ -21,7 +21,7 @@ export function LeaderboardItem({ user, onUserClick }: LeaderboardItemProps) {
       <div className="flex items-center justify-center">
         <h2
           className={`
-              font-anton text-4xl
+              font-anton text-2xl sm:text-4xl
               ${
                 user.rank === 1
                   ? "bg-gradient-to-b from-[#FFF6C4] to-[#DFAA00] bg-clip-text text-transparent"
@@ -38,7 +38,7 @@ export function LeaderboardItem({ user, onUserClick }: LeaderboardItemProps) {
         </div>
 
       <div className="flex items-center gap-3 flex-1 ml-4">
-        <Avatar className="h-12 w-12 border-2 border-neutral-600">
+        <Avatar className="h-8 w-8 md:h-12 md:w-12 border-2 border-neutral-600">
           <AvatarImage src={user.avatar ?? "/images/user.png"} />
           <AvatarFallback className="text-base bg-neutral-600 text-white">
             {user.username?.charAt(0) || user.name?.charAt(0)}
@@ -58,7 +58,7 @@ export function LeaderboardItem({ user, onUserClick }: LeaderboardItemProps) {
 
       {/* Points with star icon on the right */}
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 flex items-center justify-center">
+        <div className="w-5 h-5 sm:w-8 sm:h-8 flex items-center justify-center">
           <Image
             src="/images/logos/round_logo.png"
             alt="arrow-down"
@@ -67,7 +67,7 @@ export function LeaderboardItem({ user, onUserClick }: LeaderboardItemProps) {
             className="w-full h-full "
           />
         </div>
-        <span className="text-xl font-semibold text-white">
+        <span className="text-sm sm:text-lg md:text-xl font-semibold text-white">
           {roundPoints(user.qaccPoints)}
         </span>
       </div>

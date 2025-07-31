@@ -6,8 +6,8 @@ export default function LeaderboardPage() {
     <div className="pt-36 pb-12 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 ">
       <div className="flex flex-col space-y-4">
        <div className="mb-8">
-       <h1 className="text-[64px] tracking-normal font-anton uppercase">Points Leaderboard</h1>
-          <p className="text-base max-w-xl text-white/40 font-medium">
+       <h1 className="text-4xl sm:text-[42px] lg:text-[64px] tracking-normal font-anton uppercase">Points Leaderboard</h1>
+          <p className="text-base max-w-xl text-white/40 font-medium mt-2">
           Rise to the top, earn your place
           </p>
        </div>

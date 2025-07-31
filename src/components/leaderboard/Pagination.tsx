@@ -1,6 +1,6 @@
 'use client';
 import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface PaginationProps {
   currentPage: number;
@@ -13,7 +13,17 @@ export const Pagination: React.FC<PaginationProps> = ({
   totalPages,
   onPageChange,
 }) => {
-  const maxPagesToShow = 5;
+  // Responsive: adjust maxPagesToShow based on screen size
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const maxPagesToShow = isMobile ? 3 : 5;
 
   const pages = [];
   const startPage = Math.max(
@@ -25,6 +35,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   );
   const endPage = Math.min(totalPages, startPage + maxPagesToShow);
 
+  // Always render "prev" button, but disable if on the first page
   pages.push(
     <button
       key='prev'
@@ -33,18 +44,38 @@ export const Pagination: React.FC<PaginationProps> = ({
           onPageChange(currentPage - 1);
         }
       }}
-      className={`h-11 w-11 flex items-center justify-center bg-white/5 rounded-[8px] ${currentPage === 0 ? 'text-white/30' : 'text-white hover:text-white'} `}
+      className={`${isMobile ? 'h-8 w-8 text-base' : 'h-11 w-11 text-lg'} flex items-center justify-center bg-white/5 rounded-[8px] ${currentPage === 0 ? 'text-white/30' : 'text-white hover:text-white'} `}
     >
       <ArrowLeftIcon/>
     </button>
   );
 
+  // ... existing code for ellipsis and first page button ...
+  if (startPage > 0) {
+    pages.push(
+      <button
+        key={0}
+        onClick={() => onPageChange(0)}
+        className={`${isMobile ? 'h-8 w-8 text-base' : 'h-11 w-11 text-lg'} flex items-center justify-center bg-white/5 rounded-[8px] text-peach-400 hover:text-white px-2 font-medium`}
+      >
+        1
+      </button>,
+    );
+    if (startPage > 1) {
+      pages.push(
+        <span key='start-ellipsis' className={`${isMobile ? 'px-1' : 'px-2'}`}>
+          …
+        </span>,
+      );
+    }
+  }
+
   for (let i = startPage; i < endPage; i++) {
     pages.push(
       <button
         key={i}
-        onClick={() => onPageChange(i)} 
-        className={` bg-white/5 rounded-[8px] px-3 text-lg font-medium h-11 w-11 flex items-center justify-center ${
+        onClick={() => onPageChange(i)}
+        className={`bg-white/5 rounded-[8px] ${isMobile ? 'px-2 h-8 w-8 text-base' : 'px-3 h-11 w-11 text-lg'} font-medium flex items-center justify-center ${
           i === currentPage
             ? 'text-peach-400'
             : 'text-white/50 hover:text-white'
@@ -58,7 +89,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   if (endPage < totalPages) {
     if (endPage < totalPages - 1) {
       pages.push(
-        <span key='end-ellipsis' className='h-11 w-11 px-3 text-lg font-medium flex justify-center items-end'>
+        <span key='end-ellipsis' className={`${isMobile ? 'h-8 w-8 px-1 text-base' : 'h-11 w-11 px-3 text-lg'} font-medium flex justify-center items-end`}>
           …
         </span>,
       );
@@ -67,32 +98,31 @@ export const Pagination: React.FC<PaginationProps> = ({
       <button
         key={totalPages - 1}
         onClick={() => onPageChange(totalPages - 1)}
-        className='h-11 w-11 flex items-center justify-center bg-white/5 rounded-[8px] text-white hover:text-peach-400 px-3 text-lg font-medium'
+        className={`${isMobile ? 'h-8 w-8 text-base' : 'h-11 w-11 text-lg'} flex items-center justify-center bg-white/5 rounded-[8px] text-white hover:text-peach-400 px-2 font-medium`}
       >
         {totalPages}
       </button>,
     );
   }
 
-  if (currentPage + 1 < totalPages) {
-    pages.push(
-      <button
-        key='next'
-        onClick={() => {
-          if (currentPage < totalPages - 1) {
-            onPageChange(currentPage + 1);
-          }
-        }}
-        className={`h-11 w-11 flex items-center justify-center bg-white/5 rounded-[8px] ${currentPage === totalPages - 1 ? 'text-white/30' : 'text-white hover:text-white'} `}
-        disabled={currentPage === totalPages - 1}
-      >
-        <ArrowRightIcon/>
-      </button>
-    );
-  }
+  // Always render "next" button, but disable if on the last page
+  pages.push(
+    <button
+      key='next'
+      onClick={() => {
+        if (currentPage < totalPages - 1) {
+          onPageChange(currentPage + 1);
+        }
+      }}
+      className={`${isMobile ? 'h-8 w-8 text-base' : 'h-11 w-11 text-lg'} flex items-center justify-center bg-white/5 rounded-[8px] ${currentPage === totalPages - 1 ? 'text-white/30' : 'text-white hover:text-white'} `}
+      disabled={currentPage === totalPages - 1}
+    >
+      <ArrowRightIcon/>
+    </button>
+  );
 
   return (
-    <div className='flex gap-2 justify-center mt-6 text-sm font-redHatText'>
+    <div className={`flex justify-center mt-6 text-sm font-redHatText ${isMobile ? 'gap-1' : 'gap-2'}`}>
       {pages}
     </div>
   );
