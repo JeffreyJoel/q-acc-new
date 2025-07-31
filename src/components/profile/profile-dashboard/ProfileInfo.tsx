@@ -154,7 +154,7 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
               />
             </div>
             <span className="font-bold ml-3">
-              {roundPoints(user?.qaccPoints || 0).toLocaleString("en-US")}
+              {roundPoints(user?.qaccPoints || 0)}
             </span>
           </div>
 

@@ -101,7 +101,7 @@ const DonateSuccessPage: FC<IDonateSuccessPage> = ({
           clearInterval(interval);
           console.log("✅ Donation found in points history!");
           setPointsEarned(
-            roundPoints(found.pointsEarned).toLocaleString("en-US")
+            roundPoints(found.pointsEarned)
           );
           refetchUser();
         }
