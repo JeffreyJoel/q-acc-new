@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Anton, IBM_Plex_Mono, IBM_Plex_Sans, Inter } from "next/font/google";
 import "../globals.css";
 import ClientLayout from "../ClientLayout";
-import { NavBar } from "@/components/shared/Navbar";
+import { NavBar } from "@/components/shared/NavBar";
 import { Footer } from "@/components/shared/Footer";
 
 const anton = Anton({
