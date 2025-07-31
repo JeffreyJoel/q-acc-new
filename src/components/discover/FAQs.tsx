@@ -179,9 +179,9 @@ const FAQs = () => {
   };
 
   return (
-    <div className="bg-qacc-black text-white py-16 px-8 mt-12">
+    <div className="bg-qacc-black text-white py-32 px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-16 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-stretch">
           <div className="space-y-8">
             <h2 className="font-anton text-5xl lg:text-[64px] tracking-wider mb-12">
               FREQUENTLY ASKED
@@ -227,14 +227,14 @@ const FAQs = () => {
 
           {/* Right Side - Video Section */}
           <div
-            className="relative w-full mx-auto lg:mx-0 cursor-pointer"
+            className="relative w-full h-[400px] sm:h-[500px] md:h-[550px] lg:h-[614px] xl:h-full mx-auto lg:mx-0 cursor-pointer"
             onClick={() => setIsVideoModalOpen(true)}
           >
             <Image
               src="/images/landing/how-qacc-works.svg"
-              alt=" "
+              alt="How Q-ACC works"
               fill
-              className=" w-full h-full"
+              className="w-full h-full mx-auto object-contain"
             />
           </div>
         </div>

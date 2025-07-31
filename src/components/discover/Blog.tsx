@@ -1,8 +1,11 @@
-'use client';
-import { useMirrorArticles } from '@/hooks/useMirrorArticles';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ArrowUpRight, ExternalLink } from 'lucide-react';
+"use client";
+import { useMirrorArticles } from "@/hooks/useMirrorArticles";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import Image from "next/image";
+import { formatDateWithOrdinal } from "@/helpers/date";
+import { getIpfsAddress } from "@/helpers/image";
+import Link from "next/link";
 
 export const Blog = () => {
   const { articles, loading, error } = useMirrorArticles();
@@ -10,7 +13,7 @@ export const Blog = () => {
   if (loading) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-peach-400"></div>
       </div>
     );
   }
@@ -24,49 +27,59 @@ export const Blog = () => {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-12">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-12">
-        <h1 className="text-4xl font-bold text-white">BLOG</h1>
-        <Button 
-          variant="outline" 
-          className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white transition-colors"
-        >
-          ALL REPORTS ON MIRROR.XYZ
-          <ArrowUpRight className="ml-2 h-4 w-4" />
-        </Button>
-      </div>
-
-
-      {/* Mirror Articles (if any) */}
-      {articles.length > 0 && (
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold text-white mb-6">Recent Articles</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {articles.slice(0, 2).map((article) => (
-              <Card key={article.id} className="bg-gray-900 border-gray-800 hover:border-orange-500 transition-colors">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-white mb-2 overflow-hidden text-ellipsis whitespace-nowrap">
-                    {article.title}
-                  </h3>
-                  <p className="text-gray-400 text-sm mb-4 overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
-                    {article.body.replace(/<[^>]*>/g, '').substring(0, 150)}...
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">
-                      {article.timestamp ? new Date(article.timestamp * 1000).toLocaleDateString() : 'Unknown date'}
-                    </span>
-                    <Button variant="ghost" size="sm" className="text-orange-500 hover:text-orange-400">
-                      Read More
-                      <ExternalLink className="ml-1 h-3 w-3" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+    <div className="w-full bg-gradient-to-b from-[#000] to-qacc-gray-dark">
+      <div className="w-full max-w-7xl mx-auto px-4 py-12 md:py-24">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-12">
+          <h1 className="text-4xl md:text-[64px] tracking-wide text-white font-anton uppercase">
+            BLOG
+          </h1>
+          <Button
+            variant="outline"
+            className="px-3 py-2 border-peach-400 text-peach-400 hover:bg-peach-400 hover:text-qacc-black transition-colors text-xs font-medium rounded-lg"
+          >
+            ALL REPORTS ON MIRROR.XYZ
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
         </div>
-      )}
+
+        {/* Mirror Articles (if any) */}
+        {articles.length > 0 && (
+          <div className="mt-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-20 md:gap-14">
+              {articles.slice(0, 2).map((article) => (
+                <Link href={`https://mirror.xyz/qacc.eth/${article.id}`} target="_blank" className="w-full cursor-pointer ">
+                  <div className="w-full h-[300px] relative overflow-hidden rounded-3xl">
+                  <Image
+                    src={getIpfsAddress(article.imageURI) || "/images/banners/banner-lg.jpg"}
+                    alt={article.title}
+                    width={530}
+                    height={200}
+                    className="w-full rounded-3xl"
+                  />
+                  </div>
+                  <div className="w-full mt-6">
+                    <span className="h-[18px] w-fit px-2 py-1 rounded-md bg-[#202020] flex items-center text-white/30 text-[8px] font-bold uppercase mb-2">
+                      {article.timestamp
+                        ? formatDateWithOrdinal(
+                            new Date(article.timestamp * 1000)
+                          )
+                        : "Unknown date"}
+                    </span>
+
+                    <h3 className="text-white text-2xl font-anton uppercase">
+                      {article.title}
+                    </h3>
+                    <p className="text-white text-sm leading-5 mt-2">
+                      {article.description}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

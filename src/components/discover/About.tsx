@@ -4,7 +4,7 @@ import Image from "next/image";
 
 const About = () => {
   return (
-    <div className="flex flex-col lg:flex-row gap-12 p-8 max-w-7xl mx-auto">
+    <div className="flex flex-col lg:flex-row gap-12 p-8 pb-28 max-w-7xl mx-auto">
       {/* Left Dark Card */}
       <div className="flex-1 bg-black rounded-3xl p-[60px] text-white relative overflow-hidden">
         <div className="mb-8 flex items-center justify-between">

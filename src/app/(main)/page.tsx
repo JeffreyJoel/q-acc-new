@@ -13,8 +13,8 @@ export default function Home() {
       <HeroSection />
       <Projects />
       <About />
+      <Blog />
       <FAQs />
-      {/* <Blog /> */}
     </>
   );
 }
