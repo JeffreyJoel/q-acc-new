@@ -5,19 +5,20 @@ import {
   ChevronDown,
   LogOut,
   UserCircle2,
-  UserCircleIcon,
   Wallet,
-  HelpCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLogout } from "@privy-io/react-auth";
-import { shortenAddress } from "@/helpers/address";
 import { useDisconnectAndLogout } from "@/hooks/useDisconnectAndLogout";
 import { getLocalStorageToken } from "@/helpers/generateJWT";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { UserPill } from "@privy-io/react-auth/ui";
+import UserPoints from "./UserPoints";
+import { Address } from "viem";
+import { useFetchUser } from "@/hooks/useFetchUser";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface WalletDisplayProps {
   walletAddress?: string;
@@ -31,6 +32,11 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
   const router = useRouter();
   const { disconnect } = useDisconnectAndLogout();
   const queryClient = useQueryClient();
+
+  const { data: user } = useFetchUser(
+    !!walletAddress,
+    walletAddress as Address
+  );
 
   const { logout } = useLogout({
     onSuccess: () => {
@@ -66,14 +72,12 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
   const toggleDropdown = () => setIsMenuOpen(!isMenuOpen);
   const closeDropdown = () => setIsMenuOpen(false);
 
-  // Click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
       ) {
-        // Check if the click is on a UserPill modal or any modal with high z-index
         const target = event.target as Element;
         const isModalClick =
           target.closest("[data-radix-popper-content-wrapper]") ||
@@ -97,7 +101,6 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
     };
   }, [isMenuOpen]);
 
-  // Close dropdown on Escape key
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -133,7 +136,6 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
         localStorage.removeItem("token");
       }
 
-      // Clean up any other auth-related localStorage items
       const authRelatedKeys = ["token"];
       authRelatedKeys.forEach((key) => {
         try {
@@ -145,7 +147,6 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
     } catch (error) {
       console.error("Error during logout:", error);
 
-      // Still try to clean up storage even if logout/disconnect fails
       try {
         queryClient.clear();
         localStorage.removeItem("token");
@@ -174,7 +175,6 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
 
   return (
     <>
-      {/* Ensure UserPill modals appear above dropdown */}
       <style jsx global>{`
         [data-radix-popper-content-wrapper],
         [role="dialog"],
@@ -183,79 +183,83 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
           z-index: 100 !important;
         }
       `}</style>
-      <div className="relative inline-block text-left" ref={dropdownRef}>
-        <button
-          onClick={toggleDropdown}
-          className="flex items-center gap-2 bg-neutral-800 px-4 py-3 rounded-full border border-peach-400/30 shadow-sm hover:bg-neutral-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-peach-400/50"
-          aria-haspopup="true"
-          aria-expanded={isMenuOpen}
-        >
-          <UserCircleIcon className="h-5 w-5" />
-          <span className="hidden sm:block text-sm font-medium text-gray-200">
-            {walletAddress ? shortenAddress(walletAddress) : "0x0000...0000"}
-          </span>
-          <ChevronDown
-            className={`h-4 w-4 hidden sm:block transition-transform duration-200 ${
-              isMenuOpen ? "rotate-180" : ""
-            }`}
-          />
-        </button>
 
-        {isMenuOpen && (
-          <div className="absolute right-0 mt-2 w-64 bg-neutral-800 rounded-2xl shadow-xl ring-1 ring-white/10 z-40 animate-in slide-in-from-top-2 duration-200">
-            {/* Header with UserPill */}
-            <div className="py-2 border-b border-neutral-700 relative">
-              <div className="cursor-pointer hover:bg-peach-400/10 [&_.privy-modal]:z-[100] [&_[role='dialog']]:z-[100] [&_[data-radix-popper-content-wrapper]]:z-[100]">
-                <UserPill
-                  expanded={true}
-                  ui={{
-                    minimal: false,
-                    background: "secondary",
-                  }}
-                  label={
-                    <span className="w-full flex items-center gap-3 text-left transition-colors duration-150 text-gray-200">
-                      <Wallet className="h-5 w-5" />
-                      <span className="text-sm font-medium">
-                        Manage Wallets
+      <div className="flex items-center gap-2">
+        <UserPoints qaccPoints={user?.qaccPoints ?? 0} />
+        <div className="relative inline-block text-left" ref={dropdownRef}>
+          <button
+            onClick={toggleDropdown}
+            className="flex items-center gap-2 bg-white/10 px-4 py-3 rounded-xl  shadow-sm hover:bg-neutral-700 transition-colors duration-200 focus:outline-none"
+            aria-haspopup="true"
+            aria-expanded={isMenuOpen}
+          >
+            <Avatar className="w-6 h-6">
+              <AvatarImage
+                src={user?.avatar ?? "/images/user.png"}
+                height={24}
+                width={24}
+                className="rounded-full m-0 p-0"
+              />
+              <AvatarFallback>{user?.fullName?.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <span className=" text-[13px] font-medium text-white">
+              {user?.fullName}
+            </span>
+            <ChevronDown
+              className={`h-4 w-4 hidden sm:block transition-transform duration-200 text-white/30 ${
+                isMenuOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {isMenuOpen && (
+            <div className="absolute right-0 mt-2 w-64 bg-neutral-800 rounded-2xl shadow-xl ring-1 ring-white/10 z-40 animate-in slide-in-from-top-2 duration-200">
+              {/* Header with UserPill */}
+              <div className="py-2 border-b border-neutral-700 relative">
+                <div className="cursor-pointer hover:bg-peach-400/10 [&_.privy-modal]:z-[100] [&_[role='dialog']]:z-[100] [&_[data-radix-popper-content-wrapper]]:z-[100]">
+                  <UserPill
+                    expanded={true}
+                    ui={{
+                      minimal: false,
+                      background: "secondary",
+                    }}
+                    label={
+                      <span className="w-full flex items-center gap-3 text-left transition-colors duration-150 text-gray-200">
+                        <Wallet className="h-5 w-5" />
+                        <span className="text-sm font-medium">
+                          Manage Wallets
+                        </span>
                       </span>
-                    </span>
-                  }
-                />
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Menu Items */}
+              <div className="py-2">
+                <Link
+                  href={`/profile/${walletAddress}`}
+                  onClick={handleMyAccountClick}
+                >
+                  <div className="flex items-center gap-3 px-4 py-3 hover:bg-peach-400/10 transition-colors duration-150 text-gray-200">
+                    <UserCircle2 className="h-5 w-5" />
+                    <span className="text-sm font-medium">My Account</span>
+                  </div>
+                </Link>
+
+                <div className="my-2 border-t border-neutral-700" />
+
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-red-500/10 transition-colors duration-150 text-red-400"
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span className="text-sm font-semibold">Sign Out</span>
+                </button>
               </div>
             </div>
-
-            {/* Menu Items */}
-            <div className="py-2">
-              <Link
-                href={`/profile/${walletAddress}`}
-                onClick={handleMyAccountClick}
-              >
-                <div className="flex items-center gap-3 px-4 py-3 hover:bg-peach-400/10 transition-colors duration-150 text-gray-200">
-                  <UserCircle2 className="h-5 w-5" />
-                  <span className="text-sm font-medium">My Account</span>
-                </div>
-              </Link>
-              {/* 
-              <button
-                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-peach-400/10 transition-colors duration-150 text-gray-200"
-              >
-                <HelpCircle className="h-5 w-5" />
-                <span className="text-sm font-medium">Need Help?</span>
-              </button> */}
-
-              {/* Divider */}
-              <div className="my-2 border-t border-neutral-700" />
-
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-red-500/10 transition-colors duration-150 text-red-400"
-              >
-                <LogOut className="h-5 w-5" />
-                <span className="text-sm font-semibold">Sign Out</span>
-              </button>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </>
   );

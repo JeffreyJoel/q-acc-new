@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 const ARWEAVE_URL = "https://arweave.net";
 
@@ -54,12 +54,13 @@ interface ArweaveTransactions {
 
 const address = "0x0C49031B01eB1c41cBB127501E4E317F7e739D7E";
 
-export const fetchMirrorTransactions = async (): Promise<ArweaveTransactions> => {
-  try {
-    const result = await axios.post(
-      `${ARWEAVE_URL}/graphql`,
-      {
-        query: `
+export const fetchMirrorTransactions =
+  async (): Promise<ArweaveTransactions> => {
+    try {
+      const result = await axios.post(
+        `${ARWEAVE_URL}/graphql`,
+        {
+          query: `
           query {
             transactions(
              owners:["Ky1c1Kkt-jZ9sY1hvLF5nCf6WWdBhIU5Un_BMYh-t3c"]
@@ -106,29 +107,28 @@ export const fetchMirrorTransactions = async (): Promise<ArweaveTransactions> =>
               }
             }
           }
-        `
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json'
+        `,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-      }
-    );
+      );
 
-    return result.data.data.transactions;
-  } catch (error) {
-    console.error('Error fetching transactions:', error);
-    throw error;
-  }
-};
+      return result.data.data.transactions;
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      throw error;
+    }
+  };
 
-// Get transaction IDs with deduplication logic, sorted by most recent
 export const getArweaveTransactions = (transactions: ArweaveTransactions) => {
   const map = new Map();
   transactions.edges.forEach((edge) => {
     const { id, tags, block } = edge.node;
     const originContentDigest = tags.find(
-      (tag) => tag.name === 'Original-Content-Digest'
+      (tag) => tag.name === "Original-Content-Digest"
     )?.value;
 
     if (!originContentDigest) {
@@ -175,88 +175,23 @@ export const fetchArticleContent = async (transactionId: string) => {
   }
 };
 
-// Extract image URIs from article content
-const extractImageURIs = (article: any) => {
-  const images = {
-    imageURI: '',
-    featuredImageURI: '',
-    coverImageURI: '',
-    thumbnailURI: ''
-  };
-
-  // Check various possible locations for images
-  if (article.content) {
-    // Featured image from content
-    if (article.content.featuredImage) {
-      images.featuredImageURI = article.content.featuredImage;
-      images.imageURI = article.content.featuredImage; // Use as primary
-    }
-    
-    // Cover image
-    if (article.content.coverImage) {
-      images.coverImageURI = article.content.coverImage;
-      if (!images.imageURI) images.imageURI = article.content.coverImage;
-    }
-
-    // Thumbnail
-    if (article.content.thumbnail) {
-      images.thumbnailURI = article.content.thumbnail;
-      if (!images.imageURI) images.imageURI = article.content.thumbnail;
-    }
-
-    // Check for image in body content (first image found)
-    if (article.content.body && !images.imageURI) {
-      const imageRegex = /!\[.*?\]\((.*?)\)|<img[^>]+src="([^"]+)"/g;
-      const match = imageRegex.exec(article.content.body);
-      if (match) {
-        images.imageURI = match[1] || match[2];
-      }
-    }
-  }
-
-  // Direct properties on article
-  if (article.featuredImage && !images.featuredImageURI) {
-    images.featuredImageURI = article.featuredImage;
-    images.imageURI = article.featuredImage;
-  }
-
-  if (article.coverImage && !images.coverImageURI) {
-    images.coverImageURI = article.coverImage;
-    if (!images.imageURI) images.imageURI = article.coverImage;
-  }
-
-  if (article.image && !images.imageURI) {
-    images.imageURI = article.image;
-  }
-
-  // Check body for images if still no primary image
-  if (article.body && !images.imageURI) {
-    const imageRegex = /!\[.*?\]\((.*?)\)|<img[^>]+src="([^"]+)"/g;
-    const match = imageRegex.exec(article.body);
-    if (match) {
-      images.imageURI = match[1] || match[2];
-    }
-  }
-
-  return images;
-};
-
-// Fetch and format all articles, sorted by most recent
-export const fetchMirrorArticles = async (limit?: number): Promise<MirrorArticle[]> => {
+export const fetchMirrorArticles = async (
+  limit?: number
+): Promise<MirrorArticle[]> => {
   try {
     const transactions = await fetchMirrorTransactions();
     const transactionList = getArweaveTransactions(transactions);
-    
-    // Apply limit if specified
-    const limitedList = limit ? transactionList.slice(0, limit) : transactionList;
 
-    console.debug('===limitedList', limitedList);
-    
+    // Apply limit if specified
+    const limitedList = limit
+      ? transactionList.slice(0, limit)
+      : transactionList;
+
     const list = await Promise.all(
       limitedList.map(async ({ id, mirrorXyzContentDigest, timestamp }) => {
         const transactionsData = await fetchArticleContent(id);
         if (!transactionsData) return null;
-        
+
         return {
           ...transactionsData,
           mirrorXyzContentDigest,
@@ -265,36 +200,36 @@ export const fetchMirrorArticles = async (limit?: number): Promise<MirrorArticle
       })
     );
 
-    console.debug('===fetched articles', list);
-    
-    // Filter out null results and format as MirrorArticle
     const articles = list
       // .filter(article => article !== null)
-      .map(article => {
-        const images = extractImageURIs(article);
-        
+      .map((article) => {
         return {
           id: article.id || article.mirrorXyzContentDigest,
-          title: article.title || article.content?.title || 'Untitled Article',
-          description: article.description || article.content?.description || article.wnft?.description || '',
-          body: article.body || article.content?.body || article.content || '',
-          timestamp: article.content?.timestamp || article.timestamp || article.arweaveTimestamp,
+          title: article.title || article.content?.title || "Untitled Article",
+          description:
+            article.description ||
+            article.content?.description ||
+            article.wnft?.description ||
+            "",
+          body: article.body || article.content?.body || article.content || "",
+          timestamp:
+            article.content?.timestamp ||
+            article.timestamp ||
+            article.arweaveTimestamp,
           author: article.author || article.content?.author || address,
           mirrorXyzContentDigest: article.mirrorXyzContentDigest,
-          // ...images, // Spread all image URIs
-          imageURI: article.wnft?.imageURI
+          imageURI: article.wnft?.imageURI,
         };
       })
       .sort((a, b) => {
-        // Sort by timestamp descending (most recent first)
         const timestampA = a.timestamp || 0;
         const timestampB = b.timestamp || 0;
         return timestampB - timestampA;
       });
-    
+
     return articles;
   } catch (error) {
-    console.error('Error fetching mirror articles:', error);
+    console.error("Error fetching mirror articles:", error);
     return [];
   }
 };

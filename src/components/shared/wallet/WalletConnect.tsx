@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useLogin, useLoginWithEmail, usePrivy } from "@privy-io/react-auth";
+import { useLogin, usePrivy } from "@privy-io/react-auth";
 import { WalletDisplay } from "./WalletDisplay";
-import { NavbarButton } from "../ui/resizable-navbar";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 
 function WalletConnect() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -36,6 +35,11 @@ function WalletConnect() {
         <WalletDisplay walletAddress={user?.wallet?.address} />
       ) : (
         <>
+          <div className="hidden md:flex items-center space-x-3">
+          <div className="px-4 py-3 flex items-center space-x-4 text-sm font-bold border border-peach-400/30 rounded-xl">
+              <span className="text-white">Season 1 Token Claim In: 79 d</span>
+              <span className="text-peach-400 ">Vesting Timeline</span>
+            </div>   
           {ready ? (
             <Button
               disabled={isLoading}
@@ -56,14 +60,11 @@ function WalletConnect() {
               Loading...
             </Button>
           )}
+          </div>
         </>
       )}
 
-      {/* <ProfileCreationModal
-        isOpen={isProfileModalOpen}
-        onClose={handleCloseProfileModal}
-        onSubmit={handleSubmitProfile}
-      /> */}
+    
     </div>
   );
 }

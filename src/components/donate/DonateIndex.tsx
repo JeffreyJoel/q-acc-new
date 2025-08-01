@@ -9,7 +9,7 @@ import { useDonateContext } from "@/contexts/donation.context";
 import { useFetchActiveRoundDetails } from "@/hooks/useRounds";
 import { InfoModal } from "../modals/InfoModal";
 import DonatePageLoader from "../loaders/DonatePageLoader";
-import { WalletNotConnected } from "../shared/WalletNotConnected";
+import { WalletNotConnected } from "../shared/wallet/WalletNotConnected";
 import { usePrivy } from "@privy-io/react-auth";
 // import { ConnectModal } from '../ConnectModal';
 

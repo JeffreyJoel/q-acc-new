@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useLogin, usePrivy } from "@privy-io/react-auth";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import { Wallet, AlertCircle } from "lucide-react";
 
 interface WalletNotConnectedProps {
