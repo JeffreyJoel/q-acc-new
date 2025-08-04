@@ -1,4 +1,4 @@
-import RichTextViewer from "@/components/project/common/RichTextViewer";
+import { TailwindStyledContent } from "@/components/project/common/RichTextViewer";
 
 interface ProjectAboutTabProps {
   description: string;
@@ -7,7 +7,7 @@ interface ProjectAboutTabProps {
 export default function ProjectAboutTab({ description }: ProjectAboutTabProps) {
   return (
     <div className="max-w-6xl mx-auto">
-      <RichTextViewer description={description} />
+      <TailwindStyledContent content={description} />
     </div>
   );
 }

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { CopyButton } from '@/components/shared/CopyButton';
 import SocialLinks from '@/components/project/common/SocialLinks';
 import TeamMember from '@/components/project/common/TeamCard';
-import RichTextViewer from '@/components/project/common/RichTextViewer';
+import { TailwindStyledContent } from '@/components/project/common/RichTextViewer';
 import { ProjectFormData, TeamMember as TeamMemberType, EProjectSocialMediaType } from '@/types/project.type';
 import { IconX } from '@tabler/icons-react';
 
@@ -174,7 +174,7 @@ const ProjectPreview: FC<ProjectPreviewProps> = ({ formData, onClose, onEdit }) 
               <TabsContent value="about" className="mt-0">
                 <div className="max-w-6xl mx-auto">
                   {formData.projectDescription ? (
-                    <RichTextViewer description={formData.projectDescription} />
+                    <TailwindStyledContent content={formData.projectDescription} />
                   ) : (
                     <div className="bg-neutral-800 rounded-lg p-8 text-center">
                       <p className="text-neutral-400">No project description provided</p>

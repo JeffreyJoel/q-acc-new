@@ -39,9 +39,9 @@ import {
             const data = await fetchProjectBySlug(slug);
   
             setProjectData(data);
-            setTeamMembers(data.projectData.teamMembers);
+            setTeamMembers(data?.teamMembers || []);
             // console.log('DATA', teamMembers);
-            setIsLoading(data);
+            setIsLoading(data ? false : true);
           } catch (err) {}
         };
   

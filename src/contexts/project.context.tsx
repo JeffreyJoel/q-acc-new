@@ -40,8 +40,8 @@ import {
             const data = await fetchProjectBySlug(slug);
   
             setProjectData(data);
-            setTeamMembers(data.projectData.teamMembers);
-            setIsLoading(data);
+            setTeamMembers(data?.teamMembers || []);
+            setIsLoading(data ? false : true);
           } catch (err) {}
         };
         fetchProject();
