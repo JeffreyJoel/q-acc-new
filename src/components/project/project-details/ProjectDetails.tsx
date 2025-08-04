@@ -5,19 +5,11 @@ import {
   useFetchActiveRoundDetails,
   useFetchMostRecentEndRound,
 } from "@/hooks/useRounds";
-import GeneralInfo from "@/components/project/project-details/GeneralInfo";
-import { Tabs, TabsTrigger, TabsList, TabsContent } from "@/components/ui/tabs";
 import { GeckoTerminalChart } from "@/components/project/project-details/GeckoTerminal";
 
-import { IProject } from "@/types/project.type";
 import Image from "next/image";
 import ProjectDetailsLoader from "@/components/loaders/ProjectDetailsLoader";
 import { ArrowUpRight } from "lucide-react";
-import ProjectHeader from "./ProjectHeader";
-import ProjectAboutTab from "./ProjectAboutTab";
-import ProjectTeamTab from "./ProjectTeamTab";
-import ProjectRoadmapTab from "./ProjectRoadmapTab";
-import ProjectTransactionsTab from "./ProjectTransactionsTab";
 import { capitalizeFirstLetter } from "@/helpers";
 import { shortenAddressLarger } from "@/helpers/address";
 import { CopyButton } from "@/components/shared/CopyButton";
@@ -25,13 +17,10 @@ import SocialLinks from "../common/SocialLinks";
 import { TailwindStyledContent } from "../common/RichTextViewer";
 import TeamSection from "./TeamSection";
 import TokenHolders from "./TokenHolders";
+import ProjectStats from "./ProjectStats";
 
 export default function ProjectDetails({ params }: { params: { id: string } }) {
   const { data: project, isLoading, error } = useFetchProjectBySlug(params.id);
-  const { data: activeRoundDetails } = useFetchActiveRoundDetails();
-
-  const isRoundActive = !!activeRoundDetails;
-  const isQaccRoundEnded = useFetchMostRecentEndRound(activeRoundDetails);
 
   console.log(project);
 
@@ -51,7 +40,7 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
               priority
             />
             {/* Overlay for better text readability */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-neutral-950/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
             <div className="relative z-10 h-full flex flex-col justify-between p-8 md:px-20 md:py-11">
               <div className="flex-1 flex flex-col justify-center">
                 <div className="max-w-lg">
@@ -77,6 +66,11 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Project Stats Section */}
+          <div className="max-w-7xl mx-auto mt-8">
+            <ProjectStats project={project} />
           </div>
 
           {project?.abc?.issuanceTokenAddress && (

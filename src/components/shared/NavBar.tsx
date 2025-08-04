@@ -66,7 +66,7 @@ export function NavBar() {
             </Link>
           </div>
 
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             <div className=" flex items-baseline space-x-12">
               {navItems.map((item, idx) => (
                 <Link
@@ -82,11 +82,11 @@ export function NavBar() {
               ))}
             </div>
           </div>
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             <WalletConnect />
           </div>
 
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="text-neutral-400 hover:text-white p-2"
@@ -114,7 +114,7 @@ export function NavBar() {
       </div>
 
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-[#0a0a0a] border-t border-neutral-800">
+        <div className="lg:hidden bg-[#0a0a0a] border-t border-neutral-800">
           <div className="px-2 pt-2 pb-3 space-y-1">
             <div className="px-3 py-2 text-sm text-neutral-300 border-b border-neutral-700 mb-2">
               <div>Season 1 Token Claim In: 79 d</div>

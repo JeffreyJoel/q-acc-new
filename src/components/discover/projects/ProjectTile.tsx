@@ -32,8 +32,8 @@ export function ProjectTile({
         className="object-center object-cover"
         priority
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black/90 z-10" />
-      <div className="absolute bottom-2 left-0 right-0 z-20 p-3 px-4 flex flex-col gap-2">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black/85 z-10" />
+      <div className="absolute bottom-2 left-0 right-0 z-20 p-3 flex flex-col gap-2">
         <span className="inline-block bg-peach-400 text-black text-[8px] font-bold font-inter px-1 py-0.5 rounded-md mb-1 w-fit shadow uppercase tracking-wide">
           Season {season}
         </span>
