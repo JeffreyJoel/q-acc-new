@@ -49,7 +49,7 @@ export const fetchProjectById = async (id: number, address?: Address) => {
 
 export const fetchProjectBySlug = async (slug: string, address?: Address) => {
   try {
-    const res = await requestGraphQL<{ projectBySlug: any }>(
+    const res = await requestGraphQL<{ projectBySlug: IProject }>(
       GET_PROJECT_BY_SLUG,
       {
         slug,

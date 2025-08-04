@@ -26,7 +26,7 @@ import { useEffect } from "react";
 import { fetchProjectDonationsById } from "@/services/donation.service";
 import { useFetchActiveRoundDetails } from "@/hooks/useRounds";
 import { useFetchPOLPriceSquid } from "@/hooks/useTokens";
-import ProjectDonateButton from "./project-details/ProjectDonateButton";
+import ProjectDonateButton from "./ProjectDonateButton";
 import { getPoolAddressByPair } from "@/helpers/getTokensListedData";
 import config from "@/config/configuration";
 

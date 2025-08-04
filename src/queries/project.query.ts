@@ -278,6 +278,7 @@ export const GET_PROJECT_BY_SLUG = /* GraphQL */ `
       verified
       totalDonations
       description
+      descriptionSummary
       teaser
       seasonNumber
       batchNumbersWithSafeTransactions

@@ -4,10 +4,10 @@ import Link from "next/link";
 import type React from "react";
 import { IProject } from "@/types/project.type";
 import { formatAmount, formatNumber } from "@/helpers/donations";
-import { Spinner } from "../loaders/Spinner";
+import { Spinner } from "@/components/loaders/Spinner";
 import { getIpfsAddress } from "@/helpers/image";
 import Image from "next/image";
-import { SupportButton } from "./SupportButton";
+import { SupportButton } from "@/components/project/common/SupportButton";
 import { useProjectData } from "@/hooks/useProjectData";
 
 interface ProjectCardProps {

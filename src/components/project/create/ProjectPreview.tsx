@@ -6,9 +6,9 @@ import { ChevronLeft, Globe } from 'lucide-react';
 import { Tabs, TabsTrigger, TabsList, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { CopyButton } from '@/components/shared/CopyButton';
-import SocialLinks from '@/components/project/SocialLinks';
-import TeamMember from '@/components/project/Team';
-import RichTextViewer from '@/components/project/RichTextViewer';
+import SocialLinks from '@/components/project/common/SocialLinks';
+import TeamMember from '@/components/project/common/TeamCard';
+import RichTextViewer from '@/components/project/common/RichTextViewer';
 import { ProjectFormData, TeamMember as TeamMemberType, EProjectSocialMediaType } from '@/types/project.type';
 import { IconX } from '@tabler/icons-react';
 

@@ -202,7 +202,7 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
               />
               <AvatarFallback>{user?.fullName?.charAt(0)}</AvatarFallback>
             </Avatar>
-            <span className=" text-[13px] font-medium text-white">
+            <span className=" text-sm font-medium text-white">
               {user?.fullName}
             </span>
             <ChevronDown

@@ -5,3 +5,9 @@ export function shortenAddress(
 ): string {
   return address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
 }
+
+export function shortenAddressLarger(
+  address: Address | string | null | undefined,
+): string {
+  return address ? `${address.slice(0, 12)}...${address.slice(-12)}` : "";
+}

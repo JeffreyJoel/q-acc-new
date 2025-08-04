@@ -13,7 +13,7 @@ interface TeamMemberProps {
   };
 }
 
-const TeamMember = ({ member }: TeamMemberProps) => {
+const TeamCard = ({ member }: TeamMemberProps) => {
   return (
     <div className="bg-neutral-800 w-[250px] p-4 h-auto rounded-2xl flex flex-col items-center text-center">
       <div className="relative mb-3">
@@ -43,4 +43,4 @@ const TeamMember = ({ member }: TeamMemberProps) => {
   );
 };
 
-export default TeamMember;
+export default TeamCard;

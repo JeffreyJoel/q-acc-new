@@ -48,38 +48,6 @@ export interface CarouselProps {
   animateText?: boolean;
 }
 
-const defaultTips: Tip[] = [
-  {
-    text: "Backend snippets. Shadcn style headless components.. but for your backend.",
-    image:
-      "https://www.cult-ui.com/_next/image?url=%2Fplaceholders%2Fcult-snips.png&w=1080&q=75",
-    url: "https://www.newcult.co/backend",
-  },
-  {
-    text: "Create your first directory app today. AI batch scripts to process 100s of urls in seconds.",
-    image:
-      "https://www.cult-ui.com/_next/image?url=%2Fplaceholders%2Fcult-dir.png&w=1080&q=75",
-    url: "https://www.newcult.co/templates/cult-seo",
-  },
-  {
-    text: "Cult landing page template. Framer motion, shadcn, and tailwind.",
-    image:
-      "https://www.cult-ui.com/_next/image?url=%2Fplaceholders%2Fcult-rune.png&w=1080&q=75",
-    url: "https://www.newcult.co/templates/cult-landing-page",
-  },
-  {
-    text: "Vector embeddings, semantic search, and chat based vector retrieval on easy mode.",
-    image:
-      "https://www.cult-ui.com/_next/image?url=%2Fplaceholders%2Fcult-manifest.png&w=1080&q=75",
-    url: "https://www.newcult.co/templates/manifest",
-  },
-  {
-    text: "SEO analysis app. Scraping, analysis, insights, and AI recommendations.",
-    image:
-      "https://www.cult-ui.com/_next/image?url=%2Fplaceholders%2Fcult-seo.png&w=1080&q=75",
-    url: "https://www.newcult.co/templates/cult-seo",
-  },
-];
 
 
 const carouselVariants: Variants = {
@@ -111,7 +79,7 @@ const aspectRatioClasses = {
 export function ProjectsCarousel({
   onTipChange,
   className,
-  tips = defaultTips,
+  tips,
   showProgress = true,
   aspectRatio = "wide",
   showNavigation = false,
