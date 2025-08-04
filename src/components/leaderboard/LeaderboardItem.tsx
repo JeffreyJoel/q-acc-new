@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { shortenAddress } from "@/helpers/address";
+import { handleImageUrl } from "@/helpers/image";
 import { roundPoints } from "@/helpers/points";
 import type { LeaderboardUser } from "@/types/leaderboard";
 import { ArrowUpRight } from "lucide-react";
@@ -13,6 +14,8 @@ interface LeaderboardItemProps {
 }
 
 export function LeaderboardItem({ user, onUserClick }: LeaderboardItemProps) {
+  const avatar = handleImageUrl(user.avatar ?? "");
+
   return (
     <div
       className="flex items-center justify-between bg-white/5 rounded-3xl p-6 cursor-pointer hover:bg-neutral-700 transition-colors"
@@ -32,14 +35,14 @@ export function LeaderboardItem({ user, onUserClick }: LeaderboardItemProps) {
                   : "text-white/30"
               }
             `}
-          >
-            {user.rank > 0 ? user.rank.toLocaleString() : "N/A"}
-          </h2>
-        </div>
+        >
+          {user.rank > 0 ? user.rank.toLocaleString() : "N/A"}
+        </h2>
+      </div>
 
       <div className="flex items-center gap-3 flex-1 ml-4">
         <Avatar className="h-8 w-8 md:h-12 md:w-12 border-2 border-neutral-600">
-          <AvatarImage src={user.avatar ?? "/images/user.png"} />
+          <AvatarImage src={avatar ?? "/images/user.png"} />
           <AvatarFallback className="text-base bg-neutral-600 text-white">
             {user.username?.charAt(0) || user.name?.charAt(0)}
           </AvatarFallback>

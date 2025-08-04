@@ -149,7 +149,7 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {/* Project/Round Information Card */}
       <div className="bg-white/5 rounded-3xl p-5 backdrop-blur-lg bg-opacity-80 relative">
-        {!isRoundActive && (
+        {isRoundActive && (
           <div className="absolute -top-2 left-[78px] -translate-x-1/2">
             <span className="bg-green-500 text-black text-[13px] font-bold px-2 py-1 rounded-lg">
               LIVE
@@ -159,7 +159,7 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
 
         <div className="">
           <div className="flex flex-row justify-between items-center flex-1 gap-4 lg:gap-6">
-            <h3 className="text-[22px] font-anton font-bold text-right text-white/30 w-[78px] flex items-end gap-2 leading-none">
+            <h3 className="text-[22px] font-anton text-right text-white/30 w-[78px] flex items-end gap-2 leading-none">
               <span className="text-white/30">
                 {activeRoundDetails?.roundNumber === 1
                   ? "1st"
@@ -209,7 +209,7 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
       {/* Market Data Card */}
       <div className="bg-white/5 rounded-3xl p-5 backdrop-blur-lg bg-opacity-80">
         <div className="flex flex-row justify-between items-center flex-1 gap-4 lg:gap-6">
-          <h3 className="text-[22px] font-anton font-bold text-right text-white/30 w-[78px] leading-none">
+          <h3 className="text-[22px] font-anton text-right text-white/30 w-[78px] leading-none">
             <span className="text-white/30">MARKET</span>
             <br />
             <span className="">DATA</span>

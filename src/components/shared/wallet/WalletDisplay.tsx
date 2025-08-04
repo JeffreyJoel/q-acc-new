@@ -19,6 +19,7 @@ import UserPoints from "./UserPoints";
 import { Address } from "viem";
 import { useFetchUser } from "@/hooks/useFetchUser";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { handleImageUrl } from "@/helpers/image";
 
 interface WalletDisplayProps {
   walletAddress?: string;
@@ -173,6 +174,8 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
     return null;
   }
 
+  const avatar = handleImageUrl(user?.avatar ?? "");
+
   return (
     <>
       <style jsx global>{`
@@ -195,7 +198,7 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
           >
             <Avatar className="w-6 h-6">
               <AvatarImage
-                src={user?.avatar ?? "/images/user.png"}
+                src={avatar ?? "/images/user.png"}
                 height={24}
                 width={24}
                 className="rounded-full m-0 p-0"
