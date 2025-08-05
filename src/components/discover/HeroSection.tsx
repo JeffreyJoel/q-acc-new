@@ -59,9 +59,9 @@ const HeroSection = () => {
   };
 
   return (
-    <div className="bg-gradient-to-b from-[#000000] to-qacc-gray-dark relative w-full my-8 md:my-0 md:min-h-screen flex items-center justify-center overflow-hidden">
+    <div className="bg-gradient-to-b from-[#000000] to-qacc-gray-dark relative w-full py-8 md:py-0 md:min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Vector */}
-      <div className="mt-20 w-full absolute inset-0 flex items-center justify-center">
+      <div className="pt-20 w-full absolute inset-0 flex items-center justify-center">
         <div className="relative w-full h-full max-w-7xl xl:max-w-full xl:w-11/12 mx-auto">
           <Image
             src="/images/landing/landing-vector.svg"
