@@ -10,7 +10,7 @@ import VestingSchedule from "./VestingSchedule";
 function Projects() {
   const { data: allProjects, isLoading, error } = useFetchAllProjects();
 
-  const tips = (allProjects?.projects || []).slice(0, 4).map((project) => ({
+  const carouselItems = (allProjects?.projects || []).slice(0, 4).map((project) => ({
     text: project.title || "Untitled Project",
     image: project.image || "/images/banners/banner-lg.jpg",
     url: `/project/${project.slug}`,
@@ -35,10 +35,10 @@ function Projects() {
       ? project.abc.tokenPrice * project.abc.totalSupply
       : 0,
     season: project.seasonNumber || "",
+    slug: project.slug || "",
   }));
 
 
-  console.log(tips);
 
   if (isLoading) {
     return (
@@ -64,11 +64,11 @@ function Projects() {
         Projects
       </h2>
       <div>
-        <ProjectsCarousel tips={tips} />
+        <ProjectsCarousel tips={carouselItems} />
 
         <div className="flex flex-row gap-4 mt-10 overflow-x-auto">
           {tiles.map((tile) => (
-            <ProjectTile key={tile.text} title={tile.text} description={tile.description} image={tile.image} season={tile.season} />
+            <ProjectTile key={tile.text} title={tile.text} description={tile.description} image={tile.image} season={tile.season} slug={tile.slug} />
           ))}
         </div>
 

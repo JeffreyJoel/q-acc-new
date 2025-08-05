@@ -1,12 +1,14 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { capitalizeFirstLetter } from "@/helpers";
+import Link from "next/link";
 
 interface ProjectTileProps {
   title: string;
   description: string;
   image: string;
   season: string | number;
+  slug: string;
   className?: string;
 }
 
@@ -16,8 +18,10 @@ export function ProjectTile({
   image,
   season,
   className,
+  slug,
 }: ProjectTileProps) {
   return (
+    <Link href={`/project/${slug}`}> 
     <div
       className={cn(
         "relative rounded-[20px] overflow-hidden shadow-lg bg-muted flex flex-col justify-end min-h-[354px] w-[220px] flex-shrink-0",
@@ -45,6 +49,7 @@ export function ProjectTile({
         </p>
       </div>
     </div>
+    </Link>
   );
 }
 

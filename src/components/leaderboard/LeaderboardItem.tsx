@@ -14,7 +14,12 @@ interface LeaderboardItemProps {
 }
 
 export function LeaderboardItem({ user, onUserClick }: LeaderboardItemProps) {
-  const avatar = handleImageUrl(user.avatar ?? "");
+  let avatar;
+  if (user.avatar) {
+    avatar = handleImageUrl(user.avatar);
+  } else {
+    avatar = "/images/user.png";
+  }
 
   return (
     <div
@@ -42,7 +47,7 @@ export function LeaderboardItem({ user, onUserClick }: LeaderboardItemProps) {
 
       <div className="flex items-center gap-3 flex-1 ml-4">
         <Avatar className="h-8 w-8 md:h-12 md:w-12 border-2 border-neutral-600">
-          <AvatarImage src={avatar ?? "/images/user.png"} />
+          <AvatarImage src={avatar} />
           <AvatarFallback className="text-base bg-neutral-600 text-white">
             {user.username?.charAt(0) || user.name?.charAt(0)}
           </AvatarFallback>

@@ -29,6 +29,7 @@ import {
 import { toast } from "sonner";
 import { Dropzone } from "../ui/dropzone";
 import { useForm, FormProvider } from "react-hook-form";
+import { getIpfsAddress } from '@/helpers/image';
 
 interface UpdateProfileModalProps {
   isOpen: boolean;
@@ -139,7 +140,7 @@ export const UpdateProfileModal = ({
 
   const handleDrop = (name: string, file: File, ipfsHash: string) => {
     setAvatarFile(file);
-    setAvatarHash(ipfsHash);
+    setAvatarHash(getIpfsAddress(ipfsHash));
   };
 
   const handleSendVerificationCode = async () => {

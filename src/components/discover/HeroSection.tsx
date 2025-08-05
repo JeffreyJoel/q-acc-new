@@ -1,11 +1,54 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { VideoModal } from "@/components/modals/VideoModal";
+import { formatNumber } from "@/helpers";
 
 const HeroSection = () => {
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [stats, setStats] = useState<{
+    total_raised_pol: number | null;
+    amount_in_protocol_pol: number | null;
+    total_market_cap: number | null;
+  } | null>(null);
+
+ 
+
+  useEffect(() => {
+    const CACHE_KEY = "dune_stats";
+    const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      const now = Date.now();
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.timestamp && now - parsed.timestamp < ONE_WEEK_MS) {
+          setStats(parsed.data);
+          return;
+        }
+      }
+
+      // Fetch from API if no valid cache
+      fetch("/api/dune")
+        .then((res) => res.json())
+        .then((data) => {
+          const formattedData = {
+            total_raised_pol: Number(data.total_raised_pol) || null,
+            amount_in_protocol_pol: Number(data.amount_in_protocol_pol) || null,
+            total_market_cap: Number(data.total_market_cap) || null,
+          };
+          setStats(formattedData);
+          localStorage.setItem(
+            CACHE_KEY,
+            JSON.stringify({ timestamp: now, data: formattedData })
+          );
+        })
+        .catch((err) => console.error("Failed to fetch Dune stats", err));
+    } catch (err) {
+      console.error("Error accessing localStorage for Dune stats", err);
+    }
+  }, []);
 
   const handlePlayButtonClick = () => {
     setIsVideoModalOpen(true);
@@ -82,17 +125,17 @@ const HeroSection = () => {
                 </div>
 
                 <div className="space-y-0.1">
-                  <div className="text-white text-2xl xl:text-3xl font-bold">325K POL</div>
+                  <div className="text-white text-2xl xl:text-3xl font-bold">{formatNumber(stats?.total_raised_pol)}</div>
                   <div className="text-white/30 font-medium text-[13px] leading-normal">Total Raised</div>
                 </div>
 
                 <div className="space-y-0.1">
-                  <div className="text-white text-2xl xl:text-3xl font-bold">3.8M POL</div>
+                  <div className="text-white text-2xl xl:text-3xl font-bold">{formatNumber(stats?.amount_in_protocol_pol)}</div>
                   <div className="text-white/30 font-medium text-[13px] leading-normal">In Protocol</div>
                 </div>
 
                 <div className="space-y-0.1">
-                  <div className="text-white text-2xl xl:text-3xl font-bold">$6.5M+</div>
+                  <div className="text-white text-2xl xl:text-3xl font-bold">{formatNumber(stats?.total_market_cap, true)}</div>
                   <div className="text-white/30 font-medium text-[13px] leading-normal">Peak Market Cap</div>
                 </div>
 
@@ -126,17 +169,17 @@ const HeroSection = () => {
               </div>
 
               <div className="text-center space-y-1">
-                <div className="text-white text-lg sm:text-2xl font-bold">325K POL</div>
+                <div className="text-white text-lg sm:text-2xl font-bold">{formatNumber(stats?.total_raised_pol)}</div>
                 <div className="text-white/30 font-medium text-xs sm:text-sm leading-normal">Total Raised</div>
               </div>
 
               <div className="text-center space-y-1">
-                <div className="text-white text-lg sm:text-2xl font-bold">3.8M POL</div>
+                <div className="text-white text-lg sm:text-2xl font-bold">{formatNumber(stats?.amount_in_protocol_pol)}</div>
                 <div className="text-white/30 font-medium text-xs sm:text-sm leading-normal">In Protocol</div>
               </div>
 
               <div className="text-center space-y-1">
-                <div className="text-white text-lg sm:text-2xl font-bold">$6.5M+</div>
+                <div className="text-white text-lg sm:text-2xl font-bold">{formatNumber(stats?.total_market_cap, true)}</div>
                 <div className="text-white/30 font-medium text-xs sm:text-sm leading-normal">Peak Market Cap</div>
               </div>
 
