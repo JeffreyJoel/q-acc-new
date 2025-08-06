@@ -15,6 +15,7 @@ import TeamSection from "./TeamSection";
 import TokenHolders from "./TokenHolders";
 import ProjectStats from "./ProjectStats";
 import Link from "next/link";
+import QuickSwapWidget from "./QuickSwapWidget";
 
 export default function ProjectDetails({ params }: { params: { id: string } }) {
   const { data: project, isLoading, error } = useFetchProjectBySlug(params.id);
@@ -31,7 +32,7 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
             {/* Background Image */}
             <Image
               src={project.image || ""}
-              alt="TO DA MOON Hero Background"
+              alt={project.title || "Project Image"}
               fill
               className="object-cover"
               priority

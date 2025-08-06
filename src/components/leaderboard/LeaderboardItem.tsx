@@ -7,6 +7,7 @@ import { roundPoints } from "@/helpers/points";
 import type { LeaderboardUser } from "@/types/leaderboard";
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface LeaderboardItemProps {
   user: LeaderboardUser;
@@ -24,7 +25,6 @@ export function LeaderboardItem({ user, onUserClick }: LeaderboardItemProps) {
   return (
     <div
       className="flex items-center justify-between bg-white/5 rounded-3xl p-6 cursor-pointer hover:bg-neutral-700 transition-colors"
-      onClick={() => onUserClick?.(user.walletAddress)}
     >
       <div className="flex items-center justify-center">
         <h2
@@ -54,12 +54,14 @@ export function LeaderboardItem({ user, onUserClick }: LeaderboardItemProps) {
         </Avatar>
 
         <div className="flex flex-col">
-          <span className="font-bold text-lg text-white">{user?.username}</span>
+          <span className="text-2xl font-anton text-white">{user?.username ? `@${user?.username}` : ""}</span>
           <div className="flex items-center gap-1">
             <span className="text-base text-white/50 font-ibm-mono font-medium">
               {shortenAddress(user.walletAddress)}
             </span>
-            <ArrowUpRight className="w-3 h-3 text-white/40" />
+            <Link href={`https://polygonscan.com//address/${user.walletAddress}`} target="_blank">
+              <ArrowUpRight className="w-4 h-4 text-white/50" />
+            </Link>
           </div>
         </div>
       </div>
