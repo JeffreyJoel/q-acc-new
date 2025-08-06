@@ -1,81 +1,34 @@
 "use client";
+
 import { shortenAddress } from "@/helpers/address";
 import { ITokenHolder } from "@/types/token-holders.type";
-import { useEffect, useState } from "react";
+import { useTokenHolders } from "@/hooks/useTokenHolders";
 
 export default function TokenHolders({
   tokenAddress,
-  paymentProcessor,
+  paymentRouter,
 }: {
   tokenAddress: string;
-  paymentProcessor: string;
+  paymentRouter: string;
 }) {
-  const [tokenHolders, setTokenHolders] = useState<ITokenHolder[] | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const {
+    data: tokenHolders,
+    isLoading,
+    error,
+  } = useTokenHolders(tokenAddress, { enabled: !!tokenAddress });
 
-  useEffect(() => {
-    const fetchTokenHolders = async () => {
-      if (!tokenAddress) return;
-      
-      setIsLoading(true);
-      setError(null);
-      
-      try {
-        const response = await fetch(`/api/token-holders?tokenAddress=${tokenAddress}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch token holders');
-        }
+  const holders: ITokenHolder[] = tokenHolders?.holders || [];
+  const holdersCount: number = tokenHolders?.totalHolders ?? holders.length;
 
-        const data = await response.json();
-        setTokenHolders(data as ITokenHolder[]);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('An error occurred'));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchTokenHolders();
-  }, [tokenAddress]);
-
-  const refetch = () => {
-    if (tokenAddress) {
-      const fetchTokenHolders = async () => {
-        setIsLoading(true);
-        setError(null);
-        
-        try {
-          const response = await fetch(`/api/token-holders?tokenAddress=${tokenAddress}`);
-          
-          if (!response.ok) {
-            throw new Error('Failed to fetch token holders');
-          }
-
-          const data = await response.json();
-          setTokenHolders(data as ITokenHolder[]);
-        } catch (err) {
-          setError(err instanceof Error ? err : new Error('An error occurred'));
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      fetchTokenHolders();
-    }
-  };
-
-  function getHolderLabel(holder: any) {
-    if (holder.owner_address === paymentProcessor) {
-      return "Payment Processor";
+  const getHolderLabel = (address: string) => {
+    if (
+      address.toLowerCase() === paymentRouter.toLowerCase()
+    ) {
+      return "Vesting Contract";
     }
     return "";
-  }
-  const holders = tokenHolders || [];
-  const holdersCount = holders.length;
+  };
 
-  // Loading state
   if (isLoading) {
     return (
       <div className="bg-white/5 px-6 lg:px-8 py-8 rounded-3xl">
@@ -93,7 +46,7 @@ export default function TokenHolders({
     );
   }
 
-  // Error state
+
   if (error) {
     return (
       <div className="bg-white/5 px-6 lg:px-8 py-8 rounded-3xl">
@@ -117,19 +70,11 @@ export default function TokenHolders({
       <div className="flex flex-row items-baseline justify-between">
         <div className="flex flex-row items-baseline gap-2">
           <h2 className="text-[40px] font-anton text-white">HOLDERS</h2>
-          <span className="text-gray-400 text-2xl font-anton">
-            {holdersCount}
-          </span>
+          <span className="text-gray-400 text-2xl font-anton">{holdersCount}</span>
         </div>
-        {/* <button 
-          onClick={() => refetch()}
-          className="text-orange-500 hover:text-orange-400 font-medium transition-colors"
-        >
-          REFRESH
-        </button> */}
       </div>
 
-      { holdersCount === 0 ? (
+      {holdersCount === 0 ? (
         <div className="flex flex-col items-center justify-center py-8">
           <p className="text-gray-400 text-center">
             No token holders available for this project.
@@ -138,33 +83,32 @@ export default function TokenHolders({
       ) : (
         <div className="flex flex-col justify-center gap-4 mt-6">
           <ol className="flex flex-col gap-4 list-none">
-            {holders
-              .slice(0, 20)
-              .map((holder: ITokenHolder, index: number) => {
-                const holderLabel = getHolderLabel(holder);
-                return (
-                  <li key={`${holder.owner_address}-${index}`} className="flex items-center">
-                    <span className="text-white/30 font-ibm-mono mr-2 font-bold">
-                      {index + 1}.
-                    </span>
-                    <div className="flex flex-row items-center justify-between w-full">
-                      <div className="flex flex-col">
-                        <span className="font-ibm-mono text-white font-medium">
-                          {shortenAddress(holder.owner_address)}
-                        </span>
-                        {holderLabel && (
-                          <span className="text-white/30 text-sm">
-                            {holderLabel}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-white/30 font-medium">
-                        {holder.percentage_relative_to_total_supply?.toFixed(4) || "0.0000"}%
-                      </div>
+            {holders.slice(0, 20).map((holder, index) => {
+              const holderLabel = getHolderLabel(holder.address);
+              return (
+                <li
+                  key={`${holder.address}-${index}`}
+                  className="flex items-center"
+                >
+                  <span className="text-white/30 font-ibm-mono mr-2 font-bold">
+                    {index + 1}.
+                  </span>
+                  <div className="flex flex-row items-center justify-between w-full">
+                    <div className="flex flex-col">
+                      <span className="font-ibm-mono text-white font-medium">
+                        {shortenAddress(holder.address)}
+                      </span>
+                      {holderLabel && (
+                        <span className="text-white/30 text-sm">{holderLabel}</span>
+                      )}
                     </div>
-                  </li>
-                );
-              })}
+                    <div className="text-white/30 font-medium">
+                      {holder.percentage.toFixed(4)}%
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
           </ol>
         </div>
       )}

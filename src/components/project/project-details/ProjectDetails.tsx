@@ -1,11 +1,7 @@
 "use client";
 
 import { useFetchProjectBySlug } from "@/hooks/useProjects";
-import {
-  useFetchActiveRoundDetails,
-  useFetchMostRecentEndRound,
-} from "@/hooks/useRounds";
-import { GeckoTerminalChart } from "@/components/project/project-details/GeckoTerminal";
+import { GeckoTerminalChart } from "./GeckoTerminal";
 
 import Image from "next/image";
 import ProjectDetailsLoader from "@/components/loaders/ProjectDetailsLoader";
@@ -18,14 +14,15 @@ import { TailwindStyledContent } from "../common/RichTextViewer";
 import TeamSection from "./TeamSection";
 import TokenHolders from "./TokenHolders";
 import ProjectStats from "./ProjectStats";
+import Link from "next/link";
 
 export default function ProjectDetails({ params }: { params: { id: string } }) {
   const { data: project, isLoading, error } = useFetchProjectBySlug(params.id);
 
-  console.log(project);
+  // console.log(project);
 
   return (
-    <div className="mt-32 max-w-7xl min-h-screen  mx-auto px-6">
+    <div className="mt-32 mb-12 max-w-7xl min-h-screen  mx-auto px-6">
       {isLoading || !project ? (
         <ProjectDetailsLoader />
       ) : (
@@ -58,7 +55,9 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
                       {shortenAddressLarger(project.abc?.projectAddress || "")}
                     </span>
                     <CopyButton text={project.abc?.projectAddress || ""} />
-                    <ArrowUpRight className="w-6 h-6 cursor-pointer" />
+                    <Link href={`https://polygonscan.com/address/${project.abc?.projectAddress}`} target="_blank" className="hover:text-peach-400 transition-colors">
+                      <ArrowUpRight className="w-6 h-6 cursor-pointer" />
+                    </Link>
                   </div>
                   <div className="flex gap-4">
                     <SocialLinks socialMedia={project.socialMedia} />
@@ -86,7 +85,7 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
               </div>
               <div className="lg:w-[30%] flex flex-col gap-4">
                 <TeamSection teamMembers={project.teamMembers} />
-                <TokenHolders tokenAddress={project.abc?.issuanceTokenAddress || ""} paymentProcessor={project.abc?.fundingManagerAddress || ""} />
+                <TokenHolders tokenAddress={project.abc?.issuanceTokenAddress || ""} paymentRouter={project.abc?.paymentRouterAddress || ""} />
               </div>
             </div>
           </div>

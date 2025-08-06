@@ -1,9 +1,11 @@
 export interface ITokenHolder {
-  owner_address: string;
-  percentage_relative_to_total_supply: number;
+  address: string;
+  percentage: number;
   label?: string;
 }
 
-export interface ITokenHolders {
+export interface ITokenHoldersResponse {
+  success: boolean;
+  totalHolders: number;
   holders: ITokenHolder[];
 }

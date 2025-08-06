@@ -16,6 +16,7 @@ import {
 } from "@/services/tokenPrice.service";
 import { formatNumber } from "@/helpers/donations";
 import { Spinner } from "@/components/loaders/Spinner";
+import { useTokenHolders } from "@/hooks/useTokenHolders";
 
 interface ProjectStatsProps {
   project: IProject;
@@ -43,6 +44,13 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
   const isQaccRoundEnded = useFetchMostRecentEndRound(activeRoundDetails);
 
   const polPriceNumber = Number(POLPrice);
+
+  // Token holders
+  const { data: tokenHolderData } = useTokenHolders(
+    project.abc?.issuanceTokenAddress || "",
+    { enabled: !!project.abc?.issuanceTokenAddress }
+  );
+  const tokenHoldersCount = tokenHolderData?.totalHolders ?? 0;
 
   // Calculate token price in USD
   const tokenPriceUSD = currentTokenPrice
@@ -160,17 +168,8 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
         <div className="">
           <div className="flex flex-row justify-between items-center flex-1 gap-4 lg:gap-6">
             <h3 className="text-[22px] font-anton text-right text-white/30 w-[78px] flex items-end gap-2 leading-none">
-              <span className="text-white/30">
-                {activeRoundDetails?.roundNumber === 1
-                  ? "1st"
-                  : activeRoundDetails?.roundNumber === 2
-                  ? "2nd"
-                  : activeRoundDetails?.roundNumber === 3
-                  ? "3rd"
-                  : `1st`}
-              </span>
               <span className="">
-                Q/ACC <br /> ROUND
+                Q/ACC <br /> ROUNDS
               </span>
             </h3>
             {/* Supporters Count */}
@@ -228,7 +227,7 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
           {/* Holders */}
           <div className="space-y-0.1">
             <div className="text-white text-center text-2xl font-bold">
-              {formatNumber(project.countUniqueDonors || 0)}
+              {formatNumber(tokenHoldersCount)}
             </div>
             <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
               Holders
