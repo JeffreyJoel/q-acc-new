@@ -10,6 +10,7 @@ export type EnvConfig = {
   ERC_TOKEN_ADDRESS: string;
   ERC_TOKEN_SYMBOL: string;
   WPOL_TOKEN_ADDRESS: string;
+  NATIVE_TOKEN_ADDRESS: string;
   GRAPHQL_ENDPOINT: string;
   AUTH_BASE_ROUTE: string;
   SCAN_URL: string;

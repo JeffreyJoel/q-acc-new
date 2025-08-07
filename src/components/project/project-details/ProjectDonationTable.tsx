@@ -18,6 +18,7 @@ import { Spinner } from '@/components/loaders/Spinner';
 import { useTokenSupplyDetails } from '@/hooks/useTokens';
 import { ArrowDownUp, ExternalLink } from 'lucide-react';
 
+//TODO: move to constants
 export const POLYGON_POS_CHAIN_IMAGE =
   'https://raw.githubusercontent.com/0xsquid/assets/main/images/chains/polygon.svg';
 

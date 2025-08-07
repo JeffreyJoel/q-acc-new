@@ -17,6 +17,8 @@ import {
 import { formatNumber } from "@/helpers/donations";
 import { Spinner } from "@/components/loaders/Spinner";
 import { useTokenHolders } from "@/hooks/useTokenHolders";
+import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 
 interface ProjectStatsProps {
   project: IProject;
@@ -197,9 +199,17 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
               <div className="text-white text-center text-2xl font-bold">
                 {transactionCount}
               </div>
-              <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
-                Transactions
-              </div>
+              <Link
+                href={`https://polygonscan.com/address/${project.abc?.fundingManagerAddress}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className=""
+              >
+                <span className="text-white/30 underline text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">
+                  Transactions
+                  <ArrowUpRight className="w-4 h-4 text-white/30" />
+                </span>
+              </Link>
             </div>
           </div>
         </div>
@@ -244,7 +254,7 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
                   formatPercentageChange(marketCapChange24h)
                 )}
               </span>
-              
+
               <span>
                 {marketCapLoading ? (
                   <Spinner size={16} />

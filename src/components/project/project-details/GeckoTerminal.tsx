@@ -9,33 +9,21 @@ import config from "@/config/configuration";
 interface GeckoTerminalChartProps {
   tokenSymbol: string;
   tokenAddress: string;
+  projectPoolAddress: string;
+  isTokenListed: boolean;
 }
 
 export function GeckoTerminalChart({
   tokenAddress,
   tokenSymbol,
+  projectPoolAddress,
+  isTokenListed,
 }: GeckoTerminalChartProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [projectPoolAddress, setProjectPoolAddress] = useState<string | null>(
-    null
-  );
-  const [isTokenListed, setIsTokenListed] = useState<boolean>(false);
 
-  useEffect(() => {
-    const fetchPoolAddress = async () => {
-      if (tokenAddress) {
-        const { poolAddress, isListed } = await getPoolAddressByPair(
-          tokenAddress,
-          config.WPOL_TOKEN_ADDRESS
-        );
-        setProjectPoolAddress(poolAddress);
-        setIsTokenListed(isListed);
-      }
-    };
 
-    fetchPoolAddress();
-  }, [tokenAddress]);
+
 
   if (error) {
     return (
