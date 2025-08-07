@@ -206,7 +206,9 @@ export default function QuickSwapWidget({
               usdValue={receiveTokenBalance ? calculateUsdValue(receiveTokenBalance.formattedBalance, receiveTokenPriceInPOL ?? undefined) : 0}
             />
           </div>
-          <button className="mt-0 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full">
+          <button
+          // disabled={true}
+          className="mt-0 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full">
             CONNECT WALLET
           </button>
           {/* </div> */}

@@ -15,6 +15,8 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useDonorContext } from "@/contexts/donor.context";
 import { Spinner } from "@/components/loaders/Spinner";
 import { useFetchProjectsCountByUserId } from "@/hooks/useFetchProjectsCountByUserId";
+import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 
 export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
   const { user, loading: donorContextLoading } = useDonorContext();
@@ -92,74 +94,95 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
 
   return (
     <>
-      <div className="p-6 bg-neutral-800 rounded-2xl">
+      <div className="p-6">
         <div className="flex items-center justify-between w-full">
-          <div className="flex items-center">
-            <div className="w-[140px] h-[140px] bg-black rounded-lg overflow-hidden mr-4">
-              <img
+          <div className="flex">
+            <div className="w-[140px] h-[140px] rounded-full bg-black overflow-hidden mr-4">
+              <Image
                 src={avatar || "/images/user.png"}
                 alt="User avatar"
-                className="w-full h-full object-cover"
+                width={120}
+                height={120}
+                className="w-full h-full rounded-full object-cover"
               />
             </div>
 
             <div>
               {isOwnProfile && (
-                <p className="text-2xl font-bold">{user?.fullName}</p>
-              )}
-              {user?.username && (
-                <p className="text-xl text-neutral-300">@{user?.username}</p>
+                <div className="flex gap-2">
+                  <p className="text-[40px] font-anton leading-none">
+                    {user?.fullName}
+                  </p>
+                  {user?.username && (
+                    <span className="text-2xl font-semibold font-anton text-qacc-gray-light">
+                      @{user?.username}
+                    </span>
+                  )}
+                </div>
               )}
               {isOwnProfile && (
-                <p className="text-neutral-300">{user?.email}</p>
+                <p className="text-white/50 text-lg font-medium mt-2">
+                  {user?.email}
+                </p>
               )}
-              <div className="flex items-center text-neutral-300">
-                <span className="font-mono">
+              <div className="flex  items-center">
+                <span className="font-ibm-mono text-white/50 text-lg font-medium">
                   {" "}
                   {userAddress.slice(0, 8)}...
                   {userAddress.slice(
                     userAddress.length - 8,
                     userAddress.length
                   )}
-                  <CopyButton text={userAddress} />
+                </span>
+                <CopyButton
+                  text={userAddress}
+                  iconColor="fill-white/50"
+                  iconClassName="w-4 h-4 ml-2"
+                />
+                <Link
+                  href={`https://polygonscan.com/address/${userAddress}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white/50 text-lg font-medium"
+                >
+                  <ArrowUpRight className="w-5 h-5 ml-2" />
+                </Link>
+              </div>
+
+              <p
+                className="text-peach-400 text-xs uppercase font-medium mt-2"
+                onClick={() => user && openUpdateProfileModal(user, false)}
+              >
+                Edit Profile
+              </p>
+
+              <div className="flex items-center bg-white/10 rounded-xl px-4 py-2 mt-5">
+                <span className="text-white text-base font-medium mr-2">Q/acc Points</span>
+                <div className="bg-black rounded-full w-5 h-5 flex items-center justify-center mr-1">
+                  <Image
+                    src="/images/logos/round_logo.png"
+                    alt="Q"
+                    width={16}
+                    height={16}
+                    priority
+                  />
+                </div>
+                <span className="font-bold ml-3">
+                  {roundPoints(user?.qaccPoints || 0)}
                 </span>
               </div>
             </div>
           </div>
-          <div className="flex gap-3">
-            {isOwnProfile && (
-              <button
-                className="text-peach-400 font-medium hover:text-peach-300 transition-colors"
-                onClick={() => user && openUpdateProfileModal(user, false)}
-              >
-                Edit Profile
-              </button>
-            )}
-            {/* {isOwnProfile && userProjectsCount === 0 && (
+          {/* <div className="flex gap-3"> */}
+          {/* {isOwnProfile && userProjectsCount === 0 && (
               <CreateProjectButton className="bg-peach-400 text-black px-4 py-2 rounded-md font-medium hover:bg-peach-300 transition-colors" />
             )} */}
-          </div>
+          {/* </div> */}
         </div>
 
         <div className="mt-8 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center border-peach-100/30 border-[1px] border-r-4 border-b-4 shadow-sm rounded-xl px-4 py-2">
-            <span className="text-neutral-300 mr-2">Your q/acc points</span>
-            <div className="bg-black rounded-full w-5 h-5 flex items-center justify-center mr-1">
-              <Image
-                src="/images/logos/round_logo.png"
-                alt="Q"
-                width={16}
-                height={16}
-                priority
-              />
-            </div>
-            <span className="font-bold ml-3">
-              {roundPoints(user?.qaccPoints || 0)}
-            </span>
-          </div>
-
           <div className="flex flex-col md:flex-row gap-4">
-            <GitcoinVerificationBadge userAddress={userAddress} />
+            {/* <GitcoinVerificationBadge userAddress={userAddress} /> */}
             {/* <PrivadoVerificationBadge userAddress={userAddress} /> */}
           </div>
         </div>

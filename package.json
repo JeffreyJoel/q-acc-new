@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@moralisweb3/common-evm-utils": "^2.27.2",
+    "@next/third-parties": "^15.4.6",
     "@privy-io/react-auth": "^2.13.3",
     "@privy-io/wagmi": "^1.0.3",
     "@radix-ui/react-avatar": "^1.1.9",

@@ -4,6 +4,7 @@ import "../globals.css";
 import ClientLayout from "../ClientLayout";
 import { NavBar } from "@/components/shared/NavBar";
 import { Footer } from "@/components/shared/Footer";
+import { GoogleTagManager } from "@next/third-parties/google";
 
 const anton = Anton({
   subsets: ["latin"],
@@ -73,6 +74,7 @@ export default function RootLayout({
           <div className="min-h-screen">{children}</div>
           <Footer />
         </ClientLayout>
+        <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID || ''} />
       </body>
     </html>
   );
