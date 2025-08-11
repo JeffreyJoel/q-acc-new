@@ -5,6 +5,7 @@ import { useFetchAllProjects } from "@/hooks/useProjects";
 import { ProjectTile } from "./ProjectTile";
 import ProjectsTable from "./ProjectsTable";
 import VestingSchedule from "./VestingSchedule";
+import { useEnrichedProjects } from "@/hooks/useEnrichedProjects";
 
 
 function Projects() {
@@ -38,9 +39,12 @@ function Projects() {
     slug: project.slug || "",
   }));
 
+  const { data: enrichedProjects, isLoading: isEnrichedLoading } = useEnrichedProjects(
+    allProjects?.projects,
+  );
 
 
-  if (isLoading) {
+  if (isLoading || isEnrichedLoading) {
     return (
       <div className="mx-auto px-6 lg:px-12 py-20 flex flex-col justify-center items-center">
         <h2 className="font-anton text-white text-[64px] mb-6 uppercase tracking-wide">Projects</h2>
@@ -78,7 +82,7 @@ function Projects() {
           </button> 
         </div>
 
-        <ProjectsTable projects={allProjects?.projects || []} />
+        <ProjectsTable projects={enrichedProjects || []} />
 
         <VestingSchedule projects={allProjects?.projects || []} />
       </div>

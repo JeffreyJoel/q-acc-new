@@ -71,16 +71,17 @@ const ProjectDonateButton = () => {
           const { donations, totalCount } = data;
           // setPageDonations(donations);
           setMarketCapLoading(true);
-          const { marketCap: newCap, change24h } =
-            await calculateMarketCapChange(
+          const capResult1 = (await calculateMarketCapChange(
               donations,
               projectData?.abc?.fundingManagerAddress,
+              24,
               activeRoundDetails?.startDate
-            );
+            )) as { marketCap: number; pctChange: number };
+          const { marketCap: newCap, pctChange } = capResult1;
 
           // console.log(project.title, change24h);
           setMarketCap(newCap * Number(POLPrice));
-          setMarketCapChangePercentage(change24h);
+          setMarketCapChangePercentage(pctChange);
           setMarketCapLoading(false);
         } else if (
           projectData.abc?.issuanceTokenAddress &&
@@ -95,15 +96,19 @@ const ProjectDonateButton = () => {
             setMarketCap(marketCapData);
           } else {
             const { donations, totalCount } = data;
-            const { marketCap: newCap, change24h } =
-              await calculateMarketCapChange(
+            const capResult2 = (await calculateMarketCapChange(
                 donations,
-                projectData?.abc?.fundingManagerAddress
-              );
+                projectData?.abc?.fundingManagerAddress,
+                24
+              )) as { marketCap: number; pctChange: number };
+            const { marketCap: newCap, pctChange } = capResult2;
             setMarketCap(newCap * Number(POLPrice));
+            setMarketCapChangePercentage(pctChange);
           }
 
-          setMarketCapChangePercentage(0); // No change to show
+          if (isTokenListed) {
+            setMarketCapChangePercentage(0);
+          }
         }
       };
       fetchProjectDonations();

@@ -1,10 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
-import { IProject } from "@/types/project.type";
+import { EnrichedProjectData } from "@/services/projectData.service";
+import { useTokenHolders } from "@/hooks/useTokenHolders";
 import { SearchIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+
+// Lazy cell component that fetches token-holders count on-demand
+function HoldersCount({ tokenAddress, fallback }: { tokenAddress?: string; fallback: number }) {
+  const { data } = useTokenHolders(tokenAddress || "", {
+    enabled: Boolean(tokenAddress),
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const count = data?.totalHolders ?? fallback;
+  return <>{count.toLocaleString()}</>;
+}
+
+const formatPercent = (value: number) =>
+  `${value > 0 ? "+" : ""}${value.toFixed(2)}%`;
 
 const formatCurrency = (value: number) =>
   value.toLocaleString("en-US", {
@@ -13,43 +28,55 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 0,
   });
 
-const formatPercent = (value: number) =>
-  `${value > 0 ? "+" : ""}${value.toFixed(2)}%`;
 
 interface ProjectsTableProps {
-  projects?: IProject[];
+  projects: EnrichedProjectData[];
 }
 
-export default function ProjectsTable({ projects = [] }: ProjectsTableProps) {
+export default function ProjectsTable({ projects }: ProjectsTableProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"all" | "season1" | "season2">(
     "all"
   );
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const allTableProjects = projects.map((project, idx) => ({
-    logo: project.icon || "",
-    name: project.title || "Untitled Project",
-    slug: project.slug || "",
-    ticker: project.abc?.tokenTicker,
-    season: `S${project.seasonNumber || "1"}`,
-    seasonNumber: project.seasonNumber || 1,
-    supporters: project.countUniqueDonors || 0,
-    totalReceived: project.totalDonations || 0,
-    price: project.abc?.tokenPrice || 0,
-    priceChange24h: -2.17, // Mock data for now
-    priceChange7d: 17.09, // Mock data for now
-    holders: project.countUniqueDonors || 0,
-    marketCap:
-      project.abc && project.abc.tokenPrice && project.abc.totalSupply
-        ? project.abc.tokenPrice * project.abc.totalSupply
-        : 0,
-  }));
+  const allTableProjects = useMemo(() =>
+    projects.map((project) => ({
+      logo: project.icon || "",
+      name: project.title || "Untitled Project",
+      slug: project.slug || "",
+      ticker: project.tokenTicker,
+      season: `S${project.seasonNumber || 1}`,
+      seasonNumber: project.seasonNumber || 1,
+      supporters: project.supporterCount || 0,
+      totalReceived: project.totalDonatedUSD || 0,
+      pricePOL: project.pricePOL || 0,
+      priceUSD: project.priceUSD || 0,
+      priceChange24h: project.priceChange24h ?? 0,
+      priceChange7d: project.priceChange7d ?? 0,
+      tokenAddress: project.tokenAddress,
+      marketCap: project.marketCapUSD || 0,
+    })),
+    [projects]
+  );
 
   const tableProjects = allTableProjects.filter((project) => {
-    if (activeTab === "all") return true;
-    if (activeTab === "season1") return project.seasonNumber === 1;
-    if (activeTab === "season2") return project.seasonNumber === 2;
-    return true;
+    //tab filter
+    let passesTabFilter = true;
+    if (activeTab === "season1") passesTabFilter = project.seasonNumber === 1;
+    if (activeTab === "season2") passesTabFilter = project.seasonNumber === 2;
+    
+    //search filter
+    let passesSearchFilter = true;
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase().trim();
+      passesSearchFilter = 
+        project.name.toLowerCase().includes(searchLower) ||
+        (project.ticker && project.ticker.toLowerCase().includes(searchLower)) ||
+        project.season.toLowerCase().includes(searchLower);
+    }
+    
+    return passesTabFilter && passesSearchFilter;
   });
 
   return (
@@ -101,6 +128,8 @@ export default function ProjectsTable({ projects = [] }: ProjectsTableProps) {
             <input
               type="text"
               placeholder="SEARCH PROJECTS..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full rounded-[10px] bg-qacc-gray-light/10 text-white/80 pl-10 pr-4 py-2 placeholder:text-white/30 placeholder:text-xs border border-[#232323] focus:outline-none focus:ring-1 focus:ring-peach-400"
             />
           </div>
@@ -221,13 +250,14 @@ export default function ProjectsTable({ projects = [] }: ProjectsTableProps) {
                 } grid grid-cols-5 px-6  hover:bg-[#232323] transition-colors h-[80px] items-center`}
               >
                 <div className="text-center text-white font-bold text-xs flex items-center justify-center gap-2">
-                  <span className="text-qacc-gray-light/60">0.0 POL</span>
+                  <span className="text-qacc-gray-light/60">{project.pricePOL.toFixed(2)} POL</span>
                   <span className="text-white">
-                    $ {project.price.toFixed(2)}
+                    ${project.priceUSD.toFixed(2)}
                   </span>
                 </div>
                 <div className="text-center text-white font-bold text-xs">
-                  {project.holders.toLocaleString()}
+                  {/* Fetch token holders count lazily */}
+                  <HoldersCount tokenAddress={project.tokenAddress} fallback={project.supporters} />
                 </div>
                 <div
                   className={`text-center font-bold text-xs ${

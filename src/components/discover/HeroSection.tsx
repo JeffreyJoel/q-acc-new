@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { VideoModal } from "@/components/modals/VideoModal";
-import { formatNumber } from "@/helpers";
+import { formatNumberCompact } from "@/helpers";
 
 const HeroSection = () => {
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
@@ -125,17 +125,17 @@ const HeroSection = () => {
                 </div>
 
                 <div className="space-y-0.1">
-                  <div className="text-white text-2xl xl:text-3xl font-bold">{formatNumber(stats?.total_raised_pol)}</div>
+                  <div className="text-white text-2xl xl:text-3xl font-bold">{formatNumberCompact(stats?.total_raised_pol)}</div>
                   <div className="text-white/30 font-medium text-[13px] leading-normal">Total Raised</div>
                 </div>
 
                 <div className="space-y-0.1">
-                  <div className="text-white text-2xl xl:text-3xl font-bold">{formatNumber(stats?.amount_in_protocol_pol)}</div>
+                  <div className="text-white text-2xl xl:text-3xl font-bold">{formatNumberCompact(stats?.amount_in_protocol_pol)}</div>
                   <div className="text-white/30 font-medium text-[13px] leading-normal">In Protocol</div>
                 </div>
 
                 <div className="space-y-0.1">
-                  <div className="text-white text-2xl xl:text-3xl font-bold">{formatNumber(stats?.total_market_cap, true)}</div>
+                  <div className="text-white text-2xl xl:text-3xl font-bold">{formatNumberCompact(stats?.total_market_cap, true)}</div>
                   <div className="text-white/30 font-medium text-[13px] leading-normal">Peak Market Cap</div>
                 </div>
 
@@ -169,17 +169,17 @@ const HeroSection = () => {
               </div>
 
               <div className="text-center space-y-1">
-                <div className="text-white text-lg sm:text-2xl font-bold">{formatNumber(stats?.total_raised_pol)}</div>
+                <div className="text-white text-lg sm:text-2xl font-bold">{formatNumberCompact(stats?.total_raised_pol)}</div>
                 <div className="text-white/30 font-medium text-xs sm:text-sm leading-normal">Total Raised</div>
               </div>
 
               <div className="text-center space-y-1">
-                <div className="text-white text-lg sm:text-2xl font-bold">{formatNumber(stats?.amount_in_protocol_pol)}</div>
+                <div className="text-white text-lg sm:text-2xl font-bold">{formatNumberCompact(stats?.amount_in_protocol_pol)}</div>
                 <div className="text-white/30 font-medium text-xs sm:text-sm leading-normal">In Protocol</div>
               </div>
 
               <div className="text-center space-y-1">
-                <div className="text-white text-lg sm:text-2xl font-bold">{formatNumber(stats?.total_market_cap, true)}</div>
+                <div className="text-white text-lg sm:text-2xl font-bold">{formatNumberCompact(stats?.total_market_cap, true)}</div>
                 <div className="text-white/30 font-medium text-xs sm:text-sm leading-normal">Peak Market Cap</div>
               </div>
 

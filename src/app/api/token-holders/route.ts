@@ -36,9 +36,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // ---------------------------------------------------------------------
-    // 1. Fetch token metadata to get totalSupply & decimals
-    // ---------------------------------------------------------------------
+    // Fetch token metadata to get totalSupply & decimals
     const tokenInfoUrl = `${BLOCKSCOUT_BASE_URL}/${tokenAddress}`;
     const tokenInfo: any = await fetchJson(tokenInfoUrl);
 
@@ -48,18 +46,14 @@ export async function GET(request: NextRequest) {
 
     const totalSupply = Number(totalSupplyRaw) / 10 ** decimals;
 
-    // ---------------------------------------------------------------------
-    // 2. Fetch counters to obtain holders count
-    // ---------------------------------------------------------------------
+    // Fetch counters to obtain holders count
     const countersUrl = `${BLOCKSCOUT_BASE_URL}/${tokenAddress}/counters`;
     const counters: any = await fetchJson(countersUrl);
     const totalHoldersCount = Number(
       counters.token_holders_count ?? tokenInfo.holders_count ?? 0
     );
 
-    // ---------------------------------------------------------------------
-    // 3. Fetch the holder list (limited to TOP_HOLDERS_LIMIT)
-    // ---------------------------------------------------------------------
+    // Fetch the holder list (limited to TOP_HOLDERS_LIMIT)
     const holdersUrl = `${BLOCKSCOUT_BASE_URL}/${tokenAddress}/holders?page=1&offset=${TOP_HOLDERS_LIMIT}`;
     const holdersResponse: any = await fetchJson(holdersUrl);
   
@@ -67,9 +61,7 @@ export async function GET(request: NextRequest) {
       ? holdersResponse
       : holdersResponse.items ?? [];
 
-    // ---------------------------------------------------------------------
-    // 4. Shape response: address + percentage (with four-decimal precision)
-    // ---------------------------------------------------------------------
+    // Shape response: address + percentage (with four-decimal precision)
     const shapedHolders = holders.slice(0, TOP_HOLDERS_LIMIT).map((h: any) => {
       const rawBalance = h.balance ?? h.value ?? "0";
       const balance = Number(rawBalance) / 10 ** decimals;

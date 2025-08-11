@@ -13,12 +13,14 @@ import { useGetCurrentTokenPrice } from "@/hooks/useGetCurrentTokenPrice";
 import {
   calculateMarketCapChange,
   getMarketCap,
+  fetchGeckoMarketCap,
 } from "@/services/tokenPrice.service";
 import { formatNumber } from "@/helpers/donations";
 import { Spinner } from "@/components/loaders/Spinner";
 import { useTokenHolders } from "@/hooks/useTokenHolders";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import { formatPercentageChange } from "@/helpers";
 
 interface ProjectStatsProps {
   project: IProject;
@@ -101,28 +103,39 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
         );
 
         if (donationData?.donations && activeRoundDetails) {
-          // Calculate 24h change
-          const { marketCap: newCap, change24h } =
-            await calculateMarketCapChange(
-              donationData.donations,
-              project.abc.fundingManagerAddress,
-              activeRoundDetails.startDate
-            );
-
-          setMarketCap(newCap * polPriceNumber);
-          setMarketCapChange24h(change24h);
-
-          // For 7-day change, we can use a similar approach but with 7-day cutoff
-          // For now, using the same calculation as 24h but this can be enhanced
-          setMarketCapChange7d(change24h);
-        } else if (isTokenListed && project.abc?.issuanceTokenAddress) {
-          // If token is listed, get market cap from DEX
-          const marketCapData = await getMarketCap(
-            isTokenListed,
-            project.abc.issuanceTokenAddress,
-            project.abc.fundingManagerAddress
+          // 24-hour change
+          const res24 = await calculateMarketCapChange(
+            donationData.donations,
+            project.abc.fundingManagerAddress,
+            24,
+            activeRoundDetails.startDate,
           );
+
+          // 7-day change
+          const res7d = await calculateMarketCapChange(
+            donationData.donations,
+            project.abc.fundingManagerAddress,
+            24 * 7,
+            activeRoundDetails.startDate,
+          );
+
+          setMarketCap(res24.marketCap * polPriceNumber);
+          setMarketCapChange24h(res24.pctChange);
+          setMarketCapChange7d(res7d.pctChange);
+        } else if (isTokenListed && project.abc?.issuanceTokenAddress) {
+          // If token is listed, get market cap and price deltas from GeckoTerminal
+          const [marketCapData, gecko] = await Promise.all([
+            getMarketCap(
+              isTokenListed,
+              project.abc.issuanceTokenAddress,
+              project.abc.fundingManagerAddress
+            ),
+            fetchGeckoMarketCap(project.abc.issuanceTokenAddress),
+          ]);
+
           setMarketCap(marketCapData);
+          setMarketCapChange24h(gecko?.pctChange24h ?? 0);
+          setMarketCapChange7d(gecko?.pctChange7d ?? 0);
         }
       } catch (error) {
         console.error("Error fetching market cap data:", error);
@@ -143,17 +156,17 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
   const isRoundActive = !!activeRoundDetails;
 
   // Helper function to format percentage change with color
-  const formatPercentageChange = (change: number) => {
-    const isPositive = change >= 0;
-    const color = isPositive ? "text-green-400" : "text-red-400";
-    const sign = isPositive ? "↑" : "↓";
-    return (
-      <span className={color}>
-        {sign}
-        {formatNumber(change)}%
-      </span>
-    );
-  };
+  // const formatPercentageChange = (change: number) => {
+  //   const isPositive = change >= 0;
+  //   const color = isPositive ? "text-green-400" : "text-red-400";
+  //   const sign = isPositive ? "↑" : "↓";
+  //   return (
+  //     <span className={color}>
+  //       {sign}
+  //       {formatNumber(change)}%
+  //     </span>
+  //   );
+  // };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -251,7 +264,9 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
                 {marketCapLoading ? (
                   <Spinner size={16} />
                 ) : (
-                  formatPercentageChange(marketCapChange24h)
+                  <span className={formatPercentageChange(marketCapChange24h).color}>
+                    {formatPercentageChange(marketCapChange24h).formatted}
+                  </span>
                 )}
               </span>
 
@@ -259,7 +274,9 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
                 {marketCapLoading ? (
                   <Spinner size={16} />
                 ) : (
-                  formatPercentageChange(marketCapChange7d)
+                  <span className={formatPercentageChange(marketCapChange7d).color}>
+                    {formatPercentageChange(marketCapChange7d).formatted}
+                  </span>
                 )}
               </span>
             </div>

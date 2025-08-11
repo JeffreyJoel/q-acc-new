@@ -1,5 +1,5 @@
 import { fetchProjectDonationsById } from './donation.service';
-import { getMarketCap } from './tokenPrice.service';
+import { getMarketCap, calculateMarketCapChange, fetchGeckoMarketCap } from './tokenPrice.service';
 import { getPoolAddressByPair } from '@/helpers/getTokensListedData';
 import { calculateTotalDonations, calculateUniqueDonors } from '@/helpers/donations';
 import { fetchSquidPOLUSDPrice } from '@/helpers/token';
@@ -28,7 +28,7 @@ export interface EnrichedProjectData {
   isTokenListed: boolean;
   tokenTicker?: string;
   tokenAddress?: string;
-  // Price changes (placeholder for future implementation)
+  // Price changes
   priceChange24h?: number;
   priceChange7d?: number;
 }
@@ -83,10 +83,12 @@ export async function fetchTokenData(project: IProject): Promise<{
   pricePOL: number;
   marketCapUSD: number;
   isTokenListed: boolean;
+  change24h: number;
+  change7d: number;
 }> {
   try {
     if (!project.abc?.issuanceTokenAddress) {
-      return { priceUSD: 0, pricePOL: 0, marketCapUSD: 0, isTokenListed: false };
+      return { priceUSD: 0, pricePOL: 0, marketCapUSD: 0, isTokenListed: false, change24h: 0, change7d: 0 };
     }
 
     const tokenAddress = project.abc.issuanceTokenAddress;
@@ -113,6 +115,8 @@ export async function fetchTokenData(project: IProject): Promise<{
 
     // Get market cap
     let marketCapUSD = 0;
+    let change24h = 0;
+    let change7d = 0;
     if (project.abc.fundingManagerAddress) {
       try {
         // For market cap calculation, we might need donations data
@@ -132,8 +136,27 @@ export async function fetchTokenData(project: IProject): Promise<{
 
         if (isListed) {
           marketCapUSD = marketCap;
+
+          // Pull percentage deltas from GeckoTerminal result (price proxy)
+          const gecko = await fetchGeckoMarketCap(tokenAddress);
+          change24h = gecko?.pctChange24h ?? 0;
+          change7d = gecko?.pctChange7d ?? 0;
         } else {
           marketCapUSD = marketCap * (polPriceUSD || 0);
+          // compute deltas only for curve-based tokens
+          const res24 = await calculateMarketCapChange(
+            donations,
+            project.abc.fundingManagerAddress,
+            24
+          );
+          change24h = res24.pctChange;
+
+          const res7d = await calculateMarketCapChange(
+            donations,
+            project.abc.fundingManagerAddress,
+            24 * 7
+          );
+          change7d = res7d.pctChange;
         }
       } catch (error) {
         console.error(`Error calculating market cap for project ${project.id}:`, error);
@@ -145,10 +168,12 @@ export async function fetchTokenData(project: IProject): Promise<{
       pricePOL,
       marketCapUSD,
       isTokenListed: isListed,
+      change24h,
+      change7d,
     };
   } catch (error) {
     console.error(`Error fetching token data for project ${project.id}:`, error);
-    return { priceUSD: 0, pricePOL: 0, marketCapUSD: 0, isTokenListed: false };
+    return { priceUSD: 0, pricePOL: 0, marketCapUSD: 0, isTokenListed: false, change24h: 0, change7d: 0 };
   }
 }
 
@@ -182,8 +207,8 @@ export async function fetchAndAggregateProjectData(project: IProject): Promise<E
       tokenTicker: project.abc?.tokenTicker,
       tokenAddress: project.abc?.issuanceTokenAddress,
       // Placeholder for future price change implementation
-      priceChange24h: 0,
-      priceChange7d: 0,
+      priceChange24h: tokenData.change24h,
+      priceChange7d: tokenData.change7d,
     };
   } catch (error) {
     console.error(`Error aggregating data for project ${project.id}:`, error);
@@ -217,13 +242,23 @@ export async function fetchAndAggregateProjectData(project: IProject): Promise<E
  */
 export async function fetchAllProjectsData(projects: IProject[]): Promise<EnrichedProjectData[]> {
   try {
-    // Process all projects in parallel
-    const enrichedProjectsPromises = projects.map(project => 
-      fetchAndAggregateProjectData(project)
-    );
+    const CONCURRENCY = 5; // simultaneous RPC calls
 
-    const enrichedProjects = await Promise.all(enrichedProjectsPromises);
-    return enrichedProjects;
+    const enriched: EnrichedProjectData[] = [];
+
+    // Batch process to respect RPC provider rate-limits
+    for (let i = 0; i < projects.length; i += CONCURRENCY) {
+      const slice = projects.slice(i, i + CONCURRENCY);
+
+      // run the current batch in parallel
+      const batchResults = await Promise.all(
+        slice.map((p) => fetchAndAggregateProjectData(p))
+      );
+
+      enriched.push(...batchResults);
+    }
+
+    return enriched;
   } catch (error) {
     console.error('Error fetching all projects data:', error);
     throw error;

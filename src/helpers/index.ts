@@ -1,3 +1,5 @@
+import { formatNumber } from './donations';
+
 export * from './getPaymentAddresses'; 
 
 export const capitalizeFirstLetter = (str: string) => {
@@ -6,7 +8,7 @@ export const capitalizeFirstLetter = (str: string) => {
       .replace(/(?:^|\.\s*)([a-z])/g, (match) => match.toUpperCase());
   };
 
-   export const formatNumber = (value: number | null | undefined, isCurrency = false) => {
+   export const formatNumberCompact = (value: number | null | undefined, isCurrency = false) => {
     if (value === null || value === undefined) return "-";
     let num = value;
     let suffix = "";
@@ -21,4 +23,17 @@ export const capitalizeFirstLetter = (str: string) => {
 
     const formatted = num.toFixed(num >= 100 ? 0 : 1);
     return `${isCurrency ? "$" : ""}${formatted}${suffix}${isCurrency ? "" : " POL"}`;
+  };
+
+  export const formatPercentageChange = (change: number) => {
+    const isPositive = change >= 0;
+    const color = isPositive ? "text-green-400" : "text-red-400";
+    const sign = isPositive ? "↑" : "↓";
+
+    return {
+        color,
+        sign,
+          formatted: `${sign}${formatNumber(change)}%`
+    }
+
   };

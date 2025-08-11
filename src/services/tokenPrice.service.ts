@@ -8,6 +8,33 @@ import { IEarlyAccessRound, IQfRound } from '@/types/round.type';
 import { createPublicClient, http, formatUnits as viemFormatUnits } from 'viem';
 import { polygon } from 'viem/chains';
 
+const COINGECKO_API = 'https://api.coingecko.com/api/v3';
+
+/**
+ * Fetches market-cap series for the last `days` and returns latest cap plus percentage changes.
+ * Uses the "contract market_chart" endpoint which supports Polygon (asset platform "polygon-pos").
+ */
+export async function fetchCoinGeckoMarketChart(
+  tokenAddress: string,
+  days: number = 7,
+) {
+  try {
+    const baseUrl = `${COINGECKO_API}/coins/polygon-pos/contract/${tokenAddress}`
+
+    const { data } = await axios.get(baseUrl);
+
+    const latestCap = data?.market_cap_usd ?? 0;
+
+    const pctChange24h = data?.price_change_percentage_24h ?? 0;
+    const pctChange7d = data?.price_change_percentage_7d ?? 0;
+
+    return { marketCap: latestCap, pctChange24h, pctChange7d };
+  } catch (err) {
+    console.error('Error fetching market chart from CoinGecko', err);
+    return null;
+  }
+}
+
 const provider = new ethers.JsonRpcProvider(config.NETWORK_RPC_ADDRESS);
 
 // Create viem public client for multicall
@@ -87,47 +114,6 @@ export const useTokenPriceRange = ({
 
   const minPrice =
     parseFloat((staticPriceForBuying.data || '0').toString()) / 1_000_000; // convert PPM to price in POL
-
-  // // Fetch `getVirtualCollateralSupply` (total contributed so far)
-  // const virtualCollateralSupply = useQuery<BigNumberish, Error>({
-  //   queryKey: ['getVirtualCollateralSupply', contractAddress],
-  //   queryFn: async () => {
-  //     if (!contract) throw new Error('Contract not loaded');
-  //     const result: BigNumberish = await contract.getVirtualCollateralSupply();
-  //     return result;
-  //   },
-  //   enabled: !!contract,
-  //   select: data => Number(formatUnits(data, 18)),
-  // });
-  //
-  // const contributedSoFar = parseFloat(
-  //   (virtualCollateralSupply.data || '0').toString(),
-  // ); // todo: we need to deduct the initial supply from that
-  // // Calculate the upper limit (X)
-  // const X = contributionLimit - contributedSoFar;
-  //
-  // // Fetch `calculatePurchaseReturn` using X
-  // const calculatePurchaseReturn = useQuery<BigNumberish, Error>({
-  //   queryKey: ['calculatePurchaseReturn', X.toString(), contractAddress],
-  //   queryFn: async () => {
-  //     if (!contract) throw new Error('Contract not loaded');
-  //     const result: BigNumberish = await contract.calculatePurchaseReturn(
-  //       parseUnits(X.toString(), 18),
-  //     );
-  //     return result;
-  //   },
-  //   enabled: !!contract && !!X,
-  //   select: data => Number(formatUnits(data, 18)),
-  // });
-  //
-  // let maxPrice = minPrice;
-  // if (calculatePurchaseReturn.data) {
-  //   const Y = parseFloat((calculatePurchaseReturn.data || 1).toString()); // Prevent division by zero
-  //   // Calculate the max token price (P = X / Y)
-  //   // console.log('X:', X, 'Y:', Y);
-  //   maxPrice = X / Y;
-  //   // console.log('max price:', maxPrice);
-  // }
 
   const maxPrice = minPrice + 0.806; // hardcode max price with a delta of 0.786
 
@@ -291,153 +277,114 @@ export async function getTokenSupplyDetails(address: string) {
   }
 }
 
-// export async function calculateMarketCapFromDonations(
-//   donations: any[],
-//   contract_address: string,
-//   startDate?: string
-// ): Promise<number> {
-//   if (!contract_address) {
-//     throw new Error('Contract address is required');
-//   }
-
-//   try {
-//     const { reserve_ration, collateral_supply, issuance_supply } =
-//       await getTokenSupplyDetails(contract_address);
-
-//     const reserveRatio = Number(reserve_ration);
-//     let reserve = Number(collateral_supply);
-//     let supply = Number(issuance_supply);
-
-//     // Validate initial values
-//     if (reserveRatio <= 0 || reserve <= 0 || supply <= 0) {
-//       throw new Error('Invalid bonding curve parameters');
-//     }
-
-//     // Filter donations if start date is provided
-//     const filteredDonations = startDate 
-//       ? donations.filter(d => new Date(d.createdAt) > new Date(startDate))
-//       : donations;
-
-//     // Process each donation through bonding curve
-//     filteredDonations.forEach(({ amount }) => {
-//       if (amount > 0) {
-//         // Update supply using bonding curve formula
-//         supply = supply * Math.pow(1 + amount / reserve, reserveRatio);
-//         // Update reserve
-//         reserve += amount;
-//         const price = (reserve / (supply * reserveRatio)) * 1.1;
-//         const marketCap = supply * price;
-    
-//       }
-//     });
-
-//     // Calculate final price and market cap
-
-//     return Math.round(marketCap);
-//   } catch (error) {
-//     console.error('Error calculating market cap from donations:', error);
-//     throw error;
-//   }
-// }
 
 export async function calculateMarketCapChange(
   donations: any[],
-  contract_address: string,
-  startDate = '2025-04-15T00:00:00Z', //start date  to see the change in makret cap
+  contractAddress: string,
+  hoursAgo: number = 24,
+  startDateISO?: string,
 ) {
+  // 1.  Fetch on-chain curve parameters once
   const { reserve_ration, collateral_supply, issuance_supply } =
-    await getTokenSupplyDetails(contract_address);
+    await getTokenSupplyDetails(contractAddress);
 
   const reserveRatio = Number(reserve_ration);
   let reserve = Number(collateral_supply);
   let supply = Number(issuance_supply);
 
-  // Sort by date
-  let history: { createdAt: string; marketCap: number; id: number }[] = [];
-  const initialPrice = (reserve / (supply * reserveRatio)) * 1.1;
+  const history: { ts: number; marketCap: number }[] = [];
 
-  const initialMarketCap = supply * initialPrice;
-  const initialTimestamp = startDate; // virtual Day 0 timestamp (can be set based on your round start)
-
-  history.push({
-    createdAt: initialTimestamp,
-    marketCap: initialMarketCap,
-    id: 0,
-  });
-
-  const now = new Date();
-  const cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-  // const recentDonationExists = donations.some(
-  //   d => new Date(d.createdAt) > cutoff,
-  // );
-
-  const filteredDonations = donations.filter(
-    d => new Date(d.createdAt) > new Date(initialTimestamp),
-  );
-
-  filteredDonations.forEach(({ amount, createdAt, id }) => {
-    supply = supply * Math.pow(1 + amount / reserve, reserveRatio);
-    reserve += amount;
+  // helper to push a datapoint using current reserve/supply values
+  const pushPoint = (ts: number) => {
     const price = (reserve / (supply * reserveRatio)) * 1.1;
-    const marketCap = supply * price;
-    history.push({ createdAt, marketCap, id: id });
-  });
-
-  // Find market cap from ≥24h ago
-
-  const past = [...history]
-    .reverse()
-    .find(h => new Date(h.createdAt) <= cutoff);
-
-  // const marketCapPast = past ? past.marketCap : initialMarketCap;
-  const marketCapPast = initialMarketCap;
-
-  const latestMarketCap = history[history.length - 1].marketCap; 
-  
-
-  // const change24h = recentDonationExists
-  // ? ((latestMarketCap - marketCapPast) / marketCapPast) * 100
-  // : 0;
-  const change24h = ((latestMarketCap - marketCapPast) / marketCapPast) * 100;
-
-  return {
-    marketCap: Math.round(latestMarketCap),
-    change24h: change24h,
+    history.push({ ts, marketCap: supply * price });
   };
+
+  // genesis point (either provided startDate or Unix epoch)
+  const genesisTs = startDateISO ? new Date(startDateISO).getTime() : 0;
+  pushPoint(genesisTs);
+
+  // 2.  Replay donations chronologically
+  donations
+    .filter((d) => new Date(d.createdAt).getTime() > genesisTs)
+    .sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt))
+    .forEach(({ amount, createdAt }) => {
+      supply = supply * Math.pow(1 + amount / reserve, reserveRatio);
+      reserve += amount;
+      pushPoint(new Date(createdAt).getTime());
+    });
+
+  if (history.length === 0) {
+    return { marketCap: 0, pctChange: 0 };
+  }
+
+  const nowTs = Date.now();
+  const cutoffTs = nowTs - hoursAgo * 60 * 60 * 1000;
+
+  const latestCap = history[history.length - 1].marketCap;
+  const pastCap =
+    [...history]
+      .reverse()
+      .find((h) => h.ts <= cutoffTs)?.marketCap ?? history[0].marketCap;
+
+  const pctChange = pastCap === 0 ? 0 : ((latestCap - pastCap) / pastCap) * 100;
+
+  return { marketCap: Math.round(latestCap), pctChange };
 }
 
 export async function fetchGeckoMarketCap(tokenAddress: string) {
   try {
-    const response = await axios.get(
-      `${GECKO_TERMINAL_BASE_URL}/${tokenAddress.toLowerCase()}/`,
-    );
+    const poolsUrl = `${GECKO_TERMINAL_BASE_URL}/${tokenAddress.toLowerCase()}/pools?page=1`;
+    const { data: poolsData } = await axios.get(poolsUrl);
 
-    const priceUSD = parseFloat(response.data.data.attributes.price_usd);
+    if (!poolsData?.data || poolsData.data.length === 0) {
+      throw new Error('No pools returned from GeckoTerminal');
+    }
+
+    // Pick the first pool in the list
+    const poolAttributes = poolsData.data[0].attributes;
+
+    // USD price for the token
+    const priceUSD = parseFloat(
+      poolAttributes.token_price_usd ?? poolAttributes.base_token_price_usd ?? '0',
+    );
     if (isNaN(priceUSD) || priceUSD === 0) {
       return null;
     }
 
-    // Calculate token price in POL by dividing USD price by POL price
-    const polResponse = await axios.get(
-      `${GECKO_TERMINAL_BASE_URL}/${tokenAddress}/`,
-    );
-    const polPriceUSD = parseFloat(polResponse.data.data.attributes.price_usd);
-
-    if (isNaN(polPriceUSD) || polPriceUSD === 0) {
-      return null;
-    }
-
-    const marketCap = response.data.data.attributes.fdv_usd
-      ? parseFloat(response.data.data.attributes.fdv_usd)
+    // Fully-diluted valuation (if available)
+    const marketCap = poolAttributes.fdv_usd
+      ? parseFloat(poolAttributes.fdv_usd)
       : null;
 
+    // 24-hour price change percentage – directly available from GeckoTerminal pools response
+    const pct24 = parseFloat(poolAttributes.price_change_percentage?.h24 ?? '0');
+
+    const chart = await fetchCoinGeckoMarketChart(tokenAddress, 7);
+    const pct7d = chart?.pctChange7d ?? 0;
+
+    let pricePOL = 0;
+    try {
+      const wpolUrl = `${GECKO_TERMINAL_BASE_URL}/${config.WPOL_TOKEN_ADDRESS.toLowerCase()}`;
+      const { data: wpolData } = await axios.get(wpolUrl);
+      const polPriceUSD = parseFloat(wpolData.data.attributes.price_usd);
+      if (!isNaN(polPriceUSD) && polPriceUSD !== 0) {
+        pricePOL = priceUSD / polPriceUSD;
+      }
+    } catch (e) {
+      // Fallback: keep pricePOL as 0 on failure – not critical for current use-cases
+      console.warn('Failed to fetch WPOL price from GeckoTerminal', e);
+    }
+
     return {
-      price: priceUSD / polPriceUSD, // Price in terms of POL tokens
+      price: pricePOL,
       priceUSD,
       marketCap,
+      pctChange24h: isNaN(pct24) ? 0 : pct24,
+      pctChange7d: isNaN(pct7d) ? 0 : pct7d,
     };
   } catch (error: any) {
-    console.error('Error fetching token price from GeckoTerminal', {
+    console.error('Error fetching token data from GeckoTerminal', {
       tokenAddress,
       error: error.message,
     });
@@ -456,7 +403,7 @@ export async function getMarketCap(
     return result?.marketCap ?? 0;
   } else {
     if (donations && donations.length > 0) {
-      const {marketCap, change24h} = await calculateMarketCapChange(donations, contract_address);
+      const { marketCap } = await calculateMarketCapChange(donations, contract_address);
       return marketCap;
     }
     
