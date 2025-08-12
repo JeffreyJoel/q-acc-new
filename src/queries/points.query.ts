@@ -5,11 +5,13 @@ export const FETCH_LEADERBOARD = /* GraphQL */ `
         id
         name
         email
+        avatar
         qaccPoints
         qaccPointsMultiplier
         projectsFundedCount
         walletAddress
         rank
+        username
       }
       totalCount
     }
@@ -22,6 +24,7 @@ export const FETCH_POINTS_HISTORY_OF_USER = /* GraphQL */ `
       pointsEarned
       user {
         name
+        username
       }
       donation {
         id

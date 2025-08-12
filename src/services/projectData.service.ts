@@ -1,5 +1,5 @@
 import { fetchProjectDonationsById } from './donation.service';
-import { getMarketCap, calculateMarketCapChange, fetchGeckoMarketCap } from './tokenPrice.service';
+import { getMarketCap, calculateMarketCapChange, fetchGeckoMarketCap, getTokenSupplyDetails } from './tokenPrice.service';
 import { getPoolAddressByPair } from '@/helpers/getTokensListedData';
 import { calculateTotalDonations, calculateUniqueDonors } from '@/helpers/donations';
 import { fetchSquidPOLUSDPrice } from '@/helpers/token';
@@ -106,6 +106,23 @@ export async function fetchTokenData(project: IProject): Promise<{
         pricePOL = Number(price);
       } else {
         pricePOL = Number(price) === 0 ? 0 : 1 / Number(price);
+      }
+    } else if (project.abc?.fundingManagerAddress) {
+      // Derive price from bonding curve parameters
+      try {
+        const { reserve_ration, collateral_supply, issuance_supply } = await getTokenSupplyDetails(
+          project.abc.fundingManagerAddress,
+        );
+
+        const reserveRatio = Number(reserve_ration);
+        const reserve = Number(collateral_supply);
+        const supply = Number(issuance_supply);
+        if (reserveRatio && supply) {
+          pricePOL = (reserve / (supply * reserveRatio)) * 1.1;
+        }
+      } catch (err) {
+        console.error('Error calculating bonding curve price', err);
+        pricePOL = 0;
       }
     }
 

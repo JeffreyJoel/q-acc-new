@@ -18,6 +18,7 @@ import {
 import { formatNumber } from "@/helpers/donations";
 import { Spinner } from "@/components/loaders/Spinner";
 import { useTokenHolders } from "@/hooks/useTokenHolders";
+import { useTokenSupplyDetails } from "@/hooks/useTokens";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { formatPercentageChange } from "@/helpers";
@@ -39,6 +40,11 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
     project.abc?.issuanceTokenAddress
   );
 
+  // Bonding curve supply details (needed when token is not listed)
+  const { data: supplyDetails } = useTokenSupplyDetails(
+    project.abc?.fundingManagerAddress || ""
+  );
+
   // Market cap and change data
   const [marketCap, setMarketCap] = useState(0);
   const [marketCapChange24h, setMarketCapChange24h] = useState(0);
@@ -56,10 +62,19 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
   );
   const tokenHoldersCount = tokenHolderData?.totalHolders ?? 0;
 
-  // Calculate token price in USD
-  const tokenPriceUSD = currentTokenPrice
-    ? currentTokenPrice * polPriceNumber
-    : 0;
+  // Calculate token price (POL & USD) – fallback to bonding-curve formula if token is not listed
+  const tokenPricePOL = isTokenListed
+    ? currentTokenPrice || 0
+    : (() => {
+        if (!supplyDetails) return 0;
+        const reserveRatio = Number(supplyDetails.reserve_ration);
+        const reserve = Number(supplyDetails.collateral_supply);
+        const supply = Number(supplyDetails.issuance_supply);
+        if (!reserveRatio || !supply) return 0;
+        return (reserve / (supply * reserveRatio)) * 1.1;
+      })();
+
+  const tokenPriceUSD = tokenPricePOL * polPriceNumber;
 
   useEffect(() => {
     if (project?.id) {
@@ -108,7 +123,7 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
             donationData.donations,
             project.abc.fundingManagerAddress,
             24,
-            activeRoundDetails.startDate,
+            activeRoundDetails.startDate
           );
 
           // 7-day change
@@ -116,7 +131,7 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
             donationData.donations,
             project.abc.fundingManagerAddress,
             24 * 7,
-            activeRoundDetails.startDate,
+            activeRoundDetails.startDate
           );
 
           setMarketCap(res24.marketCap * polPriceNumber);
@@ -136,6 +151,19 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
           setMarketCap(marketCapData);
           setMarketCapChange24h(gecko?.pctChange24h ?? 0);
           setMarketCapChange7d(gecko?.pctChange7d ?? 0);
+        } else if (!isTokenListed && project.abc?.issuanceTokenAddress) {
+          // For tokens not listed, derive market cap from bonding curve parameters
+          const marketCapData = await getMarketCap(
+            false,
+            project.abc.issuanceTokenAddress,
+            project.abc.fundingManagerAddress,
+            donationData?.donations,
+          );
+
+          setMarketCap(marketCapData * polPriceNumber);
+          // Price change percentages not available for unlisted tokens – leave as zero
+          setMarketCapChange24h(0);
+          setMarketCapChange7d(0);
         }
       } catch (error) {
         console.error("Error fetching market cap data:", error);
@@ -151,6 +179,7 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
     activeRoundDetails,
     isTokenListed,
     polPriceNumber,
+    supplyDetails,
   ]);
 
   const isRoundActive = !!activeRoundDetails;
@@ -243,7 +272,7 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
               ${formatNumber(tokenPriceUSD)}
             </div>
             <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
-              Price: {formatNumber(currentTokenPrice || 0)} POL
+              Price: {formatNumber(tokenPricePOL)} POL
             </div>
           </div>
 
@@ -258,32 +287,42 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
           </div>
 
           {/* 24h Change */}
-          <div className="space-y-0.1">
-            <div className="text-white text-center flex flex-row gap-2 text-2xl font-bold">
-              <span>
-                {marketCapLoading ? (
-                  <Spinner size={16} />
-                ) : (
-                  <span className={formatPercentageChange(marketCapChange24h).color}>
-                    {formatPercentageChange(marketCapChange24h).formatted}
-                  </span>
-                )}
-              </span>
+          {isTokenListed && (
+            <div className="space-y-0.1">
+              <div className="text-white text-center flex flex-row gap-2 text-2xl font-bold">
+                <span>
+                  {marketCapLoading ? (
+                    <Spinner size={16} />
+                  ) : (
+                    <span
+                      className={
+                        formatPercentageChange(marketCapChange24h).color
+                      }
+                    >
+                      {formatPercentageChange(marketCapChange24h).formatted}
+                    </span>
+                  )}
+                </span>
 
-              <span>
-                {marketCapLoading ? (
-                  <Spinner size={16} />
-                ) : (
-                  <span className={formatPercentageChange(marketCapChange7d).color}>
-                    {formatPercentageChange(marketCapChange7d).formatted}
-                  </span>
-                )}
-              </span>
+                <span>
+                  {marketCapLoading ? (
+                    <Spinner size={16} />
+                  ) : (
+                    <span
+                      className={
+                        formatPercentageChange(marketCapChange7d).color
+                      }
+                    >
+                      {formatPercentageChange(marketCapChange7d).formatted}
+                    </span>
+                  )}
+                </span>
+              </div>
+              <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                24h/7d Change
+              </div>
             </div>
-            <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
-              24h/7d Change
-            </div>
-          </div>
+          )}
 
           {/* Market Cap */}
           <div className="space-y-0.1">
@@ -302,21 +341,26 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
           {/* Token Listing Status */}
           {isTokenListed === false && (
             <div className="space-y-0.1">
-              <div className="text-white text-center text-2xl font-bold">
-                Not listed
+              <div className="text-white text-center text-xl font-bold">
+                DEX Listing Soon
               </div>
-              <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
-                Follow the team's{" "}
-                <a
-                  href={project.socialMedia?.find((s) => s.type === "X")?.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline hover:text-white transition-colors"
-                >
-                  X
-                </a>{" "}
-                for updates
-              </div>
+              {project.socialMedia?.find((s) => s.type === "X" || "Twitter")
+                ?.link && (
+                <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                  Follow the team's{" "}
+                  <a
+                    href={
+                      project.socialMedia?.find((s) => s.type === "X")?.link
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-white transition-colors"
+                  >
+                    X
+                  </a>{" "}
+                  for updates
+                </div>
+              )}
             </div>
           )}
         </div>

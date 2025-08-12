@@ -16,7 +16,7 @@ const HeroSection = () => {
  
 
   useEffect(() => {
-    const CACHE_KEY = "dune_stats";
+    const CACHE_KEY = "dune_stats_hero";
     const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
     try {
       const cached = localStorage.getItem(CACHE_KEY);

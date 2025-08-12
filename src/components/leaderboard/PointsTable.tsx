@@ -1,17 +1,11 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { SearchBar } from "./SearchBar";
 import { LeaderboardItem } from "./LeaderboardItem";
 import { useFetchLeaderBoard } from "@/hooks/useFetchLeaderBoard";
 import { SortDirection, SortField, ILeaderBoardInfo } from "@/services/points.service";
-import { ArrowDownUp } from "lucide-react";
 import { Pagination } from "./Pagination";
-import { useFetchUser } from "@/hooks/useFetchUser";
 import { Spinner } from "../loaders/Spinner";
-import { useAccount } from "wagmi";
-import { Address } from "viem";
 import { UserInfo } from "./UserInfo";
 import { LeaderboardUser } from "@/types/leaderboard";
 
@@ -49,19 +43,13 @@ const getInitialLeaderboardData = (): LeaderboardQueryData => {
 };
 
 export function PointsTable() {
-  const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("Rank");
   const [sortDirection, setSortDirection] = useState<SortDirection>("ASC");
   const [page, setPage] = useState(0);
   const LIMIT = 15;
   const FETCH_ALL_LIMIT = 5000;
-  const { address } = useAccount();
-
 
   const [initialData] = useState<LeaderboardQueryData>(() => getInitialLeaderboardData());
-
-  const { data: user } = useFetchUser(!!address, address as Address);
 
   const { data: leaderboardInfo, isLoading } = useFetchLeaderBoard(
     FETCH_ALL_LIMIT,
@@ -76,30 +64,12 @@ export function PointsTable() {
   useEffect(() => {
     setPage(0);
 
-  }, [searchQuery, sortField, sortDirection]);
+  }, [sortField, sortDirection]);
 
   const filteredAndSortedUsers = useMemo(() => {
-    if (!leaderboardInfo?.users) {
-      return [];
-    }
+    return leaderboardInfo?.users ?? [];
+  }, [leaderboardInfo?.users]);
 
-    let users = [...leaderboardInfo.users];
-
-    if (searchQuery) {
-      users = users.filter(
-        (u) =>
-          u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          u.walletAddress?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    return users;
-  }, [leaderboardInfo?.users, searchQuery, sortField, sortDirection]);
-
-
-  const handleUserClick = (userAddress: string) => {
-    router.push(`/profile/${userAddress}`);
-  };
 
   const total = filteredAndSortedUsers.length;
   const totalPages = Math.ceil(total / LIMIT);
@@ -127,7 +97,6 @@ export function PointsTable() {
           <LeaderboardItem
             key={item.id}
             user={item as LeaderboardUser}
-            onUserClick={handleUserClick}
           />
         ))}
 

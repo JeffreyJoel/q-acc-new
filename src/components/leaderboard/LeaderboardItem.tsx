@@ -11,16 +11,9 @@ import Link from "next/link";
 
 interface LeaderboardItemProps {
   user: LeaderboardUser;
-  onUserClick?: (userAddress: string) => void;
 }
 
-export function LeaderboardItem({ user, onUserClick }: LeaderboardItemProps) {
-  let avatar;
-  if (user.avatar) {
-    avatar = handleImageUrl(user.avatar);
-  } else {
-    avatar = "/images/user.png";
-  }
+export function LeaderboardItem({ user }: LeaderboardItemProps) {
 
   return (
     <div
@@ -47,9 +40,9 @@ export function LeaderboardItem({ user, onUserClick }: LeaderboardItemProps) {
 
       <div className="flex items-center gap-3 flex-1 ml-4">
         <Avatar className="h-8 w-8 md:h-12 md:w-12 border-2 border-neutral-600">
-          <AvatarImage src={avatar} />
+          <AvatarImage src={handleImageUrl(user.avatar && user.avatar !==null ? user.avatar : "/images/user.png")} />
           <AvatarFallback className="text-base bg-neutral-600 text-white">
-            {user.username?.charAt(0) || user.name?.charAt(0)}
+            <Image src="/images/user.png" alt="user" className="w-full h-full" width={32} height={32} />
           </AvatarFallback>
         </Avatar>
 
