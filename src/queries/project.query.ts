@@ -753,10 +753,10 @@ export const UPDATE_DONATION_STATUS = /* GraphQL */ `
   }
 `;
 
-//TODO: update token holder module
-export const GET_TOKEN_HOLDERS_BY_ADDRESS = /* GraphQL */ `
-  query ($address: String!) {
-    tokenHoldersByAddress(address: $address) {
+export const GET_TOKEN_HOLDERS_BY_PROJECT = /* GraphQL */ `
+  query ($projectName: String!) {
+    tokenHoldersByProject(projectName: $projectName) {
+      id
       projectName
       address
       tag

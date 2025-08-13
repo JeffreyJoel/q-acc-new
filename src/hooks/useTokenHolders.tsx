@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { ITokenHoldersResponse } from '@/types/token-holders.type';
+import { ITokenHoldersResponse, ITokenHolding } from '@/types/token-holders.type';
+import { GET_TOKEN_HOLDERS_BY_PROJECT } from '@/queries/project.query';
+import { requestGraphQL } from '@/helpers/request';
 
 /**
  * Fetches token holders (top 20) & total count from the internal API.
@@ -22,5 +24,21 @@ export const useTokenHolders = (
     },
     enabled: (options?.enabled ?? true) && Boolean(tokenAddress),
     staleTime: options?.staleTime ?? 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+
+export const useTokenHolderTags = (projectName: string) => {
+  return useQuery<ITokenHolding[], Error>({
+    queryKey: ['tokenHolderTags', projectName],
+    queryFn: async () => {
+      const res = await requestGraphQL<{ tokenHoldersByProject: ITokenHolding[] }>(
+        GET_TOKEN_HOLDERS_BY_PROJECT,
+        { projectName },
+        {url: "https://staging.qacc-be.generalmagic.io/graphql"}
+      );
+      return res.tokenHoldersByProject;
+    },
+    enabled: !!projectName,
   });
 };

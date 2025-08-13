@@ -152,6 +152,7 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
                 <TokenHolders
                   tokenAddress={project.abc?.issuanceTokenAddress || ""}
                   paymentRouter={project.abc?.paymentRouterAddress || ""}
+                  projectName={project.abc?.tokenTicker || ""}
                 />
               </div>
             </div>

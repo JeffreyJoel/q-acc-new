@@ -1,21 +1,39 @@
 "use client";
 
 import { shortenAddress } from "@/helpers/address";
-import { ITokenHolder } from "@/types/token-holders.type";
+import { ITokenHolder, ITokenHolding } from "@/types/token-holders.type";
 import { useTokenHolders } from "@/hooks/useTokenHolders";
+import { useTokenHolderTags } from "@/hooks/useTokenHolders";
+import { useMemo } from "react";
 
 export default function TokenHolders({
   tokenAddress,
   paymentRouter,
+  projectName,
 }: {
   tokenAddress: string;
   paymentRouter: string;
+  projectName: string;
 }) {
   const {
     data: tokenHolders,
     isLoading,
     error,
   } = useTokenHolders(tokenAddress, { enabled: !!tokenAddress });
+
+  const { data: taggedHolders } = useTokenHolderTags(projectName);
+
+  console.log("taggedHolders", taggedHolders);
+
+  const tagMap = useMemo(() => {
+    const map = new Map<string, string>();
+    taggedHolders?.forEach((h: ITokenHolding) => {
+      if (h.address && h.tag) {
+        map.set(h.address.toLowerCase(), h.tag);
+      }
+    });
+    return map;
+  }, [taggedHolders]);
 
   const holders: ITokenHolder[] = tokenHolders?.holders || [];
   const holdersCount: number = tokenHolders?.totalHolders ?? holders.length;
@@ -26,7 +44,8 @@ export default function TokenHolders({
     ) {
       return "Vesting Contract";
     }
-    return "";
+    const lowerAddr = address.toLowerCase();
+    return tagMap.get(lowerAddr) || "";
   };
 
   if (isLoading) {

@@ -9,3 +9,9 @@ export interface ITokenHoldersResponse {
   totalHolders: number;
   holders: ITokenHolder[];
 }
+
+export interface ITokenHolding {
+  projectName: string;
+  address: string;
+  tag: string;
+}
