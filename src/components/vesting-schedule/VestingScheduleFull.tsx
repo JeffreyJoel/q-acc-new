@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { IProject } from "@/types/project.type";
+import { useVestingSchedules } from "@/hooks/useVestingSchedules";
 import Image from "next/image";
 
 interface VestingPeriod {
@@ -35,70 +36,50 @@ const VestingScheduleFull: React.FC<VestingScheduleFullProps> = ({ projects = []
   });
   const [showTimeline, setShowTimeline] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { data: vestingSchedules } = useVestingSchedules();
 
   // Filter projects by season
   const season1Projects = projects.filter(project => project.seasonNumber === 1);
   const season2Projects = projects.filter(project => project.seasonNumber === 2);
 
-  // Vesting data grouped by seasons
-  const vestingData: VestingPeriod[] = [
-    // Season 1
-    {
-      name: "team-tokens-s1",
-      displayName: "Team Tokens",
-      type: "team",
-      season: 1,
-      order: 1,
-      start: new Date("2024-10-29"),
-      cliff: new Date("2025-10-29"),
-      end: new Date("2026-10-29"),
-    },
-    {
-      name: "supporters-round1-s1",
-      displayName: "Round 1 Supporters",
-      type: "supporters",
-      season: 1,
-      order: 2,
-      start: new Date("2024-12-20"),
-      cliff: new Date("2025-06-20"),
-      end: new Date("2025-12-20"),
-    },
-    {
-      name: "supporters-round2-s1",
-      displayName: "Round 2 Supporters",
-      type: "supporters",
-      season: 1,
-      order: 3,
-      start: new Date("2025-03-13"),
-      cliff: new Date("2025-10-13"),
-      end: new Date("2026-03-13"),
-    },
-    // Season 2
-    {
-      name: "team-tokens-s2",
-      displayName: "Team Tokens",
-      type: "team",
-      season: 2,
-      order: 4,
-      start: new Date("2025-04-11"),
-      cliff: new Date("2026-04-11"),
-      end: new Date("2027-04-11"),
-    },
-    {
-      name: "supporters-round2-s2",
-      displayName: "Round 2 Supporters",
-      type: "supporters",
-      season: 2,
-      order: 5,
-      start: new Date("2025-05-13"),
-      cliff: new Date("2025-11-13"),
-      end: new Date("2026-05-13"),
-    },
-  ];
+  // Dynamic vesting data from fetched schedules
+  let vestingData: VestingPeriod[] = vestingSchedules?.map((schedule, index) => {
+    const nameLower = schedule.name.toLowerCase();
+    const seasonMatch = nameLower.match(/season (\d+)/);
+    const season = seasonMatch ? parseInt(seasonMatch[1]) : 0;
+    
+    return {
+      name: nameLower.replace(/\s+/g, '-'),
+      displayName: schedule.name,
+      type: nameLower.includes('projects') ? 'team' : 'supporters',
+      season,
+      order: index, // Temporary order, will reassign after sorting
+      start: new Date(schedule.start),
+      cliff: new Date(schedule.cliff),
+      end: new Date(schedule.end),
+    };
+  }) || [];
+
+  // Sort by season then start date
+  vestingData.sort((a, b) => {
+    if (a.season !== b.season) return a.season - b.season;
+    return a.start.getTime() - b.start.getTime();
+  });
+
+  vestingData = vestingData.map((period, index) => ({
+    ...period,
+    order: index + 1,
+  }));
 
   const today = new Date();
-  const minDate = new Date("2024-11-01"); // Start from Nov 2024
-  const maxDate = new Date("2027-03-31"); // End at Mar 2027
+
+  const allStarts = vestingData.map(p => p.start.getTime());
+  const allEnds = vestingData.map(p => p.end.getTime());
+  const minTime = Math.min(...allStarts);
+  const maxTime = Math.max(...allEnds);
+  const rangePadding = 30 * 24 * 60 * 60 * 1000; 
+  const minDate = new Date(Math.max(minTime - rangePadding, new Date('2024-10-01').getTime()));
+  const maxDate = new Date(maxTime + rangePadding);
 
   const generateTimelineMonths = () => {
     const months = [];
@@ -117,7 +98,7 @@ const VestingScheduleFull: React.FC<VestingScheduleFullProps> = ({ projects = []
               })
             : currentDate.toLocaleDateString("en-US", { month: "short" }),
       });
-      currentDate.setMonth(currentDate.getMonth() + 2); // Every 2 months
+      currentDate.setMonth(currentDate.getMonth() + 2);
     }
     return months;
   };

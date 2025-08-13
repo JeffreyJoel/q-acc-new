@@ -3,6 +3,8 @@
 import React, { useState, useRef } from "react";
 import { IProject } from "@/types/project.type";
 import Image from "next/image";
+import { useVestingSchedules } from "@/hooks/useVestingSchedules";
+import { useFetchAllProjects } from "@/hooks/useProjects";
 
 interface VestingPeriod {
   name: string;
@@ -23,13 +25,15 @@ interface TooltipData {
 }
 
 interface VestingScheduleProps {
-  projects?: IProject[];
   seasonNumber: number;
+  projectTicker?: string;
+  projectIcon?: string;
 }
 
-const VestingSchedule: React.FC<VestingScheduleProps> = ({ 
-  projects = [], 
-  seasonNumber 
+const VestingSchedule: React.FC<VestingScheduleProps> = ({
+  seasonNumber,
+  projectTicker,
+  projectIcon,
 }) => {
   const [tooltip, setTooltip] = useState<TooltipData>({
     period: {} as VestingPeriod,
@@ -40,94 +44,61 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
   const [showTimeline, setShowTimeline] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Filter projects by the specified season
-  const seasonProjects = projects.filter(project => project.seasonNumber === seasonNumber);
+  const { data: vestingSchedules } = useVestingSchedules();
 
-  // Vesting data for the specific season
-  const getVestingDataForSeason = (season: number): VestingPeriod[] => {
-    const seasonData = {
-      1: [
-        {
-          name: "team-tokens-s1",
-          displayName: "Team Tokens",
-          type: "team" as const,
-          season: 1,
-          order: 1,
-          start: new Date("2024-10-29"),
-          cliff: new Date("2025-10-29"),
-          end: new Date("2026-10-29"),
-        },
-        {
-          name: "supporters-round1-s1",
-          displayName: "Round 1 Supporters",
-          type: "supporters" as const,
-          season: 1,
-          order: 2,
-          start: new Date("2024-12-20"),
-          cliff: new Date("2025-06-20"),
-          end: new Date("2025-12-20"),
-        },
-        {
-          name: "supporters-round2-s1",
-          displayName: "Round 2 Supporters",
-          type: "supporters" as const,
-          season: 1,
-          order: 3,
-          start: new Date("2025-03-13"),
-          cliff: new Date("2025-10-13"),
-          end: new Date("2026-03-13"),
-        },
-      ],
-      2: [
-        {
-          name: "team-tokens-s2",
-          displayName: "Team Tokens",
-          type: "team" as const,
-          season: 2,
-          order: 4,
-          start: new Date("2025-04-11"),
-          cliff: new Date("2026-04-11"),
-          end: new Date("2027-04-11"),
-        },
-        {
-          name: "supporters-round2-s2",
-          displayName: "Round 2 Supporters",
-          type: "supporters" as const,
-          season: 2,
-          order: 5,
-          start: new Date("2025-05-13"),
-          cliff: new Date("2025-11-13"),
-          end: new Date("2026-05-13"),
-        },
-      ],
-    };
+  const { data: allProjects } = useFetchAllProjects();
 
-    return seasonData[season as keyof typeof seasonData] || [];
-  };
+  const seasonProjects =
+    allProjects?.projects?.filter(
+      (project: IProject) => project.seasonNumber === seasonNumber
+    ) || [];
 
-  const vestingData = getVestingDataForSeason(seasonNumber);
+  let vestingData: VestingPeriod[] =
+    vestingSchedules
+      ?.map((schedule, index) => {
+        const nameLower = schedule.name.toLowerCase();
+        const seasonMatch = nameLower.match(/season (\d+)/);
+        const season = seasonMatch ? parseInt(seasonMatch[1]) : 0;
 
-  // Get date range for the specific season
-  const getDateRangeForSeason = (season: number) => {
-    const seasonRanges = {
-      1: {
-        minDate: new Date("2024-11-01"),
-        maxDate: new Date("2026-03-31"),
-      },
-      2: {
-        minDate: new Date("2025-04-01"),
-        maxDate: new Date("2027-03-31"),
-      },
-    };
+        return {
+          name: nameLower.replace(/\s+/g, "-"),
+          displayName: schedule.name,
+          type: (nameLower.includes("projects") ? "team" : "supporters") as
+            | "team"
+            | "supporters",
+          season,
+          order: index,
+          start: new Date(schedule.start),
+          cliff: new Date(schedule.cliff),
+          end: new Date(schedule.end),
+        };
+      })
+      ?.filter((period) => period.season === seasonNumber) || [];
 
-    return seasonRanges[season as keyof typeof seasonRanges] || {
-      minDate: new Date("2024-11-01"),
-      maxDate: new Date("2027-03-31"),
-    };
-  };
+  vestingData.sort((a, b) => a.start.getTime() - b.start.getTime());
 
-  const { minDate, maxDate } = getDateRangeForSeason(seasonNumber);
+  vestingData = vestingData.map((period, index) => ({
+    ...period,
+    order: index + 1,
+  }));
+
   const today = new Date();
+
+  let minDate = new Date("2024-11-01");
+  let maxDate = new Date("2027-03-31");
+
+  // Dynamic min/max dates with padding
+  if (vestingData.length > 0) {
+    const allStarts = vestingData.map((p) => p.start.getTime());
+    const allEnds = vestingData.map((p) => p.end.getTime());
+    const minTime = Math.min(...allStarts);
+    const maxTime = Math.max(...allEnds);
+    const rangePadding = 30 * 24 * 60 * 60 * 1000; // 30 days
+    minDate = new Date(
+      Math.max(minTime - rangePadding, new Date("2024-10-01").getTime())
+    );
+    maxDate = new Date(maxTime + rangePadding);
+  }
 
   const generateTimelineMonths = () => {
     const months = [];
@@ -146,7 +117,7 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
               })
             : currentDate.toLocaleDateString("en-US", { month: "short" }),
       });
-      currentDate.setMonth(currentDate.getMonth() + 2); // Every 2 months
+      currentDate.setMonth(currentDate.getMonth() + 2);
     }
     return months;
   };
@@ -224,7 +195,6 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
   const todayPosition = getTodayPosition();
   const timelineMonths = generateTimelineMonths();
 
-  // Token icons component
   const TokenIcons = ({ projects }: { projects: IProject[] }) => (
     <div className="flex -space-x-2 items-center">
       {projects.slice(0, 6).map((project, index) => (
@@ -232,21 +202,23 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
           {project.abc?.icon ? (
             <Image
               src={project?.icon || ""}
-              alt={project.abc.tokenTicker || project.title || 'Token'}
+              alt={project.abc.tokenTicker || project.title || "Token"}
               className="w-6 h-6 rounded-full object-cover bg-black"
               width={24}
               height={24}
             />
           ) : null}
-          <div 
+          <div
             className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-              seasonNumber === 1 
+              seasonNumber === 1
                 ? "bg-gradient-to-br from-peach-400 to-peach-600 text-black"
                 : "bg-gradient-to-br from-purple-400 to-purple-600 text-white"
             }`}
-            style={{ display: project.abc?.icon ? 'none' : 'flex' }}
+            style={{ display: project.abc?.icon ? "none" : "flex" }}
           >
-            {project.abc?.tokenTicker?.charAt(0) || project.title?.charAt(0) || 'T'}
+            {project.abc?.tokenTicker?.charAt(0) ||
+              project.title?.charAt(0) ||
+              "T"}
           </div>
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none z-10">
             {project.abc?.tokenTicker || project.title}
@@ -256,49 +228,42 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
     </div>
   );
 
-  // Get season header info
-  const getSeasonHeaderInfo = (season: number) => {
-    const seasonInfo = {
-      1: {
-        title: "SEASON 1",
-        dexListing: "DEX Listing",
-        startDate: new Date("2024-10-29"),
-      },
-      2: {
-        title: "SEASON 2",
-        dexListing: "DEX Listing",
-        startDate: new Date("2025-04-11"),
-        additionalInfo: "Sep-Nov",
-      },
-    };
-
-    return seasonInfo[season as keyof typeof seasonInfo] || {
-      title: `SEASON ${season}`,
-      dexListing: "DEX Listing",
-      startDate: new Date(),
-    };
-  };
-
-  const seasonInfo = getSeasonHeaderInfo(seasonNumber);
+  const seasonTitle = `SEASON ${seasonNumber}`;
+  const headerPosition =
+    vestingData.length > 0
+      ? Math.min(...vestingData.map((p) => getDatePosition(p.start)))
+      : 0;
 
   return (
-    <div className="max-w-7xl mx-auto mt-16 text-white">
+    <div className="bg-white/5 p-6 rounded-3xl text-white">
       {/* Header */}
-      <div className="text-center mb-16">
-        <h1 className="text-[64px] font-anton text-white tracking-tight">
+      <div className="flex items-center gap-6 mb-10">
+        <h1 className="text-[40px] font-anton text-white tracking-wide">
           VESTING SCHEDULE
         </h1>
+
+        <Image
+          src={projectIcon || ""}
+          alt="Vesting Schedule"
+          width={32}
+          height={32}
+          className="rounded-full"
+        />
+
+        <p className="text-peach-400 text-[40px] font-anton tracking-wide">
+          ${projectTicker}
+        </p>
       </div>
 
       {/* Chart Container */}
       <div
         ref={containerRef}
-        className="relative group pb-0 w-8/12 mx-auto"
+        className="relative group pb-0 w-10/12 mx-auto"
         onMouseEnter={handleContainerMouseEnter}
         onMouseLeave={handleContainerMouseLeave}
       >
         {/* Vertical Grid Lines */}
-        <div className="absolute top-0 left-0 right-0 h-[380px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+        <div className="absolute top-0 left-0 right-0 h-[190px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
           {timelineMonths.map((month, index) => (
             <div
               key={index}
@@ -313,20 +278,15 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
           <div className="flex items-center mb-6 relative">
             <div
               className="absolute flex items-center"
-              style={{ left: `${getDatePosition(seasonInfo.startDate)}%` }}
+              style={{ left: `${headerPosition}%` }}
             >
               <h3 className="text-xl font-anton text-peach-400 uppercase mr-8">
-                {seasonInfo.title}
+                {seasonTitle}
               </h3>
               <div className="flex items-center text-xs">
                 <span className="text-qacc-gray-light font-semibold">
-                  {seasonInfo.dexListing}
+                  DEX Listing
                 </span>
-                {/* {seasonInfo.additionalInfo && (
-                  <span className="text-qacc-gray-light/40 ml-1">
-                    {seasonInfo.additionalInfo}
-                  </span>
-                )} */}
               </div>
             </div>
           </div>
@@ -361,7 +321,9 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
                         <span className="font-bold text-xs text-[#020202]">
                           {period.displayName}
                         </span>
-                        {period.type === "team" && <TokenIcons projects={seasonProjects} />}
+                        {period.type === "team" && (
+                          <TokenIcons projects={seasonProjects} />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -407,7 +369,7 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
         </div>
 
         {/* Timeline */}
-        <div className="pb-12 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+        <div className="pb-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
           <div className="relative h-full flex items-center">
             {timelineMonths.map((month, index) => (
               <div
@@ -426,7 +388,7 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
         {/* Today Line */}
         {todayPosition >= 0 && (
           <div
-            className="absolute top-0 w-[1px] bg-[#D6644F] pointer-events-none h-[380px] transition-all duration-100 ease-in-out"
+            className="absolute top-0 w-[1px] bg-[#D6644F] pointer-events-none h-[190px] transition-all duration-100 ease-in-out"
             style={{ left: `${todayPosition}%` }}
           >
             {/* Top circle */}
@@ -500,4 +462,4 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
   );
 };
 
-export default VestingSchedule; 
+export default VestingSchedule;

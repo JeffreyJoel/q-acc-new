@@ -35,4 +35,14 @@ export interface IEarlyAccessRound {
     qfTotalCollected: number;
     contributorsCount: number;
   }
+
+  export interface IVestingSchedule {
+    id: string;
+    name: string;
+    start: string;
+    cliff: string;
+    end: string;
+    createdAt: string;
+    updatedAt: string;
+  }
   

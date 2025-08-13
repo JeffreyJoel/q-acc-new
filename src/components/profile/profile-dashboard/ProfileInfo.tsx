@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { CopyButton } from "../../shared/CopyButton";
 import Image from "next/image";
 import { Address } from "viem";
 import { roundPoints } from "@/helpers/points";
 import { GitcoinVerificationBadge } from "../../verification-badges/GitcoinVerificationBadge";
-import { PrivadoVerificationBadge } from "../../verification-badges/PrivadoVerificationBadge";
 import { useAccount } from "wagmi";
 import { useModal } from "@/contexts/ModalContext";
 import { getIpfsAddress } from "@/helpers/image";
@@ -94,10 +93,10 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
 
   return (
     <>
-      <div className="p-6">
+      <div className="">
         <div className="flex items-center justify-between w-full">
           <div className="flex">
-            <div className="w-[140px] h-[140px] rounded-full bg-black overflow-hidden mr-4">
+            <div className="w-[120px] h-[120px] rounded-full bg-black overflow-hidden mr-4">
               <Image
                 src={avatar || "/images/user.png"}
                 alt="User avatar"
@@ -109,12 +108,12 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
 
             <div>
               {isOwnProfile && (
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-end">
                   <p className="text-[40px] font-anton leading-none">
                     {user?.fullName}
                   </p>
                   {user?.username && (
-                    <span className="text-2xl font-semibold font-anton text-qacc-gray-light">
+                    <span className="text-[20px] font-anton text-qacc-gray-light">
                       @{user?.username}
                     </span>
                   )}
@@ -156,22 +155,32 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
                 Edit Profile
               </p>
 
-              <div className="flex items-center bg-white/10 rounded-xl px-4 py-2 mt-5">
-                <span className="text-white text-base font-medium mr-2">Q/acc Points</span>
-                <div className="bg-black rounded-full w-5 h-5 flex items-center justify-center mr-1">
-                  <Image
-                    src="/images/logos/round_logo.png"
-                    alt="Q"
-                    width={16}
-                    height={16}
-                    priority
-                  />
-                </div>
-                <span className="font-bold ml-3">
-                  {roundPoints(user?.qaccPoints || 0)}
+              <div className="w-fit flex justify-between items-center bg-white/10 rounded-xl px-5 py-2 mt-5">
+                <span className="text-white text-base font-medium mr-4">
+                  Q/ACC Points
                 </span>
+                <div className="flex items-center">
+                  <div className="bg-black rounded-full w-5 h-5 flex items-center justify-center">
+                    <Image
+                      src="/images/logos/round_logo.png"
+                      alt="Q"
+                      width={16}
+                      height={16}
+                      priority
+                    />
+                  </div>
+                  <span className="font-bold ml-1">
+                    {roundPoints(user?.qaccPoints || 0)}
+                  </span>
+                </div>
               </div>
             </div>
+          </div>
+
+          <div className="flex gap-4">
+            <GitcoinVerificationBadge userAddress={userAddress} />
+            <GitcoinVerificationBadge userAddress={userAddress} />
+
           </div>
           {/* <div className="flex gap-3"> */}
           {/* {isOwnProfile && userProjectsCount === 0 && (
@@ -181,10 +190,7 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
         </div>
 
         <div className="mt-8 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* <GitcoinVerificationBadge userAddress={userAddress} /> */}
-            {/* <PrivadoVerificationBadge userAddress={userAddress} /> */}
-          </div>
+    
         </div>
       </div>
     </>

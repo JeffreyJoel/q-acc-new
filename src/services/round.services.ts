@@ -4,8 +4,9 @@ import {
   GET_ALL_ROUNDS,
   GET_PROJECT_ROUND_RECORDS,
   GET_QACC_ROUND_STATS,
+  GET_VESTING_SCHEDULES,
 } from '@/queries/round.query';
-import { IEarlyAccessRound, IQaccStats, IQfRound } from '@/types/round.type';
+import { IEarlyAccessRound, IQaccStats, IQfRound, IVestingSchedule } from '@/types/round.type';
 
 export const fetchActiveRoundDetails = async () => {
   try {
@@ -56,6 +57,18 @@ export const fetchQaccRoundStats = async () => {
       qAccStat: IQaccStats;
     }>(GET_QACC_ROUND_STATS, {});
     return res?.qAccStat;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+//TODO: switch to use config.GRAPHQL_ENDPOINT after qacc-be is updated
+export const fetchVestingSchedules = async () => {
+  try {
+    const res = await requestGraphQL<{
+      vestingSchedules: IVestingSchedule[];
+    }>(GET_VESTING_SCHEDULES, {}, { url: "https://staging.qacc-be.generalmagic.io/graphql" });
+    return res?.vestingSchedules;
   } catch (error) {
     console.error(error);
   }

@@ -19,13 +19,14 @@ import QuickSwapWidget from "./QuickSwapWidget";
 import { getPoolAddressByPair } from "@/helpers/getTokensListedData";
 import config from "@/config/configuration";
 import { useEffect, useState } from "react";
+import VestingSchedule from "@/components/vesting-schedule/VestingSchedule";
+import { handleImageUrl } from "@/helpers/image";
 
 export default function ProjectDetails({ params }: { params: { id: string } }) {
   const [projectPoolAddress, setProjectPoolAddress] = useState<string | null>(
     null
   );
   const [isTokenListed, setIsTokenListed] = useState<boolean>(false);
-
 
   const { data: project, isLoading, error } = useFetchProjectBySlug(params.id);
 
@@ -52,8 +53,16 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
         <ProjectDetailsLoader />
       ) : (
         <>
-          <div className={`${isTokenListed ? "flex flex-col lg:flex-row gap-4" : ""}`}>
-            <div className={`${isTokenListed ? "w-full lg:w-[65%]" : ""} relative w-full h-[550px]  overflow-hidden rounded-3xl`}>
+          <div
+            className={`${
+              isTokenListed ? "flex flex-col lg:flex-row gap-4" : ""
+            }`}
+          >
+            <div
+              className={`${
+                isTokenListed ? "w-full lg:w-[65%]" : ""
+              } relative w-full h-[550px]  overflow-hidden rounded-3xl`}
+            >
               {/* Background Image */}
               <Image
                 src={project.image || ""}
@@ -105,7 +114,7 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
                 <QuickSwapWidget
                   receiveTokenAddress={project.abc?.issuanceTokenAddress || ""}
                   receiveTokenSymbol={project.abc?.tokenTicker || ""}
-                  receiveTokenIcon={project.image || ""}
+                  receiveTokenIcon={handleImageUrl(project.abc?.icon || "")}
                 />
               </div>
             ) : (
@@ -127,8 +136,16 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
           )}
           <div className="max-w-7xl mx-auto mt-4 ">
             <div className="flex flex-col lg:flex-row gap-4">
-              <div className="lg:w-[70%] bg-black/50 px-6 lg:px-16 py-8 lg:py-12 rounded-3xl">
-                <TailwindStyledContent content={project.description || ""} />
+              <div className="lg:w-[70%] flex flex-col gap-4">
+                <VestingSchedule
+                  seasonNumber={project.seasonNumber}
+                  projectTicker={project.abc?.tokenTicker}
+                  projectIcon={handleImageUrl(project.abc?.icon || "")}
+                />
+
+                <div className="bg-black/50 px-6 lg:px-16 py-8 lg:py-12 rounded-3xl">
+                  <TailwindStyledContent content={project.description || ""} />
+                </div>
               </div>
               <div className="lg:w-[30%] flex flex-col gap-4">
                 <TeamSection teamMembers={project.teamMembers} />
