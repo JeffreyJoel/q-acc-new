@@ -55,7 +55,6 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
 
   const polPriceNumber = Number(POLPrice);
 
-  // Token holders
   const { data: tokenHolderData } = useTokenHolders(
     project.abc?.issuanceTokenAddress || "",
     { enabled: !!project.abc?.issuanceTokenAddress }

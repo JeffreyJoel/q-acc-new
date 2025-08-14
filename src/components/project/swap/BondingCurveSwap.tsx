@@ -1,3 +1,5 @@
+//TODO: Refactor this component and separate components and logic into separate files
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -22,7 +24,6 @@ import {
   useCalculateSaleReturn,
 } from "@/hooks/useBondingCurve";
 import { useGetCurrentTokenPrice } from "@/hooks/useGetCurrentTokenPrice";
-import { Button } from "@/components/ui/button";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { usePrivy } from "@privy-io/react-auth";
 import { useForm, Controller } from "react-hook-form";
@@ -33,6 +34,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import ConnectWalletButton from "@/components/shared/wallet/SwapConnectWalletButton";
 
 interface BondingCurveSwapProps {
   contractAddress: string;
@@ -62,6 +64,7 @@ type PayReceiveRowProps = {
   selectedToken?: string;
   onTokenSelect?: (symbol: string) => void;
   hasError?: boolean;
+  isDisabled?: boolean;
 };
 
 const PayReceiveRow = ({
@@ -79,6 +82,7 @@ const PayReceiveRow = ({
   selectedToken,
   onTokenSelect,
   hasError,
+  isDisabled,
 }: PayReceiveRowProps) => {
   const currentSymbol = selectableTokens ? selectedToken! : tokenSymbol;
   const currentIcon = selectableTokens
@@ -148,20 +152,32 @@ const PayReceiveRow = ({
             <div className="text-xs text-white/40 mt-1">
               Balance: {balance || "0.00"}
             </div>
-            <Controller
-              control={control}
-              name={name || "payAmount"}
-              render={({ field }) => (
-                <input
-                  type="number"
-                  placeholder="0.0"
-                  {...field}
-                  className={`bg-transparent text-xl font-bold text-right focus:outline-none w-32 ${
-                    hasError ? "text-red-500" : "text-white"
-                  }`}
-                />
-              )}
-            />
+            {control ? (
+              <Controller
+                control={control}
+                name={name || "payAmount"}
+                render={({ field }) => (
+                  <input
+                    type="number"
+                    placeholder="0.0"
+                    {...field}
+                    disabled={isDisabled}
+                    className={`bg-transparent text-xl font-bold text-right focus:outline-none w-32 ${
+                      hasError ? "text-red-500" : "text-white"
+                    }`}
+                  />
+                )}
+              />
+            ) : (
+              <input
+                type="number"
+                placeholder="0.0"
+                disabled={true}
+                className={`bg-transparent text-xl font-bold text-right focus:outline-none w-32 ${
+                  hasError ? "text-red-500" : "text-white"
+                }`}
+              />
+            )}
           </>
         ) : (
           <>
@@ -262,6 +278,8 @@ export default function BondingCurveSwap({
     </div>
   );
 }
+
+
 
 function BuyMode({
   contractAddress,
@@ -418,10 +436,10 @@ function BuyMode({
   const payRowProps = {
     tokenSymbol: selectedPayToken,
     iconSrc: POLYGON_POS_CHAIN_IMAGE,
-    balance: payBalance
+    balance: userAddress && payBalance
       ? formatBalance(parseFloat(payBalance.formattedBalance))
-      : undefined,
-    usdValue: payBalance
+      : "0.00",
+    usdValue: userAddress && payBalance
       ? calculateUsdValue(payBalance.formattedBalance, 1)
       : 0,
     selectableTokens: [
@@ -432,15 +450,16 @@ function BuyMode({
     onTokenSelect: (symbol: string) =>
       setSelectedPayToken(symbol as "POL" | "WPOL"),
     hasError: !!balanceError,
+    isDisabled: !userAddress,
   };
 
   const receiveRowProps = {
     tokenSymbol: receiveTokenSymbol,
     iconSrc: receiveTokenIcon,
-    balance: receiveTokenBalance
+    balance: userAddress && receiveTokenBalance
       ? formatBalance(parseFloat(receiveTokenBalance.formattedBalance))
-      : undefined,
-    usdValue: receiveTokenBalance
+      : "0.00",
+    usdValue: userAddress && receiveTokenBalance
       ? calculateUsdValue(
           receiveTokenBalance.formattedBalance,
           receiveTokenPriceInPOL ?? undefined
@@ -459,7 +478,7 @@ function BuyMode({
         <PayReceiveRow
           label="PAY"
           isPay={true}
-          control={control}
+          control={userAddress ? control : undefined}
           name="payAmount"
           {...payRowProps}
         />
@@ -480,25 +499,29 @@ function BuyMode({
           {...receiveRowProps}
         />
       </div>
-      <button
-        type="submit"
-        className="mt-4 mb-1 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full disabled:opacity-50"
-        disabled={
-          isProcessing ||
-          !!balanceError ||
-          !!errors.payAmount ||
-          !!processingStatus
-        }
-      >
-        {processingStatus || balanceError ? (
-          <span className="text-xs font-semibold">
-            {processingStatus || balanceError}
-          </span>
-        ) : (
-          "BUY"
-        )}
-      </button>
-      {(!bondingCurveData?.buyIsOpen || !roleCheckData?.hasRole) && (
+      {userAddress ? (
+        <button
+          type="submit"
+          className="mt-4 mb-1 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full disabled:opacity-50"
+          disabled={
+            isProcessing ||
+            !!balanceError ||
+            !!errors.payAmount ||
+            !!processingStatus
+          }
+        >
+          {processingStatus || balanceError ? (
+            <span className="text-xs font-semibold">
+              {processingStatus || balanceError}
+            </span>
+          ) : (
+            "BUY"
+          )}
+        </button>
+      ) : (
+        <ConnectWalletButton />
+      )}
+      {(!bondingCurveData?.buyIsOpen || !roleCheckData?.hasRole) && userAddress && (
         <div className="text-center text-xs text-red-500 mt-2">
           Buy is currently not available. Please check permissions.
         </div>
@@ -650,25 +673,26 @@ function SellMode({
   const payRowProps = {
     tokenSymbol: receiveTokenSymbol,
     iconSrc: receiveTokenIcon,
-    balance: receiveTokenBalance
+    balance: userAddress && receiveTokenBalance
       ? formatBalance(parseFloat(receiveTokenBalance.formattedBalance))
-      : undefined,
-    usdValue: receiveTokenBalance
+      : "0.00",
+    usdValue: userAddress && receiveTokenBalance
       ? calculateUsdValue(
           receiveTokenBalance.formattedBalance,
           receiveTokenPriceInPOL ?? undefined
         )
       : 0,
     hasError: !!balanceError,
+    isDisabled: !userAddress,
   };
 
   const receiveRowProps = {
     tokenSymbol: "WPOL",
     iconSrc: POLYGON_POS_CHAIN_IMAGE,
-    balance: receiveBalance
+    balance: userAddress && receiveBalance
       ? formatBalance(parseFloat(receiveBalance.formattedBalance))
-      : undefined,
-    usdValue: receiveBalance
+      : "0.00",
+    usdValue: userAddress && receiveBalance
       ? calculateUsdValue(receiveBalance.formattedBalance, 1)
       : 0,
   };
@@ -684,7 +708,7 @@ function SellMode({
         <PayReceiveRow
           label="PAY"
           isPay={true}
-          control={control}
+          control={userAddress ? control : undefined}
           name="payAmount"
           {...payRowProps}
         />
@@ -705,26 +729,30 @@ function SellMode({
           {...receiveRowProps}
         />
       </div>
-      <button
-        type="submit"
-        className="mt-4 mb-1 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full disabled:opacity-50"
-        disabled={
-          isProcessing ||
-          !!balanceError ||
-          !!errors.payAmount ||
-          !!processingStatus
-        }
-      >
-        {processingStatus || balanceError ? (
-          <span className="text-xs font-semibold">
-            {processingStatus || balanceError}
-          </span>
-        ) : (
-          "SELL"
-        )}
-      </button>
+      {userAddress ? (
+        <button
+          type="submit"
+          className="mt-4 mb-1 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full disabled:opacity-50"
+          disabled={
+            isProcessing ||
+            !!balanceError ||
+            !!errors.payAmount ||
+            !!processingStatus
+          }
+        >
+          {processingStatus || balanceError ? (
+            <span className="text-xs font-semibold">
+              {processingStatus || balanceError}
+            </span>
+          ) : (
+            "SELL"
+          )}
+        </button>
+      ) : (
+        <ConnectWalletButton />
+      )}
 
-      {(!bondingCurveData?.sellIsOpen || !roleCheckData?.hasRole) && (
+      {(!bondingCurveData?.sellIsOpen || !roleCheckData?.hasRole) && userAddress && (
         <div className="text-center text-xs text-red-500 mt-2">
           Sell is currently not available. Please check permissions.
         </div>
