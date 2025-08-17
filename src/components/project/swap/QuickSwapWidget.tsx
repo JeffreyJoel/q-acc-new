@@ -3,6 +3,7 @@
 import { useState } from "react";
 import BondingCurveSwap from "./BondingCurveSwap";
 import QuickSwapTab from "./QuickSwapTab";
+// import SquidWidgetComponent from "./SquidWidget";
 
 
 export default function QuickSwapWidget({
@@ -60,6 +61,7 @@ export default function QuickSwapWidget({
           receiveTokenSymbol={receiveTokenSymbol}
           receiveTokenIcon={receiveTokenIcon}
         />
+        // <SquidWidgetComponent />
       ) : (
         <BondingCurveSwap
           contractAddress={contractAddress}

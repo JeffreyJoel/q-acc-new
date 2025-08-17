@@ -258,7 +258,7 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
 
       {/* Market Data Card */}
       <div className="bg-white/5 rounded-3xl p-5 backdrop-blur-lg bg-opacity-80">
-        <div className="flex flex-row justify-between items-center flex-1 gap-4 lg:gap-6">
+        <div className="flex flex-row justify-between items-center flex-1 gap-4">
           <h3 className="text-[22px] font-anton text-right text-white/30 w-[78px] leading-none">
             <span className="text-white/30">MARKET</span>
             <br />
@@ -288,7 +288,7 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
           {/* 24h Change */}
           {isTokenListed && (
             <div className="space-y-0.1">
-              <div className="text-white text-center flex flex-row gap-2 text-2xl font-bold">
+              <div className="text-white text-center flex flex-row gap-0.5 text-2xl font-bold">
                 <span>
                   {marketCapLoading ? (
                     <Spinner size={16} />
@@ -303,7 +303,7 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
                   )}
                 </span>
 
-                <span>
+                {/* <span>
                   {marketCapLoading ? (
                     <Spinner size={16} />
                   ) : (
@@ -315,10 +315,10 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
                       {formatPercentageChange(marketCapChange7d).formatted}
                     </span>
                   )}
-                </span>
+                </span> */}
               </div>
               <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
-                24h/7d Change
+                24h Change
               </div>
             </div>
           )}

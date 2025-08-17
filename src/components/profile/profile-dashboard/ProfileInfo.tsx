@@ -16,6 +16,7 @@ import { Spinner } from "@/components/loaders/Spinner";
 import { useFetchProjectsCountByUserId } from "@/hooks/useFetchProjectsCountByUserId";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import { SelfVerificationBadge } from "@/components/verification-badges/SelfVerification";
 
 export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
   const { user, loading: donorContextLoading } = useDonorContext();
@@ -96,7 +97,7 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
       <div className="">
         <div className="flex items-center justify-between w-full">
           <div className="flex">
-            <div className="w-[120px] h-[120px] rounded-full bg-black overflow-hidden mr-4">
+            <div className="w-[120px] h-[120px] rounded-full border-[1px] border-peach-100/30 bg-black overflow-hidden mr-4">
               <Image
                 src={avatar || "/images/user.png"}
                 alt="User avatar"
@@ -179,7 +180,7 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
 
           <div className="flex gap-4">
             <GitcoinVerificationBadge userAddress={userAddress} />
-            <GitcoinVerificationBadge userAddress={userAddress} />
+            <SelfVerificationBadge userAddress={userAddress} />
 
           </div>
           {/* <div className="flex gap-3"> */}

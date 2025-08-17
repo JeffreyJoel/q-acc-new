@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ArrowDown, Loader2 } from "lucide-react";
 import { usePublicClient } from "wagmi";
 import { usePrivy } from "@privy-io/react-auth";
-import { Address, erc20Abi } from "viem";
+import { Address, erc20Abi, formatUnits } from "viem";
 import {
   useTokenBalanceWithDecimals,
   useFetchPOLPriceSquid,
@@ -17,6 +17,8 @@ import { POLYGON_POS_CHAIN_IMAGE } from "@/components/project/project-details/Pr
 import useSquidSwap from "@/hooks/useSquidSwap";
 import ConnectWalletButton from "@/components/shared/wallet/SwapConnectWalletButton";
 import { toast } from "sonner";
+import SelectChainDialog from "@/components/modals/SelectChainDialog";
+import { useBalance } from "wagmi";
 
 interface QuickSwapTabProps {
   receiveTokenAddress: string;
@@ -33,17 +35,37 @@ export default function QuickSwapTab({
   const [swapAmount, setSwapAmount] = useState<string>("");
   const [isQuoteValid, setIsQuoteValid] = useState<boolean>(false);
   const [receiveTokenDecimals, setReceiveTokenDecimals] = useState<number>(18);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [selectedFrom, setSelectedFrom] = useState({
+    chainId: "137",
+    chainIcon: POLYGON_POS_CHAIN_IMAGE,
+    tokenAddress: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // Common native address for Squid
+    tokenSymbol: "POL",
+    tokenIcon: POLYGON_POS_CHAIN_IMAGE,
+    tokenDecimals: 18,
+  });
 
   const { user: privyUser, authenticated } = usePrivy();
   const userAddress = privyUser?.wallet?.address;
   const publicClient = usePublicClient();
 
-  const { data: wpolBalance, isLoading: isWpolLoading } =
-    useTokenBalanceWithDecimals(
-      config.NATIVE_TOKEN_ADDRESS as Address,
-      userAddress as Address,
-    );
+  // Dynamic from token balance
+  const { data: fromBalanceData } = useBalance({
+    address: userAddress as Address,
+    token:
+      selectedFrom.tokenAddress.toLowerCase() === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" ||
+      selectedFrom.tokenAddress.toLowerCase() === "0x0000000000000000000000000000000000000000"
+        ? undefined
+        : (selectedFrom.tokenAddress as Address),
+  });
 
+  const fromBalance = fromBalanceData
+    ? formatUnits(fromBalanceData.value, selectedFrom.tokenDecimals).toString()
+    : "0";
+  const formattedFromBalance = formatBalance(parseFloat(fromBalance));
+
+  // Receive token balance (on Polygon)
   const {
     data: receiveTokenBalance,
     isLoading: isReceiveTokenLoading,
@@ -57,7 +79,7 @@ export default function QuickSwapTab({
   const { currentTokenPrice: receiveTokenPriceInPOL } =
     useGetCurrentTokenPrice(receiveTokenAddress);
 
-  // Get token decimals for receive token
+  // Get receive token decimals
   useEffect(() => {
     const getTokenDecimals = async () => {
       if (!publicClient || !receiveTokenAddress) return;
@@ -95,13 +117,14 @@ export default function QuickSwapTab({
   // Effect to get quote when amount changes
   useEffect(() => {
     const debounceTimeout = setTimeout(async () => {
-      if (swapAmount && parseFloat(swapAmount) > 0 && isInitialized && receiveTokenAddress) {
+      if (swapAmount && parseFloat(swapAmount) > 0 && isInitialized && receiveTokenAddress && selectedFrom) {
         try {
           await getQuote({
-            fromToken: config.WPOL_TOKEN_ADDRESS as Address,
+            fromChain: selectedFrom.chainId,
+            fromToken: selectedFrom.tokenAddress as Address,
             toToken: receiveTokenAddress as Address,
             amount: swapAmount,
-            fromDecimals: 18, // POL has 18 decimals
+            fromDecimals: selectedFrom.tokenDecimals,
             toDecimals: receiveTokenDecimals,
             slippageTolerance: parseFloat(slippageTolerance.replace('%', '')),
           });
@@ -116,7 +139,7 @@ export default function QuickSwapTab({
     }, 500);
 
     return () => clearTimeout(debounceTimeout);
-  }, [swapAmount, slippageTolerance, isInitialized, receiveTokenDecimals, getQuote, receiveTokenAddress]);
+  }, [swapAmount, slippageTolerance, isInitialized, receiveTokenDecimals, getQuote, receiveTokenAddress, selectedFrom]);
 
   // Reset swap state when error changes
   useEffect(() => {
@@ -141,17 +164,18 @@ export default function QuickSwapTab({
   };
 
   const handleSwap = async () => {
-    if (!swapAmount || !isQuoteValid) {
+    if (!swapAmount || !isQuoteValid || !selectedFrom) {
       toast.error("Please enter a valid amount");
       return;
     }
 
     try {
       const txHash = await executeSwap({
-        fromToken: config.WPOL_TOKEN_ADDRESS as Address,
+        fromChain: selectedFrom.chainId,
+        fromToken: selectedFrom.tokenAddress as Address,
         toToken: receiveTokenAddress as Address,
         amount: swapAmount,
-        fromDecimals: 18,
+        fromDecimals: selectedFrom.tokenDecimals,
         toDecimals: receiveTokenDecimals,
         slippageTolerance: parseFloat(slippageTolerance.replace('%', '')),
       });
@@ -233,15 +257,16 @@ export default function QuickSwapTab({
             alt={tokenSymbol}
             width={24}
             height={24}
-            className="rounded-full"
+            className="rounded-full cursor-pointer"
+            onClick={isInput ? () => setIsModalOpen(true) : undefined}
           />
           <span className="font-medium text-xl">{tokenSymbol}</span>
         </div>
 
         <div className="text-xs text-white/40 text-left mt-6">
           {quote && `${isInput ? "Swap" : "Receive"} Rate: ${isInput ? 
-            `1 POL = ${(parseFloat(quote.toAmount) / parseFloat(quote.fromAmount)).toFixed(6)} ${receiveTokenSymbol}` : 
-            `1 ${receiveTokenSymbol} = ${(parseFloat(quote.fromAmount) / parseFloat(quote.toAmount)).toFixed(6)} POL`}`}
+            `1 ${tokenSymbol} = ${(parseFloat(quote.toAmount) / parseFloat(quote.fromAmount)).toFixed(6)} ${receiveTokenSymbol}` : 
+            `1 ${receiveTokenSymbol} = ${(parseFloat(quote.fromAmount) / parseFloat(quote.toAmount)).toFixed(6)} ${tokenSymbol}`}`}
         </div>
       </div>
       <div className="text-right">
@@ -288,19 +313,10 @@ export default function QuickSwapTab({
       <div className="space-y-1">
         <PayReceiveRow
           label="PAY"
-          tokenSymbol="POL"
-          iconSrc={POLYGON_POS_CHAIN_IMAGE}
-          isLoading={isWpolLoading}
-          balance={
-            wpolBalance
-              ? formatBalance(parseFloat(wpolBalance.formattedBalance))
-              : undefined
-          }
-          usdValue={
-            wpolBalance
-              ? calculateUsdValue(wpolBalance.formattedBalance, 1)
-              : 0
-          }
+          tokenSymbol={selectedFrom.tokenSymbol}
+          iconSrc={selectedFrom.tokenIcon}
+          balance={formattedFromBalance}
+          usdValue={0} // TODO: Implement USD value for arbitrary tokens
           amount={swapAmount}
           onAmountChange={handleAmountChange}
           isInput={true}
@@ -395,6 +411,21 @@ export default function QuickSwapTab({
           className="ml-1.5"
         />
       </div>
+      <SelectChainDialog
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSelection={(chain: any, token: any) => {
+          setSelectedFrom({
+            chainId: chain.id,
+            chainIcon: chain.imageUrl,
+            tokenAddress: token.address,
+            tokenSymbol: token.symbol,
+            tokenIcon: token.logoURI,
+            tokenDecimals: token.decimals,
+          });
+          setIsModalOpen(false);
+        }}
+      />
     </>
   );
 }

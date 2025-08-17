@@ -1,6 +1,5 @@
 "use client";
 
-import { IconGitcoinPassport } from "../icons/IconGitcoin";
 import {
   GitcoinVerificationStatus,
   useGitcoinScore,
@@ -10,84 +9,88 @@ import { CheckCircle2 } from "lucide-react";
 import { Button } from "../ui/button";
 import links from "@/lib/constants/links";
 import Link from "next/link";
-import { useState } from "react";
 
-// Extracted UI states into dedicated components
-const VerifiedState = ({ userGitcoinScore }: { userGitcoinScore: number }) => (
+// Define states
+const VerifiedState = () => (
   <>
     <div className="flex items-center gap-3 my-2">
-      <IconGitcoinPassport size={32} color="#6DF6E7" />
+      <CheckCircle2 size={32} color="#6DF6E7" />
       <span className="text-lg font-medium text-[#6DF6E7]">
-        {userGitcoinScore}
+        Verified
       </span>
     </div>
-
-    <div className="flex items-center gap-2">
-      <CheckCircle2 size={16} color="#fff" />
-      <p className="text-white font-bold text-xs leading-relaxed">
-        Your purchase affects the matching pool
-      </p>
-    </div>
+    <p className="text-white font-bold text-xs leading-relaxed">
+      $250,000 Limit Unlocked
+    </p>
   </>
 );
 
-const ScoreZeroState = ({
-  userGitcoinScore,
-  onCheckScore,
-  isScoreFetching,
-}: {
-  userGitcoinScore: number;
-  onCheckScore: () => void;
-  isScoreFetching: boolean;
-}) => {
-  const [isScoreChecked, setIsScoreChecked] = useState(false);
+const InitialState = ({ onCheckScore }: { onCheckScore: () => void }) => (
+  <>
+    <p className="text-white text-sm max-w-xs text-center leading-relaxed mb-2">
+      Verify your identity to unlock $25,000 limit
+    </p>
+    <Button
+      className="w-full bg-white text-black rounded-lg uppercase font-medium text-xs mb-2"
+      onClick={onCheckScore}
+    >
+      VERIFY IDENTITY <span className="text-black/40">5 MIN</span>
+    </Button>
+  </>
+);
 
-  if (!isScoreChecked) {
+const InProgressState = ({ onCheckScore }: { onCheckScore: () => void }) => (
+  <>
+    <p className="text-white text-sm max-w-xs text-center leading-relaxed mb-2">
+      Verification in progress...
+    </p>
+    <Button
+      className="w-full bg-white text-black rounded-lg uppercase font-medium text-xs mb-2"
+      onClick={onCheckScore}
+    >
+      CHECK STATUS
+    </Button>
+  </>
+);
+
+const LowScoreState = ({ userGitcoinScore }: { userGitcoinScore: number }) => {
+  const isCompletelyFailed = userGitcoinScore === 0;
+
+  if (isCompletelyFailed) {
     return (
       <>
-        <p className="text-white/40 text-sm max-w-xs text-center leading-relaxed mb-2">
-          Check your Humanity Score so your purchase influences the matching
-          pool
+        <p className="text-white text-sm max-w-xs text-center leading-relaxed mb-2">
+          Unfortunately, verification failed
         </p>
         <Button
           className="w-full bg-white text-black rounded-lg uppercase font-medium text-xs mb-2"
-          onClick={() => {
-            onCheckScore();
-            setIsScoreChecked(true);
-          }}
-          loading={isScoreFetching}
         >
-          Check Score <span className="text-black/40">1 min</span>
+          CHECK DETAILS
         </Button>
       </>
     );
+  } else {
+    return (
+      <>
+        <p className="text-white text-sm max-w-xs text-center leading-relaxed mb-2">
+          Unfortunately, verification failed
+        </p>
+        <p className="text-white/40 text-sm max-w-xs text-center leading-relaxed mb-2">
+          Or try again?
+        </p>
+        <Link
+          href={links.PASSPORT}
+          target="_blank"
+          className="h-9 px-4 py-2 flex items-center justify-center w-full bg-white text-black rounded-lg uppercase font-medium text-xs my-2"
+        >
+          TRY AGAIN
+        </Link>
+      </>
+    );
   }
-
-  return (
-   <LowScoreState userGitcoinScore={userGitcoinScore} />
-  );
 };
 
-const LowScoreState = ({ userGitcoinScore }: { userGitcoinScore: number }) => (
-  <>
-    <div className="flex items-center gap-3 my-2">
-      <IconGitcoinPassport size={32} color="#FFDF86" />
-      <span className="text-lg font-medium text-[#FFDF86]">
-        {userGitcoinScore}
-      </span>
-    </div>
-
-    <Link
-      href={links.PASSPORT}
-      target="_blank"
-      className="h-9 px-4 py-2 flex items-center justify-center  w-full bg-white text-black rounded-lg uppercase font-medium text-xs my-2"
-    >
-      Let's Increase to 20
-    </Link>
-  </>
-);
-
-export const GitcoinVerificationBadge = ({
+export const SelfVerificationBadge = ({
   userAddress,
 }: {
   userAddress: Address;
@@ -104,25 +107,30 @@ export const GitcoinVerificationBadge = ({
     status === GitcoinVerificationStatus.ANALYSIS_PASS ||
     status === GitcoinVerificationStatus.SCORER_PASS;
 
-  const isScoreZero = userGitcoinScore === 0;
-  const isLowScore = userGitcoinScore > 0 && userGitcoinScore < 20;
+  let content;
+  if (isScoreFetching) {
+    content = <InProgressState onCheckScore={onCheckScore} />;
+  } else if (isVerified) {
+    content = <VerifiedState />;
+  } else if (status === GitcoinVerificationStatus.LOW_SCORE) {
+    content = <LowScoreState userGitcoinScore={userGitcoinScore} />;
+  } else {
+    content = <InitialState onCheckScore={onCheckScore} />;
+  }
+
+  const bgClass = isVerified
+    ? "bg-[#6DF6E7]/20"
+    : (status === GitcoinVerificationStatus.LOW_SCORE && userGitcoinScore === 0)
+      ? "bg-red-600/20"
+      : "bg-white/10";
+
+  const headerColor = isVerified ? "text-[#6DF6E7]" : "text-white/60";
 
   return (
-    <div className="bg-[#74BCB4]/20 rounded-3xl px-4 py-4 min-w-[280px] lg:max-w-[280px]">
-      {/* Header */}
+    <div className={`${bgClass} rounded-3xl px-4 py-4 min-w-[280px] lg:max-w-[280px]`}>
       <div className="flex flex-col items-center justify-center gap-2">
-        <h3 className="text-white font-semibold text-lg">Human Passport</h3>
-        {isVerified ? (
-          <VerifiedState userGitcoinScore={userGitcoinScore} />
-        ) : isScoreZero ? (
-          <ScoreZeroState
-            userGitcoinScore={userGitcoinScore}
-            onCheckScore={onCheckScore}
-            isScoreFetching={isScoreFetching}
-          />
-        ) : isLowScore ? (
-          <LowScoreState userGitcoinScore={userGitcoinScore} />
-        ) : null}
+        <h3 className={`font-semibold text-lg ${headerColor}`}>Self.xyz</h3>
+        {content}
       </div>
     </div>
   );

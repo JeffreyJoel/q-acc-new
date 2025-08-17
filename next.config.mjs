@@ -8,21 +8,12 @@ const nextConfig = {
       },
     ],
   },
-  // transpilePackages: ["@privy-io/react-auth"],
+  transpilePackages: ["@0xsquid/widget", "@0xsquid/react-hooks"],
   webpack: (config) => {
-    // Option 1: Disable managedPaths completely (recommended for simplicity)
     config.snapshot = {
       ...(config.snapshot ?? {}),
       managedPaths: [],
     };
-    
-    // Option 2: Use specific exclusions (uncomment if you prefer this approach)
-    // config.snapshot = {
-    //   ...(config.snapshot ?? {}),
-    //   managedPaths: [
-    //     /^(.+?[\\/]node_modules[\\/](?!(@privy-io[\\/]wagmi-connector|@next|@swc|@emotion|@nodelib|@jridgewell|@tabler|@alloc))(@.+?[\\/])?.+?)[\\/]/,
-    //   ],
-    // };
     
     return config;
   },

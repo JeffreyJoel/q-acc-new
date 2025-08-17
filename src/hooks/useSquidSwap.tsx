@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import config from "@/config/configuration";
 
 interface SwapParams {
+  fromChain: string;
   fromToken: Address;
   toToken: Address;
   amount: string; // Amount in human readable format (e.g., "1.5")
@@ -127,10 +128,10 @@ export const useSquidSwap = () => {
       
       const routeParams = {
         fromAddress: userAddress,
-        fromChain: "137", // Polygon chain ID
+        fromChain: params.fromChain,
         fromToken: params.fromToken,
         fromAmount: fromAmountWei.toString(),
-        toChain: "137", // Same chain swap
+        toChain: "137",
         toToken: params.toToken,
         toAddress: userAddress,
         slippage: params.slippageTolerance || 0.5,
@@ -192,6 +193,15 @@ export const useSquidSwap = () => {
   ) => {
     if (!squid || !userAddress) {
       throw new Error("Squid SDK not initialized or user not connected");
+    }
+
+    // Skip approval for native tokens
+    const lowercaseToken = tokenAddress.toLowerCase();
+    if (
+      lowercaseToken === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" ||
+      lowercaseToken === "0x0000000000000000000000000000000000000000"
+    ) {
+      return;
     }
 
     setStatus(prev => ({ ...prev, isApproving: true }));

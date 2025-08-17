@@ -35,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ConnectWalletButton from "@/components/shared/wallet/SwapConnectWalletButton";
+import { Button } from "@/components/ui/button";
 
 interface BondingCurveSwapProps {
   contractAddress: string;
@@ -500,7 +501,7 @@ function BuyMode({
         />
       </div>
       {userAddress ? (
-        <button
+        <Button
           type="submit"
           className="mt-4 mb-1 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full disabled:opacity-50"
           disabled={
@@ -517,7 +518,7 @@ function BuyMode({
           ) : (
             "BUY"
           )}
-        </button>
+        </Button>
       ) : (
         <ConnectWalletButton />
       )}

@@ -11,6 +11,7 @@
   "dependencies": {
     "@0xsquid/sdk": "^2.10.1",
     "@0xsquid/squid-types": "^0.1.181",
+    "@0xsquid/widget": "^5.5.1",
     "@moralisweb3/common-evm-utils": "^2.27.2",
     "@next/third-parties": "^15.4.6",
     "@privy-io/react-auth": "^2.13.3",

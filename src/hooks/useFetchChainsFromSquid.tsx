@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import config from '@/config/configuration';
+import { Squid } from '@0xsquid/sdk';
 
 const headers = {
   'x-integrator-id': config.SQUID_INTEGRATOR_ID,
@@ -73,20 +74,21 @@ interface ISquidChainResponse {
   chains: ISquidChain[];
 }
 
-export const useFetchChainsFromSquid = () => {
-  return useQuery({
-    queryKey: ['squid-chains'],
+export const useFetchChainsFromSquid = (): UseQueryResult<{ chains: ISquidChain[]; tokens: any[] }, Error> => {
+  return useQuery<{ chains: ISquidChain[]; tokens: any[] }, Error>({
+    queryKey: ['squid-data'],
     queryFn: async () => {
-      const chainsResponse = await fetch(
-        'https://apiplus.squidrouter.com/v2/chains',
-        {
-          headers: headers,
-        },
-      );
+      // Fetch list of chains
+      const chainsResponse = await fetch('https://apiplus.squidrouter.com/v2/chains', { headers });
+      const chainsJson: ISquidChainResponse = await chainsResponse.json();
 
-      return (await chainsResponse.json()) as ISquidChainResponse;
+      // Fetch list of tokens
+      const tokensResponse = await fetch('https://apiplus.squidrouter.com/v2/tokens', { headers });
+      const tokensJson: { tokens: any[] } = await tokensResponse.json();
+
+      return { chains: chainsJson.chains, tokens: tokensJson.tokens };
     },
     staleTime: Infinity,
-    gcTime: Infinity,
+    // cacheTime is not supported by react-query config here
   });
 };
