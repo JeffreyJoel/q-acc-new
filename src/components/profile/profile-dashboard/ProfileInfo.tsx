@@ -27,9 +27,6 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
 
   const { openUpdateProfileModal } = useModal();
 
-  const { data: userProjectsCount, isFetched: isProjectsCountFetched } =
-    useFetchProjectsCountByUserId(parseInt(user?.id ?? ""));
-
   const isOwnProfile = useMemo(() => {
     return (
       authenticated &&
@@ -180,7 +177,7 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
 
           <div className="flex gap-4">
             <GitcoinVerificationBadge userAddress={userAddress} />
-            <SelfVerificationBadge userAddress={userAddress} />
+            {/* <SelfVerificationBadge userAddress={userAddress} /> */}
 
           </div>
           {/* <div className="flex gap-3"> */}

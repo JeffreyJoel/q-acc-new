@@ -65,7 +65,6 @@ const ProjectPage = async ({ params }: ProjectPageProps) => {
   const initialData = await fetchProjectBySlug(slug);
 
   if (!initialData) {
-    // Handle the case where the project is not found
     redirect('/404');
   }
 

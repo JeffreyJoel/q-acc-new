@@ -124,6 +124,7 @@ export const GET_PROJECT_BY_ID = /* GraphQL */ `
         type
         link
       }
+      rank
       verified
       title
       image
@@ -451,6 +452,7 @@ export const GET_ALL_PROJECTS = /* GraphQL */ `
         slug
         description
         descriptionSummary
+        rank
         creationDate
         updatedAt
         teaser
@@ -464,6 +466,10 @@ export const GET_ALL_PROJECTS = /* GraphQL */ `
         listed
         reviewStatus
         givingBlocksId
+        socialMedia { 
+          type
+          link
+        }
         status {
           id
           symbol

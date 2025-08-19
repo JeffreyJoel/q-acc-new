@@ -156,7 +156,7 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
             false,
             project.abc.issuanceTokenAddress,
             project.abc.fundingManagerAddress,
-            donationData?.donations,
+            donationData?.donations
           );
 
           setMarketCap(marketCapData * polPriceNumber);
@@ -302,20 +302,6 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
                     </span>
                   )}
                 </span>
-
-                {/* <span>
-                  {marketCapLoading ? (
-                    <Spinner size={16} />
-                  ) : (
-                    <span
-                      className={
-                        formatPercentageChange(marketCapChange7d).color
-                      }
-                    >
-                      {formatPercentageChange(marketCapChange7d).formatted}
-                    </span>
-                  )}
-                </span> */}
               </div>
               <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
                 24h Change

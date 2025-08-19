@@ -20,6 +20,8 @@ const DonarSupports = ({ isOwnProfile }: { isOwnProfile: boolean }) => {
   const searchParams = useSearchParams();
   const projectId = searchParams.get("projectId");
 
+  console.log(donationsGroupedByProject);
+
   useEffect(() => {
     if (projectId) {
       setShowBreakDown(true);

@@ -9,5 +9,5 @@ export function shortenAddress(
 export function shortenAddressLarger(
   address: Address | string | null | undefined,
 ): string {
-  return address ? `${address.slice(0, 12)}...${address.slice(-12)}` : "";
+  return address ? `${address.slice(0, 8)}...${address.slice(-8)}` : "";
 }

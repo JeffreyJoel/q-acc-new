@@ -11,7 +11,12 @@ import { useEnrichedProjects } from "@/hooks/useEnrichedProjects";
 function Projects() {
   const { data: allProjects, isLoading, error } = useFetchAllProjects();
 
-  const carouselItems = (allProjects?.projects || []).slice(0, 4).map((project) => ({
+  console.log(allProjects?.projects);
+
+  const carouselItems = (allProjects?.projects || [])
+    .filter((project: any) => project.rank === 1)
+    .slice(0, 4)
+    .map((project) => ({
     text: project.title || "Untitled Project",
     image: project.image || "/images/banners/banner-lg.jpg",
     url: `/project/${project.slug}`,
@@ -25,7 +30,10 @@ function Projects() {
   }));
 
 
-  const tiles = (allProjects?.projects || []).slice(0, 8).map((project) => ({
+  const tiles = (allProjects?.projects || [])
+    .filter((project: any) => project.rank === 2 || project.rank === 3)
+    .slice(0, 8)
+    .map((project) => ({
     text: project.title || "Untitled Project",
     image: project.image || "/images/banners/banner-lg.jpg",
     url: `/project/${project.slug}`,

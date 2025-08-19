@@ -30,6 +30,8 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
 
   const { data: project, isLoading, error } = useFetchProjectBySlug(params.id);
 
+  console.log(project);
+
   useEffect(() => {
     const fetchPoolAddress = async () => {
       if (project?.abc?.issuanceTokenAddress) {
