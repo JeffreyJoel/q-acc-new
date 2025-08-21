@@ -12,7 +12,7 @@ export default function TeamSection({ teamMembers }: TeamSectionProps) {
   return (
     <div className="bg-black/50 px-6 lg:px-8 py-8 rounded-3xl">
       <div className="flex flex-row items-baseline gap-2">
-        <h2 className="text-[40px] font-anton">Team</h2>
+        <h2 className="text-2xl md:text-[40px] font-anton">Team</h2>
         <span className="text-white/30 text-2xl font-anton">
           {teamMembers && teamMembers.length}
         </span>
@@ -33,10 +33,10 @@ export default function TeamSection({ teamMembers }: TeamSectionProps) {
                 alt={member.name}
                 width={100}
                 height={100}
-                className="w-[80px] h-[80px] rounded-full object-cover"
+                className="w-[48px] h-[48px] md:w-[80px] md:h-[80px] rounded-full object-cover"
               />
               <div>
-                <h3 className="text-white font-medium text-xl mb-2">{member.name}</h3>
+                <h3 className="text-white font-medium text-lg md:text-xl mb-2">{member.name}</h3>
                 <Link
                   href={`https://twitter.com/${member.twitter}`}
                   target="_blank"

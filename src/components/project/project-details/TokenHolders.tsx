@@ -53,7 +53,7 @@ export default function TokenHolders({
       <div className="bg-white/5 px-6 lg:px-8 py-8 rounded-3xl">
         <div className="flex flex-row items-baseline justify-between">
           <div className="flex flex-row items-baseline gap-2">
-            <h2 className="text-[40px] font-anton text-white">HOLDERS</h2>
+            <h2 className="text-2xl md:text-[40px] font-anton text-white">HOLDERS</h2>
             <span className="text-gray-400 text-2xl font-anton">...</span>
           </div>
         </div>
@@ -71,7 +71,7 @@ export default function TokenHolders({
       <div className="bg-white/5 px-6 lg:px-8 py-8 rounded-3xl">
         <div className="flex flex-row items-baseline justify-between">
           <div className="flex flex-row items-baseline gap-2">
-            <h2 className="text-[40px] font-anton text-white">HOLDERS</h2>
+            <h2 className="text-2xl md:text-[40px] font-anton text-white">HOLDERS</h2>
             <span className="text-gray-400 text-2xl font-anton">Error</span>
           </div>
         </div>
@@ -88,7 +88,7 @@ export default function TokenHolders({
     <div className="bg-white/5 px-6 lg:px-8 py-8 rounded-3xl">
       <div className="flex flex-row items-baseline justify-between">
         <div className="flex flex-row items-baseline gap-2">
-          <h2 className="text-[40px] font-anton text-white">HOLDERS</h2>
+          <h2 className="text-2xl md:text-[40px] font-anton text-white">HOLDERS</h2>
           <span className="text-gray-400 text-2xl font-anton">{holdersCount}</span>
         </div>
       </div>
@@ -114,14 +114,14 @@ export default function TokenHolders({
                   </span>
                   <div className="flex flex-row items-center justify-between w-full">
                     <div className="flex flex-col">
-                      <span className="font-ibm-mono text-white font-medium">
+                      <span className="font-ibm-mono text-white text-sm md:text-base font-medium">
                         {shortenAddress(holder.address)}
                       </span>
                       {holderLabel && (
-                        <span className="text-white/30 text-sm">{holderLabel}</span>
+                        <span className="text-white/30 text-xs md:text-sm">{holderLabel}</span>
                       )}
                     </div>
-                    <div className="text-white/30 font-medium">
+                    <div className="text-white/30 text-sm md:text-base font-medium">
                       {holder.percentage.toFixed(4)}%
                     </div>
                   </div>

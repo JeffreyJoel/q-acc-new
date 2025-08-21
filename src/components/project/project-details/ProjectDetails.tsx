@@ -30,17 +30,23 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
 
   const { data: project, isLoading, error } = useFetchProjectBySlug(params.id);
 
-  console.log(project);
+
 
   useEffect(() => {
     const fetchPoolAddress = async () => {
       if (project?.abc?.issuanceTokenAddress) {
-        const { poolAddress, isListed } = await getPoolAddressByPair(
-          project?.abc?.issuanceTokenAddress,
-          config.WPOL_TOKEN_ADDRESS
-        );
-        setProjectPoolAddress(poolAddress);
-        setIsTokenListed(isListed);
+        try {
+          const { poolAddress, isListed } = await getPoolAddressByPair(
+            project?.abc?.issuanceTokenAddress,
+            config.WPOL_TOKEN_ADDRESS
+          );
+          setProjectPoolAddress(poolAddress);
+          setIsTokenListed(isListed);
+        } catch (error) {
+          console.error('Failed to fetch pool address:', error);
+          setProjectPoolAddress(null);
+          setIsTokenListed(false);
+        }
       }
     };
 
@@ -121,7 +127,7 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
                 />
               </div>
             ) : (
-              ""
+              null
             )}
           </div>
           {/* Project Stats Section */}
