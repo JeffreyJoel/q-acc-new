@@ -61,7 +61,6 @@ export default function QuickSwapWidget({
           receiveTokenSymbol={receiveTokenSymbol}
           receiveTokenIcon={receiveTokenIcon}
         />
-        // <SquidWidgetComponent />
       ) : (
         <BondingCurveSwap
           contractAddress={contractAddress}

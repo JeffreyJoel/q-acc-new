@@ -183,7 +183,7 @@ const FAQs = () => {
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-stretch">
           <div className="space-y-8">
-            <h2 className="font-anton text-5xl lg:text-[64px] tracking-wider mb-12">
+            <h2 className="font-anton text-[42px] lg:text-[64px] tracking-wider mb-8 md:mb-12">
               FREQUENTLY ASKED
             </h2>
 
@@ -199,7 +199,7 @@ const FAQs = () => {
                     onClick={() => toggleQuestion(index)}
                     className="w-full flex justify-between items-center text-left py-[22px] hover:text-peach-400 transition-colors"
                   >
-                    <span className="text-2xl font-bold pr-4">
+                    <span className="text-lg md:text-2xl font-bold pr-4">
                       {faq.question}
                     </span>
                     {openQuestion === index ? (
@@ -227,14 +227,14 @@ const FAQs = () => {
 
           {/* Right Side - Video Section */}
           <div
-            className="relative w-full h-[400px] sm:h-[500px] md:h-[550px] lg:h-[614px] xl:h-full mx-auto lg:mx-0 cursor-pointer"
+            className="relative w-full h-[614px]  md:h-full lg:h-[614px] xl:h-full mx-auto lg:mx-0 cursor-pointer"
             onClick={() => setIsVideoModalOpen(true)}
           >
             <Image
               src="/images/landing/how-qacc-works.svg"
               alt="How Q-ACC works"
               fill
-              className="w-full h-full mx-auto object-contain"
+              className="w-full h-full mx-auto object-cover sm:object-contain rounded-2xl"
             />
           </div>
         </div>

@@ -6,8 +6,10 @@ import Image from "next/image";
 import { formatDateWithOrdinal } from "@/helpers/date";
 import { getIpfsAddress } from "@/helpers/image";
 import Link from "next/link";
-
+import { useRouter } from "next/navigation";
+  
 export const Blog = () => {
+  const router = useRouter();
   const { articles, loading, error } = useMirrorArticles();
 
   if (loading) {
@@ -28,12 +30,13 @@ export const Blog = () => {
 
   return (
     <div className="w-full bg-gradient-to-b from-[#000] to-qacc-gray-dark">
-      <div className="w-full max-w-7xl mx-auto px-4 py-12 md:py-24">
+      <div className="w-full max-w-7xl mx-auto px-8 md:px-4 py-12 md:py-24">
         {/* Header */}
         <div className="flex items-center justify-between mb-12">
-          <h1 className="text-4xl md:text-[64px] tracking-wide text-white font-anton uppercase">
+          <h1 className="text-[42px] md:text-[64px] tracking-wide text-white font-anton uppercase">
             BLOG
           </h1>
+          <Link href={`https://mirror.xyz/qacc.eth`} target="_blank">
           <Button
             variant="outline"
             className="px-3 py-2 border-peach-400 text-peach-400 hover:bg-peach-400 hover:text-qacc-black transition-colors text-xs font-medium rounded-lg"
@@ -41,12 +44,12 @@ export const Blog = () => {
             ALL REPORTS ON MIRROR.XYZ
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
+          </Link>
         </div>
 
-        {/* Mirror Articles (if any) */}
         {articles.length > 0 && (
           <div className="mt-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-20 md:gap-14">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-14 ">
               {articles.slice(0, 2).map((article) => (
                 <Link href={`https://mirror.xyz/qacc.eth/${article.id}`} target="_blank" className="w-full cursor-pointer ">
                   <div className="w-full h-[300px] relative overflow-hidden rounded-3xl">
