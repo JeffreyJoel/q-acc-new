@@ -21,15 +21,15 @@ import SelectChainDialog from "@/components/modals/SelectChainDialog";
 import { useBalance } from "wagmi";
 
 interface QuickSwapTabProps {
-  receiveTokenAddress: string;
-  receiveTokenSymbol: string;
-  receiveTokenIcon: string;
+  receiveTokenAddress?: string;
+  receiveTokenSymbol?: string;
+  receiveTokenIcon?: string;
 }
 
 export default function QuickSwapTab({
-  receiveTokenAddress,
-  receiveTokenSymbol,
-  receiveTokenIcon,
+  receiveTokenAddress = "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+  receiveTokenSymbol = "WMATIC",
+  receiveTokenIcon = "https://raw.githubusercontent.com/axelarnetwork/axelar-configs/main/images/tokens/wmatic.svg",
 }: QuickSwapTabProps) {
   const [slippageTolerance, setSlippageTolerance] = useState<string>("0.5%");
   const [swapAmount, setSwapAmount] = useState<string>("");
@@ -40,7 +40,7 @@ export default function QuickSwapTab({
   const [selectedFrom, setSelectedFrom] = useState({
     chainId: "137",
     chainIcon: POLYGON_POS_CHAIN_IMAGE,
-    tokenAddress: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // Common native address for Squid
+    tokenAddress: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     tokenSymbol: "POL",
     tokenIcon: POLYGON_POS_CHAIN_IMAGE,
     tokenDecimals: 18,
@@ -54,8 +54,10 @@ export default function QuickSwapTab({
   const { data: fromBalanceData } = useBalance({
     address: userAddress as Address,
     token:
-      selectedFrom.tokenAddress.toLowerCase() === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" ||
-      selectedFrom.tokenAddress.toLowerCase() === "0x0000000000000000000000000000000000000000"
+      selectedFrom.tokenAddress.toLowerCase() ===
+        "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" ||
+      selectedFrom.tokenAddress.toLowerCase() ===
+        "0x0000000000000000000000000000000000000010"
         ? undefined
         : (selectedFrom.tokenAddress as Address),
   });
@@ -66,13 +68,11 @@ export default function QuickSwapTab({
   const formattedFromBalance = formatBalance(parseFloat(fromBalance));
 
   // Receive token balance (on Polygon)
-  const {
-    data: receiveTokenBalance,
-    isLoading: isReceiveTokenLoading,
-  } = useTokenBalanceWithDecimals(
-    receiveTokenAddress as Address,
-    userAddress as Address,
-  );
+  const { data: receiveTokenBalance, isLoading: isReceiveTokenLoading } =
+    useTokenBalanceWithDecimals(
+      receiveTokenAddress as Address,
+      userAddress as Address
+    );
 
   const { data: polUsdPrice } = useFetchPOLPriceSquid();
 
@@ -83,16 +83,16 @@ export default function QuickSwapTab({
   useEffect(() => {
     const getTokenDecimals = async () => {
       if (!publicClient || !receiveTokenAddress) return;
-      
+
       try {
         const decimals = await publicClient.readContract({
           address: receiveTokenAddress as Address,
           abi: erc20Abi,
-          functionName: 'decimals',
+          functionName: "decimals",
         });
         setReceiveTokenDecimals(decimals);
       } catch (error) {
-        console.error('Error fetching token decimals:', error);
+        console.error("Error fetching token decimals:", error);
         setReceiveTokenDecimals(18); // Default to 18
       }
     };
@@ -117,7 +117,13 @@ export default function QuickSwapTab({
   // Effect to get quote when amount changes
   useEffect(() => {
     const debounceTimeout = setTimeout(async () => {
-      if (swapAmount && parseFloat(swapAmount) > 0 && isInitialized && receiveTokenAddress && selectedFrom) {
+      if (
+        swapAmount &&
+        parseFloat(swapAmount) > 0 &&
+        isInitialized &&
+        receiveTokenAddress &&
+        selectedFrom
+      ) {
         try {
           await getQuote({
             fromChain: selectedFrom.chainId,
@@ -126,7 +132,7 @@ export default function QuickSwapTab({
             amount: swapAmount,
             fromDecimals: selectedFrom.tokenDecimals,
             toDecimals: receiveTokenDecimals,
-            slippageTolerance: parseFloat(slippageTolerance.replace('%', '')),
+            slippageTolerance: parseFloat(slippageTolerance.replace("%", "")),
           });
           setIsQuoteValid(true);
         } catch (error) {
@@ -139,7 +145,15 @@ export default function QuickSwapTab({
     }, 500);
 
     return () => clearTimeout(debounceTimeout);
-  }, [swapAmount, slippageTolerance, isInitialized, receiveTokenDecimals, getQuote, receiveTokenAddress, selectedFrom]);
+  }, [
+    swapAmount,
+    slippageTolerance,
+    isInitialized,
+    receiveTokenDecimals,
+    getQuote,
+    receiveTokenAddress,
+    selectedFrom,
+  ]);
 
   // Reset swap state when error changes
   useEffect(() => {
@@ -151,10 +165,7 @@ export default function QuickSwapTab({
     }
   }, [swapError]);
 
-  const calculateUsdValue = (
-    balance?: string,
-    tokenPriceInPOL?: number,
-  ) => {
+  const calculateUsdValue = (balance?: string, tokenPriceInPOL?: number) => {
     if (!balance || !polUsdPrice) return 0;
     const balanceNum = parseFloat(balance);
     if (isNaN(balanceNum)) return 0;
@@ -177,7 +188,7 @@ export default function QuickSwapTab({
         amount: swapAmount,
         fromDecimals: selectedFrom.tokenDecimals,
         toDecimals: receiveTokenDecimals,
-        slippageTolerance: parseFloat(slippageTolerance.replace('%', '')),
+        slippageTolerance: parseFloat(slippageTolerance.replace("%", "")),
       });
 
       if (txHash) {
@@ -187,8 +198,9 @@ export default function QuickSwapTab({
         toast.success("Swap successful!", {
           action: {
             label: "View on Explorer",
-            onClick: () => window.open(`${config.SCAN_URL}tx/${txHash}`, '_blank')
-          }
+            onClick: () =>
+              window.open(`${config.SCAN_URL}tx/${txHash}`, "_blank"),
+          },
         });
       }
     } catch (error) {
@@ -198,9 +210,9 @@ export default function QuickSwapTab({
 
   const handleAmountChange = (value: string) => {
     // Allow only numbers and decimal point
-    const sanitizedValue = value.replace(/[^0-9.]/g, '');
+    const sanitizedValue = value.replace(/[^0-9.]/g, "");
     // Prevent multiple decimal points
-    const parts = sanitizedValue.split('.');
+    const parts = sanitizedValue.split(".");
     if (parts.length > 2) {
       return;
     }
@@ -214,19 +226,26 @@ export default function QuickSwapTab({
     if (isApproving) return "APPROVING...";
     if (isSwapping) return "SWAPPING...";
     if (!swapAmount || parseFloat(swapAmount) <= 0) return "ENTER AMOUNT";
-    if (swapError && swapError.includes("not supported")) return "TOKEN NOT SUPPORTED";
+    if (swapError && swapError.includes("not supported"))
+      return "TOKEN NOT SUPPORTED";
     if (!isQuoteValid) return "INVALID AMOUNT";
     return "SWAP";
   };
 
-  const isSwapDisabled = !authenticated || !isInitialized || isSwapLoading || 
-                       !swapAmount || parseFloat(swapAmount) <= 0 || !isQuoteValid ||
-                       Boolean(swapError && swapError.includes("not supported"));
+  const isSwapDisabled =
+    !authenticated ||
+    !isInitialized ||
+    isSwapLoading ||
+    !swapAmount ||
+    parseFloat(swapAmount) <= 0 ||
+    !isQuoteValid ||
+    Boolean(swapError && swapError.includes("not supported"));
 
   const PayReceiveRow = ({
     label,
     tokenSymbol,
     iconSrc,
+    chainIconSrc,
     isLoading,
     balance,
     usdValue,
@@ -238,6 +257,7 @@ export default function QuickSwapTab({
     label: string;
     tokenSymbol: string;
     iconSrc: string;
+    chainIconSrc?: string;
     isLoading?: boolean;
     balance?: string;
     usdValue?: number;
@@ -252,21 +272,39 @@ export default function QuickSwapTab({
           {label}
         </span>
         <div className="flex items-center gap-3">
-          <Image
-            src={iconSrc}
-            alt={tokenSymbol}
-            width={24}
-            height={24}
-            className="rounded-full cursor-pointer"
-            onClick={isInput ? () => setIsModalOpen(true) : undefined}
-          />
+          <div className="relative">
+            <Image
+              src={iconSrc}
+              alt={tokenSymbol}
+              width={24}
+              height={24}
+              className="rounded-full cursor-pointer"
+              onClick={isInput ? () => setIsModalOpen(true) : undefined}
+            />
+            {chainIconSrc && (
+              <Image
+                src={chainIconSrc}
+                alt="Chain"
+                width={12}
+                height={12}
+                className="absolute -bottom-1 -right-1 rounded-full border border-black"
+              />
+            )}
+          </div>
           <span className="font-medium text-xl">{tokenSymbol}</span>
         </div>
 
-        <div className="text-xs text-white/40 text-left mt-6">
-          {quote && `${isInput ? "Swap" : "Receive"} Rate: ${isInput ? 
-            `1 ${tokenSymbol} = ${(parseFloat(quote.toAmount) / parseFloat(quote.fromAmount)).toFixed(6)} ${receiveTokenSymbol}` : 
-            `1 ${receiveTokenSymbol} = ${(parseFloat(quote.fromAmount) / parseFloat(quote.toAmount)).toFixed(6)} ${tokenSymbol}`}`}
+        <div className="text-[10px] text-white/40 text-left mt-6">
+          {quote &&
+            `${isInput ? "Swap" : "Receive"} Rate: ${
+              isInput
+                ? `1 ${tokenSymbol} = ${(
+                    parseFloat(quote.toAmount) / parseFloat(quote.fromAmount)
+                  ).toFixed(6)} ${receiveTokenSymbol}`
+                : `1 ${receiveTokenSymbol} = ${(
+                    parseFloat(quote.fromAmount) / parseFloat(quote.toAmount)
+                  ).toFixed(6)} ${tokenSymbol}`
+            }`}
         </div>
       </div>
       <div className="text-right">
@@ -315,6 +353,7 @@ export default function QuickSwapTab({
           label="PAY"
           tokenSymbol={selectedFrom.tokenSymbol}
           iconSrc={selectedFrom.tokenIcon}
+          chainIconSrc={selectedFrom.chainIcon}
           balance={formattedFromBalance}
           usdValue={0} // TODO: Implement USD value for arbitrary tokens
           amount={swapAmount}
@@ -326,43 +365,50 @@ export default function QuickSwapTab({
         </div>
         <PayReceiveRow
           label="RECEIVE"
-          tokenSymbol={receiveTokenSymbol}
+          tokenSymbol={receiveTokenSymbol }
           iconSrc={receiveTokenIcon}
           isLoading={isReceiveTokenLoading}
           balance={
             receiveTokenBalance
-              ? formatBalance(
-                  parseFloat(receiveTokenBalance.formattedBalance),
-                )
+              ? formatBalance(parseFloat(receiveTokenBalance.formattedBalance))
               : undefined
           }
           usdValue={
             receiveTokenBalance
               ? calculateUsdValue(
                   receiveTokenBalance.formattedBalance,
-                  receiveTokenPriceInPOL ?? undefined,
+                  receiveTokenPriceInPOL ?? undefined
                 )
               : 0
           }
-          estimatedAmount={quote?.toAmount ? formatBalance(parseFloat(quote.toAmount)) : "0.0"}
+          estimatedAmount={
+            quote?.toAmount ? formatBalance(parseFloat(quote.toAmount)) : "0.0"
+          }
         />
       </div>
 
       {/* Swap Details */}
-      {quote && isQuoteValid && (
+      {/* {quote && isQuoteValid && (
         <div className="mt-4 p-3 bg-white/5 rounded-lg border border-white/10">
           <div className="text-xs text-white/60 space-y-1">
             <div className="flex justify-between">
               <span>Expected Output:</span>
-              <span className="text-white">{formatBalance(parseFloat(quote.toAmount))} {receiveTokenSymbol}</span>
+              <span className="text-white">
+                {formatBalance(parseFloat(quote.toAmount))} {receiveTokenSymbol}
+              </span>
             </div>
             <div className="flex justify-between">
               <span>Minimum Output:</span>
-              <span className="text-white">{formatBalance(parseFloat(quote.toAmountMin))} {receiveTokenSymbol}</span>
+              <span className="text-white">
+                {formatBalance(parseFloat(quote.toAmountMin))}{" "}
+                {receiveTokenSymbol}
+              </span>
             </div>
             <div className="flex justify-between">
               <span>Price Impact:</span>
-              <span className="text-white">{parseFloat(quote.priceImpact).toFixed(3)}%</span>
+              <span className="text-white">
+                {parseFloat(quote.priceImpact).toFixed(3)}%
+              </span>
             </div>
             <div className="flex justify-between">
               <span>Slippage Tolerance:</span>
@@ -370,7 +416,7 @@ export default function QuickSwapTab({
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Swap Button */}
       {!authenticated ? (
@@ -395,7 +441,8 @@ export default function QuickSwapTab({
           <p className="text-red-300 text-xs">{swapError}</p>
           {swapError.includes("not supported") && (
             <p className="text-yellow-300 text-xs mt-2">
-              💡 Try using the "SWAP DIRECTLY" tab instead for bonding curve swaps.
+              💡 Try using the "SWAP DIRECTLY" tab instead for bonding curve
+              swaps.
             </p>
           )}
         </div>

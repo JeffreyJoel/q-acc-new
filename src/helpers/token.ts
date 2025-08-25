@@ -23,7 +23,7 @@ export const fetchBalanceWithDecimals = async (
       const formattedBalance = formatUnits(balance!, 18);
       return {
         formattedBalance: formattedBalance,
-        decimals: 18, // Native token always has 18 decimals
+        decimals: 18,
       };
     } else {
       const balance = await readContract(wagmiConfig, {

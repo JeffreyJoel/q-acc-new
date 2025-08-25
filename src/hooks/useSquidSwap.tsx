@@ -199,7 +199,8 @@ export const useSquidSwap = () => {
     const lowercaseToken = tokenAddress.toLowerCase();
     if (
       lowercaseToken === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" ||
-      lowercaseToken === "0x0000000000000000000000000000000000000000"
+      lowercaseToken === "0x0000000000000000000000000000000000000000" ||
+      lowercaseToken === "0x0000000000000000000000000000000000001010" // POL native token
     ) {
       return;
     }
@@ -208,30 +209,56 @@ export const useSquidSwap = () => {
 
     try {
       const signer = await getSigner();
-      
+
       // Check current allowance
       const erc20Abi = [
         "function allowance(address owner, address spender) view returns (uint256)",
         "function approve(address spender, uint256 amount) returns (bool)"
       ];
-      
+
+      console.log('Checking allowance for:', {
+        tokenAddress,
+        userAddress,
+        spenderAddress,
+        amount
+      });
+
       const tokenContract = new ethers.Contract(tokenAddress, erc20Abi, signer);
-      const currentAllowance = await tokenContract.allowance(userAddress, spenderAddress);
-      
+
+      // Add timeout and better error handling
+      let currentAllowance;
+      try {
+        currentAllowance = await tokenContract.allowance(userAddress, spenderAddress);
+        console.log('Current allowance:', currentAllowance.toString());
+      } catch (allowanceError) {
+        console.error('Allowance check failed:', allowanceError);
+
+        // If allowance check fails, try to approve anyway
+        console.log('Attempting approval despite allowance check failure');
+        currentAllowance = BigInt(0);
+      }
+
       const requiredAmount = BigInt(amount);
-      
+
       if (currentAllowance >= requiredAmount) {
+        console.log('Sufficient allowance already granted');
         setStatus(prev => ({ ...prev, isApproving: false }));
         return;
       }
 
+      console.log('Approving token spending:', { requiredAmount: requiredAmount.toString() });
+
       // Approve spending
       const approveTx = await tokenContract.approve(spenderAddress, requiredAmount);
+      console.log('Approval transaction sent:', approveTx.hash);
+
       await approveTx.wait();
-      
+      console.log('Approval transaction confirmed');
+
       setStatus(prev => ({ ...prev, isApproving: false }));
       toast.success("Token spending approved");
     } catch (error) {
+      console.error('Approval error:', error);
       setStatus(prev => ({ ...prev, isApproving: false }));
       const errorMessage = error instanceof Error ? error.message : "Approval failed";
       toast.error(`Approval failed: ${errorMessage}`);
@@ -275,13 +302,21 @@ export const useSquidSwap = () => {
       }
 
       // Approve token spending if needed (only for ERC20 tokens, not native POL)
-      if (params.fromToken !== config.NATIVE_TOKEN_ADDRESS) {
+      const fromTokenLower = params.fromToken.toLowerCase();
+      const isNativeToken = fromTokenLower === config.NATIVE_TOKEN_ADDRESS.toLowerCase() ||
+                           fromTokenLower === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" ||
+                           fromTokenLower === "0x0000000000000000000000000000000000000000";
+
+      if (!isNativeToken) {
+        console.log('Approving ERC20 token:', params.fromToken);
         const fromAmountWei = parseUnits(params.amount, params.fromDecimals);
         await approveTokenIfNeeded(
           params.fromToken,
           targetAddress,
           fromAmountWei.toString()
         );
+      } else {
+        console.log('Skipping approval for native token:', params.fromToken);
       }
 
       // Execute the swap
@@ -312,12 +347,28 @@ export const useSquidSwap = () => {
       toast.success("Swap completed successfully!");
       return txHash;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Swap failed";
+      let errorMessage = "Swap failed";
+
+      if (error instanceof Error) {
+        // Handle specific error types
+        if (error.message.includes("could not decode result data")) {
+          errorMessage = "Token contract interaction failed. Please check if the token exists on this chain.";
+        } else if (error.message.includes("allowance")) {
+          errorMessage = "Token approval failed. Please try again.";
+        } else if (error.message.includes("insufficient funds")) {
+          errorMessage = "Insufficient funds for this transaction.";
+        } else if (error.message.includes("user rejected")) {
+          errorMessage = "Transaction was cancelled by user.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
       console.error("Swap error:", error);
-      setStatus(prev => ({ 
-        ...prev, 
-        isSwapping: false, 
-        error: errorMessage 
+      setStatus(prev => ({
+        ...prev,
+        isSwapping: false,
+        error: errorMessage
       }));
       toast.error(`Swap failed: ${errorMessage}`);
       return null;

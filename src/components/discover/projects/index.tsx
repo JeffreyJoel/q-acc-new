@@ -46,7 +46,6 @@ function Projects() {
           : 0,
       season: project.seasonNumber || "",
       slug: project.slug || "",
-      // reel: project.socialMedia?.find((media: any) => media.type === "REEL_VIDEO")?.link || "",
       reelId: extractVideoId(project.socialMedia?.find((media: any) => media.type === "REEL_VIDEO")?.link || ""),
     }));
 

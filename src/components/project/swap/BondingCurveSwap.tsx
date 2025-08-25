@@ -501,7 +501,7 @@ function BuyMode({
         />
       </div>
       {userAddress ? (
-        <Button
+        <button
           type="submit"
           className="mt-4 mb-1 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full disabled:opacity-50"
           disabled={
@@ -518,7 +518,7 @@ function BuyMode({
           ) : (
             "BUY"
           )}
-        </Button>
+        </button>
       ) : (
         <ConnectWalletButton />
       )}
@@ -689,7 +689,7 @@ function SellMode({
 
   const receiveRowProps = {
     tokenSymbol: "WPOL",
-    iconSrc: POLYGON_POS_CHAIN_IMAGE,
+    iconSrc: "https://raw.githubusercontent.com/axelarnetwork/axelar-configs/main/images/tokens/wmatic.svg",
     balance: userAddress && receiveBalance
       ? formatBalance(parseFloat(receiveBalance.formattedBalance))
       : "0.00",
@@ -733,7 +733,7 @@ function SellMode({
       {userAddress ? (
         <button
           type="submit"
-          className="mt-4 mb-1 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full disabled:opacity-50"
+          className="mt-4 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full transition-all flex items-center justify-center gap-2  disabled:opacity-50"
           disabled={
             isProcessing ||
             !!balanceError ||

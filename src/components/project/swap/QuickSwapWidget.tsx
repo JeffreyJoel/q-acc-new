@@ -57,9 +57,9 @@ export default function QuickSwapWidget({
       {/* Content */}
       {tab === "quickswap" ? (
         <QuickSwapTab
-          receiveTokenAddress={receiveTokenAddress}
-          receiveTokenSymbol={receiveTokenSymbol}
-          receiveTokenIcon={receiveTokenIcon}
+          // receiveTokenAddress={receiveTokenAddress}
+          // receiveTokenSymbol={receiveTokenSymbol}
+          // receiveTokenIcon={receiveTokenIcon}
         />
       ) : (
         <BondingCurveSwap
