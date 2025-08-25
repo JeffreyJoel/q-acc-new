@@ -131,9 +131,9 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
           setMarketCap(res24.marketCap * polPriceNumber);
           setMarketCapChange24h(res24.pctChange);
           setMarketCapChange7d(res7d.pctChange);
-        } else if (isTokenListed && project.abc!.issuanceTokenAddress) {
+        } else if (isTokenListed && project.abc?.issuanceTokenAddress) {
           // If token is listed, get market cap and price deltas from GeckoTerminal
-          const issuanceTokenAddress = project.abc!.issuanceTokenAddress!;
+          const issuanceTokenAddress = project.abc.issuanceTokenAddress;
           const [marketCapData, gecko] = await Promise.all([
             getMarketCap(
               isTokenListed,
@@ -146,9 +146,9 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
           setMarketCap(marketCapData);
           setMarketCapChange24h(gecko?.pctChange24h ?? 0);
           setMarketCapChange7d(gecko?.pctChange7d ?? 0);
-        } else if (!isTokenListed && project.abc!.issuanceTokenAddress) {
+        } else if (!isTokenListed && project.abc?.issuanceTokenAddress) {
           // For tokens not listed, derive market cap from bonding curve parameters
-          const issuanceTokenAddress = project.abc!.issuanceTokenAddress!;
+          const issuanceTokenAddress = project.abc.issuanceTokenAddress;
           const marketCapData = await getMarketCap(
             false,
             issuanceTokenAddress,

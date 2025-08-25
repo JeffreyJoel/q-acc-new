@@ -6,7 +6,7 @@ import { ProjectTile } from "./ProjectTile";
 import ProjectsTable from "./ProjectsTable";
 import VestingScheduleFull from "@/components/vesting-schedule/VestingScheduleFull";
 import { useEnrichedProjects } from "@/hooks/useEnrichedProjects";
-import YouTubeShortsPlayer from "@/components/project/common/YoutubeShortsPlayer";
+import { extractVideoId } from "@/helpers";
 
 function Projects() {
   const { data: allProjects, isLoading, error } = useFetchAllProjects();
@@ -46,6 +46,8 @@ function Projects() {
           : 0,
       season: project.seasonNumber || "",
       slug: project.slug || "",
+      // reel: project.socialMedia?.find((media: any) => media.type === "REEL_VIDEO")?.link || "",
+      reelId: extractVideoId(project.socialMedia?.find((media: any) => media.type === "REEL_VIDEO")?.link || ""),
     }));
 
   const { data: enrichedProjects, isLoading: isEnrichedLoading } =
@@ -92,9 +94,9 @@ function Projects() {
               image={tile.image}
               season={tile.season}
               slug={tile.slug}
+              reelId={tile.reelId}
             />
           ))}
-          {/* <YouTubeShortsPlayer videoId="UR7RPTpEl8Q" /> */}
         </div>
 
         <div className="flex flex-row justify-center mt-6 md:mt-10">
