@@ -23,12 +23,12 @@ import { SquidTokenType } from '@/helpers/squidTransactions';
 /**
  * Hook to fetch balance and decimals for a token
  */
-export const useTokenBalanceWithDecimals = (tokenAddress?: Address, userAddress?: Address) => {
+export const useTokenBalanceWithDecimals = (tokenAddress?: Address, userAddress?: Address, chainId?: number) => {
   return useQuery({
     queryKey: ['tokenBalance', tokenAddress, userAddress],
     queryFn: () => {
       if (!tokenAddress || !userAddress) return null;
-      return fetchBalanceWithDecimals(tokenAddress, userAddress);
+      return fetchBalanceWithDecimals(tokenAddress, userAddress, chainId);
     },
     enabled: !!tokenAddress && !!userAddress,
   });

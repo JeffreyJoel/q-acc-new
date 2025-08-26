@@ -1,7 +1,8 @@
 "use client"
 
 import React, { useEffect, useState } from 'react';
-import { useAccount, useSwitchChain } from 'wagmi';
+import { useAccount } from 'wagmi';
+import { useWallets } from '@privy-io/react-auth';
 import { Spinner } from '@/components/loaders/Spinner';
 import { useFetchChainsFromSquid, useFetchTokensByChain, useDebounce } from '@/hooks/useFetchChainsFromSquid';
 import { UseQueryResult } from '@tanstack/react-query';
@@ -11,10 +12,11 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import Image from 'next/image';
+import config from '@/config/configuration';
 
 export const POLYGON_POS_CHAIN_ID = '137';
 export const POLYGON_POS_CHAIN_IMAGE =
@@ -32,23 +34,20 @@ const SelectChainDialog = ({
   const [selectedChain, setSelectedChain] = useState<{
     id: string | null;
     imageUrl: string;
+    blockExplorerUrl: string;
   }>({
     id: POLYGON_POS_CHAIN_ID,
     imageUrl: POLYGON_POS_CHAIN_IMAGE,
+    blockExplorerUrl: config.SCAN_URL,
   });
-  // Search terms for chains and tokens
   const [chainSearchTerm, setChainSearchTerm] = useState('');
   const [tokenSearchTerm, setTokenSearchTerm] = useState('');
-  const [hideZeroBalance, setHideZeroBalance] = useState(false);
 
-  // Debounce token search to avoid excessive API calls
   const debouncedTokenSearch = useDebounce(tokenSearchTerm, 300);
 
-  const [showAllNetworks, setShowAllNetworks] = useState(false);
   const { address } = useAccount();
-  const { switchChain } = useSwitchChain();
+  const { wallets } = useWallets();
 
-  // Fetch chains data
   const { data: chainsData } = useFetchChainsFromSquid() as UseQueryResult<{ chains: ISquidChain[] }, Error>;
 
   // Fetch tokens for selected chain with debounced search
@@ -78,6 +77,7 @@ const SelectChainDialog = ({
         setSelectedChain({
           id: polygonChain.chainId,
           imageUrl: polygonChain.chainIconURI,
+          blockExplorerUrl: config.SCAN_URL,
         });
       }
 
@@ -88,24 +88,13 @@ const SelectChainDialog = ({
     }
   }, [chainsData?.chains]);
 
-  // Process tokens with balances when tokensData is available
   const processedTokens = React.useMemo(() => {
     if (!tokensData.length || !address) return tokensData;
 
-    // For now, we'll return tokens as-is. In production, you might want to
-    // fetch balances for the filtered tokens to show which ones the user holds
-    return tokensData.filter(token => {
-      if (!hideZeroBalance) return true;
-      // If hideZeroBalance is enabled, you could check token.balance > 0
-      // For now, we'll just return all tokens since balance fetching is expensive
-      return true;
-    });
-  }, [tokensData, address, hideZeroBalance]);
+    return tokensData;
+  }, [tokensData, address]);
 
   const displayedNetworks = chainData.slice(0, 11);
-  const remainingNetworksCount = Math.max(0, chainData.length - 11);
-
-  // Tokens are already filtered by the hook, just use processedTokens
   const filteredTokens = processedTokens;
 
   const filteredChains = chainData.filter((chain: any) =>
@@ -157,7 +146,6 @@ const SelectChainDialog = ({
           />
         </div>
 
-        {/* Chains & Tokens Side-by-Side */}
         <div className="flex flex-col md:flex-row gap-4">
           {/* Chains List */}
           <div className="w-full md:w-1/2 overflow-y-auto max-h-[400px]">
@@ -172,8 +160,12 @@ const SelectChainDialog = ({
                     key={chain.chainId}
                     className={`flex items-center gap-2 p-2 cursor-pointer rounded-xl ${chain.chainId === selectedChain.id ? 'bg-peach-400/10 border-peach-400' : 'hover:bg-muted'}`}
                     onClick={() => {
-                      switchChain({ chainId: Number(chain.chainId) });
-                      setSelectedChain({ id: chain.chainId, imageUrl: chain.chainIconURI });
+                      const activeWallet = wallets[0];
+                      if (activeWallet) {
+                        activeWallet.switchChain(Number(chain.chainId));
+                      }
+                      setSelectedChain({ id: chain.chainId, imageUrl: chain.chainIconURI, blockExplorerUrl: chain.blockExplorerUrls[0] });
+                      console.log('selectedChain', selectedChain);
                     }}
                   >
                     <img src={chain.chainIconURI} alt={chain.networkName} width={24} height={24} className="rounded-full" />
@@ -188,8 +180,11 @@ const SelectChainDialog = ({
                   key={chain.chainId}
                   className={`flex items-center gap-2 p-2 cursor-pointer rounded-xl ${chain.chainId === selectedChain.id ? 'bg-peach-400/10 border-peach-400' : 'hover:bg-muted'}`}
                   onClick={() => {
-                    switchChain({ chainId: Number(chain.chainId) });
-                    setSelectedChain({ id: chain.chainId, imageUrl: chain.chainIconURI });
+                    const activeWallet = wallets[0];
+                    if (activeWallet) {
+                      activeWallet.switchChain(Number(chain.chainId));
+                    }
+                    setSelectedChain({ id: chain.chainId, imageUrl: chain.chainIconURI, blockExplorerUrl: chain.blockExplorerUrls[0] });
                   }}
                 >
                   <img src={chain.chainIconURI} alt={chain.networkName} width={24} height={24} className="rounded-full" />
@@ -219,8 +214,8 @@ const SelectChainDialog = ({
             ) : (
               <VirtualList
                 items={filteredTokens}
-                itemHeight={48} // Height of each token item
-                containerHeight={400} // Height of the container
+                itemHeight={48}
+                containerHeight={400} 
                 className="border rounded-lg"
                 renderItem={(token: any, index: number) => (
                   <div

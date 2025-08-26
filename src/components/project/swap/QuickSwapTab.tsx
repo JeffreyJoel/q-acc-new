@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import Image from "next/image";
 import { ArrowDown, Loader2 } from "lucide-react";
-import { usePublicClient } from "wagmi";
 import { usePrivy } from "@privy-io/react-auth";
-import { Address, erc20Abi, formatUnits } from "viem";
+import { Address } from "viem";
 import {
   useTokenBalanceWithDecimals,
   useFetchPOLPriceSquid,
@@ -18,7 +17,111 @@ import useSquidSwap from "@/hooks/useSquidSwap";
 import ConnectWalletButton from "@/components/shared/wallet/SwapConnectWalletButton";
 import { toast } from "sonner";
 import SelectChainDialog from "@/components/modals/SelectChainDialog";
-import { useBalance } from "wagmi";
+import { useForm, Controller } from "react-hook-form";
+
+interface PayReceiveRowProps {
+  label: string;
+  tokenSymbol: string;
+  iconSrc: string;
+  chainIconSrc?: string;
+  isLoading?: boolean;
+  balance?: string;
+  usdValue?: number;
+  control?: any;
+  isInput?: boolean;
+  estimatedAmount?: string;
+  isQuoting?: boolean;
+  onOpenModal?: () => void;
+}
+
+const PayReceiveRow = memo(({
+  label,
+  tokenSymbol,
+  iconSrc,
+  chainIconSrc,
+  isLoading,
+  balance,
+  usdValue,
+  control,
+  isInput = false,
+  estimatedAmount,
+  isQuoting = false,
+  onOpenModal,
+}: PayReceiveRowProps) => (
+  <div className="flex items-center justify-between bg-black px-4 py-6 h-full rounded-[18px] border border-white/10 text-white">
+    <div>
+      <span className="text-qacc-gray-light font-bold uppercase text-xs">
+        {label}
+      </span>
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <Image
+            src={iconSrc}
+            alt={tokenSymbol}
+            width={24}
+            height={24}
+            className="rounded-full cursor-pointer"
+            onClick={isInput ? onOpenModal : undefined}
+          />
+          {chainIconSrc && (
+            <Image
+              src={chainIconSrc}
+              alt="Chain"
+              width={12}
+              height={12}
+              className="absolute -bottom-1 -right-1 rounded-full border border-black"
+            />
+          )}
+        </div>
+        <span className="font-medium text-xl">{tokenSymbol}</span>
+      </div>
+
+    </div>
+    <div className="text-right">
+      {isInput ? (
+        <>
+          <div className="text-xs text-white/40 mt-1">
+            Balance: {Number(balance)?.toFixed(2) || "0.00"}
+          </div>
+          {control && (
+          <Controller
+            control={control}
+            name="swapAmount"
+            render={({ field }) => (
+              <input
+                type="number"
+                placeholder="0.0"
+                {...field}
+
+                className="bg-transparent text-xl font-bold text-right focus:outline-none w-32 text-white"
+                inputMode="decimal"
+              />
+            )}
+          />)}
+        </>
+      ) : (
+        <>
+          <div className="text-xs text-white/40 mt-1">
+            Balance: {balance || "0.00"}
+          </div>
+          <div className="text-xl font-bold">
+            {isQuoting ? (
+              <div className="flex items-center gap-2 justify-end">
+                <Loader2 className="w-4 h-4 animate-spin" />
+              </div>
+            ) : (
+              estimatedAmount || "0"
+            )}
+          </div>
+        </>
+      )}
+
+      <div className="text-xs text-white/40 mt-6">
+        ~${(usdValue || 0).toFixed(2)}
+      </div>
+    </div>
+  </div>
+));
 
 interface QuickSwapTabProps {
   receiveTokenAddress?: string;
@@ -32,46 +135,63 @@ export default function QuickSwapTab({
   receiveTokenIcon = "https://raw.githubusercontent.com/axelarnetwork/axelar-configs/main/images/tokens/wmatic.svg",
 }: QuickSwapTabProps) {
   const [slippageTolerance, setSlippageTolerance] = useState<string>("0.5%");
-  const [swapAmount, setSwapAmount] = useState<string>("");
   const [isQuoteValid, setIsQuoteValid] = useState<boolean>(false);
   const [receiveTokenDecimals, setReceiveTokenDecimals] = useState<number>(18);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const {
+    control,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm({
+    defaultValues: { swapAmount: "" },
+  });
 
   const [selectedFrom, setSelectedFrom] = useState({
     chainId: "137",
     chainIcon: POLYGON_POS_CHAIN_IMAGE,
-    tokenAddress: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    tokenAddress: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
     tokenSymbol: "POL",
     tokenIcon: POLYGON_POS_CHAIN_IMAGE,
     tokenDecimals: 18,
+    blockExplorerUrl: config.SCAN_URL,
   });
 
   const { user: privyUser, authenticated } = usePrivy();
   const userAddress = privyUser?.wallet?.address;
-  const publicClient = usePublicClient();
 
-  // Dynamic from token balance
-  const { data: fromBalanceData } = useBalance({
-    address: userAddress as Address,
-    token:
-      selectedFrom.tokenAddress.toLowerCase() ===
-        "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" ||
-      selectedFrom.tokenAddress.toLowerCase() ===
-        "0x0000000000000000000000000000000000000010"
-        ? undefined
-        : (selectedFrom.tokenAddress as Address),
-  });
+  // Dynamic from token balance using custom hook (supports multiple chains)
+  const {
+    data: fromBalanceData,
+    isLoading: isFromBalanceLoading,
+    refetch: refetchFromBalance,
+  } =
+    useTokenBalanceWithDecimals(
+      selectedFrom.tokenAddress.toLowerCase() as Address,
+      userAddress as Address,
+      Number(selectedFrom.chainId)
+    );
 
-  const fromBalance = fromBalanceData
-    ? formatUnits(fromBalanceData.value, selectedFrom.tokenDecimals).toString()
-    : "0";
-  const formattedFromBalance = formatBalance(parseFloat(fromBalance));
+  const fromBalanceRaw = fromBalanceData?.formattedBalance ?? "0";
+  const formattedFromBalance = formatBalance(parseFloat(fromBalanceRaw));
+
+  useEffect(() => {
+    if (fromBalanceData && typeof fromBalanceData.decimals === "number") {
+      setSelectedFrom((prev) => ({ ...prev, tokenDecimals: fromBalanceData.decimals }));
+    }
+  }, [fromBalanceData]);
 
   // Receive token balance (on Polygon)
-  const { data: receiveTokenBalance, isLoading: isReceiveTokenLoading } =
+  const {
+    data: receiveTokenBalance,
+    isLoading: isReceiveTokenLoading,
+    refetch: refetchReceiveBalance,
+  } =
     useTokenBalanceWithDecimals(
       receiveTokenAddress as Address,
-      userAddress as Address
+      userAddress as Address,
+      Number(selectedFrom.chainId)
     );
 
   const { data: polUsdPrice } = useFetchPOLPriceSquid();
@@ -79,26 +199,12 @@ export default function QuickSwapTab({
   const { currentTokenPrice: receiveTokenPriceInPOL } =
     useGetCurrentTokenPrice(receiveTokenAddress);
 
-  // Get receive token decimals
+  // Update receive token decimals whenever balance query returns
   useEffect(() => {
-    const getTokenDecimals = async () => {
-      if (!publicClient || !receiveTokenAddress) return;
-
-      try {
-        const decimals = await publicClient.readContract({
-          address: receiveTokenAddress as Address,
-          abi: erc20Abi,
-          functionName: "decimals",
-        });
-        setReceiveTokenDecimals(decimals);
-      } catch (error) {
-        console.error("Error fetching token decimals:", error);
-        setReceiveTokenDecimals(18); // Default to 18
-      }
-    };
-
-    getTokenDecimals();
-  }, [publicClient, receiveTokenAddress]);
+    if (receiveTokenBalance && typeof receiveTokenBalance.decimals === "number") {
+      setReceiveTokenDecimals(receiveTokenBalance.decimals);
+    }
+  }, [receiveTokenBalance]);
 
   // Squid swap hook
   const {
@@ -113,6 +219,9 @@ export default function QuickSwapTab({
     executeSwap,
     resetStatus,
   } = useSquidSwap();
+
+  // Get swapAmount from form
+  const swapAmount = watch("swapAmount");
 
   // Effect to get quote when amount changes
   useEffect(() => {
@@ -155,10 +264,8 @@ export default function QuickSwapTab({
     selectedFrom,
   ]);
 
-  // Reset swap state when error changes
   useEffect(() => {
     if (swapError) {
-      // Only show toast for non-token-support errors to avoid spam
       if (!swapError.includes("not supported")) {
         toast.error(swapError);
       }
@@ -192,31 +299,23 @@ export default function QuickSwapTab({
       });
 
       if (txHash) {
-        setSwapAmount("");
+        reset({ swapAmount: "" });
         setIsQuoteValid(false);
-        // Optionally show transaction link
+
+        // Refresh balances
+        refetchFromBalance();
+        refetchReceiveBalance();
         toast.success("Swap successful!", {
           action: {
             label: "View on Explorer",
             onClick: () =>
-              window.open(`${config.SCAN_URL}tx/${txHash}`, "_blank"),
+              window.open(`${selectedFrom.blockExplorerUrl}tx/${txHash}`, "_blank"),
           },
         });
       }
     } catch (error) {
       console.error("Swap execution error:", error);
     }
-  };
-
-  const handleAmountChange = (value: string) => {
-    // Allow only numbers and decimal point
-    const sanitizedValue = value.replace(/[^0-9.]/g, "");
-    // Prevent multiple decimal points
-    const parts = sanitizedValue.split(".");
-    if (parts.length > 2) {
-      return;
-    }
-    setSwapAmount(sanitizedValue);
   };
 
   const getSwapButtonText = () => {
@@ -241,111 +340,6 @@ export default function QuickSwapTab({
     !isQuoteValid ||
     Boolean(swapError && swapError.includes("not supported"));
 
-  const PayReceiveRow = ({
-    label,
-    tokenSymbol,
-    iconSrc,
-    chainIconSrc,
-    isLoading,
-    balance,
-    usdValue,
-    amount,
-    onAmountChange,
-    isInput = false,
-    estimatedAmount,
-  }: {
-    label: string;
-    tokenSymbol: string;
-    iconSrc: string;
-    chainIconSrc?: string;
-    isLoading?: boolean;
-    balance?: string;
-    usdValue?: number;
-    amount?: string;
-    onAmountChange?: (value: string) => void;
-    isInput?: boolean;
-    estimatedAmount?: string;
-  }) => (
-    <div className="flex items-center justify-between bg-black px-4 py-6 h-full rounded-[18px] border border-white/10 text-white">
-      <div>
-        <span className="text-qacc-gray-light font-bold uppercase text-xs">
-          {label}
-        </span>
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Image
-              src={iconSrc}
-              alt={tokenSymbol}
-              width={24}
-              height={24}
-              className="rounded-full cursor-pointer"
-              onClick={isInput ? () => setIsModalOpen(true) : undefined}
-            />
-            {chainIconSrc && (
-              <Image
-                src={chainIconSrc}
-                alt="Chain"
-                width={12}
-                height={12}
-                className="absolute -bottom-1 -right-1 rounded-full border border-black"
-              />
-            )}
-          </div>
-          <span className="font-medium text-xl">{tokenSymbol}</span>
-        </div>
-
-        <div className="text-[10px] text-white/40 text-left mt-6">
-          {quote &&
-            `${isInput ? "Swap" : "Receive"} Rate: ${
-              isInput
-                ? `1 ${tokenSymbol} = ${(
-                    parseFloat(quote.toAmount) / parseFloat(quote.fromAmount)
-                  ).toFixed(6)} ${receiveTokenSymbol}`
-                : `1 ${receiveTokenSymbol} = ${(
-                    parseFloat(quote.fromAmount) / parseFloat(quote.toAmount)
-                  ).toFixed(6)} ${tokenSymbol}`
-            }`}
-        </div>
-      </div>
-      <div className="text-right">
-        {isInput ? (
-          <>
-            <div className="text-xs text-white/40 mt-1">
-              Balance: {balance || "0.00"}
-            </div>
-            <input
-              type="number"
-              placeholder="0.0"
-              value={amount || ""}
-              onChange={(e) => onAmountChange?.(e.target.value)}
-              className="bg-transparent text-xl font-bold text-right focus:outline-none w-32 text-white"
-            />
-          </>
-        ) : (
-          <>
-            <div className="text-xs text-white/40 mt-1">
-              Balance: {balance || "0.00"}
-            </div>
-            <div className="text-xl font-bold">
-              {isQuoting ? (
-                <div className="flex items-center gap-2 justify-end">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-sm">...</span>
-                </div>
-              ) : (
-                estimatedAmount || "0"
-              )}
-            </div>
-          </>
-        )}
-
-        <div className="text-xs text-white/40 mt-6">
-          ~${(usdValue || 0).toFixed(2)}
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <>
       <div className="space-y-1">
@@ -355,10 +349,10 @@ export default function QuickSwapTab({
           iconSrc={selectedFrom.tokenIcon}
           chainIconSrc={selectedFrom.chainIcon}
           balance={formattedFromBalance}
-          usdValue={0} // TODO: Implement USD value for arbitrary tokens
-          amount={swapAmount}
-          onAmountChange={handleAmountChange}
+          // usdValue={0}
+          control={control}
           isInput={true}
+          onOpenModal={() => setIsModalOpen(true)}
         />
         <div className="absolute top-[265px] left-1/2 -translate-x-1/2 -translate-y-1/2 -my-6 bg-neutral-800 border-neutral-900 backdrop-blur-[40px] w-8 h-8 rounded-lg flex items-center justify-center">
           <ArrowDown className="w-4 h-4 text-qacc-gray-light" />
@@ -434,20 +428,6 @@ export default function QuickSwapTab({
         </button>
       )}
 
-      {/* Error Display */}
-      {swapError && (
-        <div className="mt-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-          <p className="text-red-400 text-sm font-medium mb-1">Swap Error</p>
-          <p className="text-red-300 text-xs">{swapError}</p>
-          {swapError.includes("not supported") && (
-            <p className="text-yellow-300 text-xs mt-2">
-              💡 Try using the "SWAP DIRECTLY" tab instead for bonding curve
-              swaps.
-            </p>
-          )}
-        </div>
-      )}
-
       <div className="w-full text-xs text-white/40 text-center mt-2 flex items-center justify-center gap-1">
         Powered by
         <Image
@@ -465,6 +445,7 @@ export default function QuickSwapTab({
           setSelectedFrom({
             chainId: chain.id,
             chainIcon: chain.imageUrl,
+            blockExplorerUrl: chain.blockExplorerUrl,
             tokenAddress: token.address,
             tokenSymbol: token.symbol,
             tokenIcon: token.logoURI,

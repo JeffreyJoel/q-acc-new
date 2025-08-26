@@ -35,7 +35,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ConnectWalletButton from "@/components/shared/wallet/SwapConnectWalletButton";
-import { Button } from "@/components/ui/button";
 
 interface BondingCurveSwapProps {
   contractAddress: string;
