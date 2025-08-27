@@ -1,26 +1,30 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { useAccount } from 'wagmi';
-import { useWallets } from '@privy-io/react-auth';
-import { Spinner } from '@/components/loaders/Spinner';
-import { useFetchChainsFromSquid, useFetchTokensByChain, useDebounce } from '@/hooks/useFetchChainsFromSquid';
-import { UseQueryResult } from '@tanstack/react-query';
-import type { ISquidChain } from '@/hooks/useFetchChainsFromSquid';
-import { VirtualList } from '@/components/ui/virtual-list';
+import React, { useEffect, useState } from "react";
+import { useAccount } from "wagmi";
+import { Spinner } from "@/components/loaders/Spinner";
+import {
+  useFetchChainsFromSquid,
+  useFetchTokensByChain,
+  useDebounce,
+} from "@/hooks/useFetchChainsFromSquid";
+import { UseQueryResult } from "@tanstack/react-query";
+import type { ISquidChain } from "@/hooks/useFetchChainsFromSquid";
+import { VirtualList } from "@/components/ui/virtual-list";
+import { useChainManager } from "@/contexts/chainManager.context";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import Image from 'next/image';
-import config from '@/config/configuration';
+import Image from "next/image";
+import config from "@/config/configuration";
 
-export const POLYGON_POS_CHAIN_ID = '137';
+export const POLYGON_POS_CHAIN_ID = "137";
 export const POLYGON_POS_CHAIN_IMAGE =
-  'https://raw.githubusercontent.com/0xsquid/assets/main/images/chains/polygon.svg';
+  "https://raw.githubusercontent.com/0xsquid/assets/main/images/chains/polygon.svg";
 
 const SelectChainDialog = ({
   isOpen,
@@ -40,28 +44,35 @@ const SelectChainDialog = ({
     imageUrl: POLYGON_POS_CHAIN_IMAGE,
     blockExplorerUrl: config.SCAN_URL,
   });
-  const [chainSearchTerm, setChainSearchTerm] = useState('');
-  const [tokenSearchTerm, setTokenSearchTerm] = useState('');
+  const [chainSearchTerm, setChainSearchTerm] = useState("");
+  const [tokenSearchTerm, setTokenSearchTerm] = useState("");
 
   const debouncedTokenSearch = useDebounce(tokenSearchTerm, 300);
 
   const { address } = useAccount();
-  const { wallets } = useWallets();
+  const { switchChain } = useChainManager();
 
-  const { data: chainsData } = useFetchChainsFromSquid() as UseQueryResult<{ chains: ISquidChain[] }, Error>;
+  const { data: chainsData } = useFetchChainsFromSquid() as UseQueryResult<
+    { chains: ISquidChain[] },
+    Error
+  >;
 
-  // Fetch tokens for selected chain with debounced search
   const {
     data: tokensData = [],
     isLoading: tokenLoading,
-    error: tokenError
-  } = useFetchTokensByChain(selectedChain.id, debouncedTokenSearch, !!selectedChain.id);
+    error: tokenError,
+  } = useFetchTokensByChain(
+    selectedChain.id,
+    debouncedTokenSearch,
+    !!selectedChain.id
+  );
 
   useEffect(() => {
     if (!chainsData?.chains) return;
     try {
-      // Filter only EVM-compatible chains
-      const evmChains = chainsData.chains.filter((chain: any) => chain.type === 'evm');
+      const evmChains = chainsData.chains.filter(
+        (chain: any) => chain.type === "evm"
+      );
       evmChains.sort((a: any, b: any) => {
         if (a.chainId === POLYGON_POS_CHAIN_ID) return -1;
         if (b.chainId === POLYGON_POS_CHAIN_ID) return 1;
@@ -71,7 +82,7 @@ const SelectChainDialog = ({
 
       // Set Polygon PoS as the default selected chain
       const polygonChain = evmChains.find(
-        (chain: any) => chain.chainId === POLYGON_POS_CHAIN_ID,
+        (chain: any) => chain.chainId === POLYGON_POS_CHAIN_ID
       );
       if (polygonChain) {
         setSelectedChain({
@@ -98,35 +109,23 @@ const SelectChainDialog = ({
   const filteredTokens = processedTokens;
 
   const filteredChains = chainData.filter((chain: any) =>
-    chain.networkName?.toLowerCase().includes(chainSearchTerm.toLowerCase()),
+    chain.networkName?.toLowerCase().includes(chainSearchTerm.toLowerCase())
   );
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
-  }, [isOpen]);
-
   if (error) {
-    return <div className='p-4 text-red-500'>Error: {error}</div>;
+    return <div className="p-4 text-red-500">Error: {error}</div>;
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className=" bg-qacc-black max-h-[90vh] overflow-y-auto md:max-w-[650px] rounded-3xl border">
         <DialogHeader>
-          <div className='flex gap-4 items-center justify-between pb-4'>
-            <div className='flex gap-4 items-center'>
-              <DialogTitle className='text-base font-semibold text-foreground leading-6'>
+          <div className="flex gap-4 items-center justify-between pb-4">
+            <div className="flex gap-4 items-center">
+              <DialogTitle className="text-base font-semibold text-foreground leading-6">
                 Select token to swap
               </DialogTitle>
             </div>
-           
           </div>
         </DialogHeader>
 
@@ -135,14 +134,14 @@ const SelectChainDialog = ({
           <Input
             placeholder="Chain"
             value={chainSearchTerm}
-            onChange={e => setChainSearchTerm(e.target.value)}
+            onChange={(e) => setChainSearchTerm(e.target.value)}
             className="border-qacc-gray-light/15 focus:border-peach-400 rounded-xl"
           />
           <Input
             className="border-qacc-gray-light/15 focus:border-peach-400 rounded-xl"
             placeholder="Token"
             value={tokenSearchTerm}
-            onChange={e => setTokenSearchTerm(e.target.value)}
+            onChange={(e) => setTokenSearchTerm(e.target.value)}
           />
         </div>
 
@@ -153,22 +152,36 @@ const SelectChainDialog = ({
             <div className="grid grid-cols-1 gap-2">
               {displayedNetworks
                 .filter((chain: any) =>
-                  chain.networkName.toLowerCase().includes(chainSearchTerm.toLowerCase())
+                  chain.networkName
+                    .toLowerCase()
+                    .includes(chainSearchTerm.toLowerCase())
                 )
                 .map((chain: any) => (
                   <div
                     key={chain.chainId}
-                    className={`flex items-center gap-2 p-2 cursor-pointer rounded-xl ${chain.chainId === selectedChain.id ? 'bg-peach-400/10 border-peach-400' : 'hover:bg-muted'}`}
+                    className={`flex items-center gap-2 p-2 cursor-pointer rounded-xl ${
+                      chain.chainId === selectedChain.id
+                        ? "bg-peach-400/10 border-peach-400"
+                        : "hover:bg-muted"
+                    }`}
                     onClick={() => {
-                      const activeWallet = wallets[0];
-                      if (activeWallet) {
-                        activeWallet.switchChain(Number(chain.chainId));
-                      }
-                      setSelectedChain({ id: chain.chainId, imageUrl: chain.chainIconURI, blockExplorerUrl: chain.blockExplorerUrls[0] });
-                      console.log('selectedChain', selectedChain);
+                      switchChain(Number(chain.chainId));
+
+                      setSelectedChain({
+                        id: chain.chainId,
+                        imageUrl: chain.chainIconURI,
+                        blockExplorerUrl: chain.blockExplorerUrls[0],
+                      });
+                      console.log("selectedChain", selectedChain);
                     }}
                   >
-                    <img src={chain.chainIconURI} alt={chain.networkName} width={24} height={24} className="rounded-full" />
+                    <img
+                      src={chain.chainIconURI}
+                      alt={chain.networkName}
+                      width={24}
+                      height={24}
+                      className="rounded-full"
+                    />
                     <span>{chain.networkName}</span>
                   </div>
                 ))}
@@ -178,16 +191,27 @@ const SelectChainDialog = ({
               {filteredChains.map((chain: any) => (
                 <div
                   key={chain.chainId}
-                  className={`flex items-center gap-2 p-2 cursor-pointer rounded-xl ${chain.chainId === selectedChain.id ? 'bg-peach-400/10 border-peach-400' : 'hover:bg-muted'}`}
+                  className={`flex items-center gap-2 p-2 cursor-pointer rounded-xl ${
+                    chain.chainId === selectedChain.id
+                      ? "bg-peach-400/10 border-peach-400"
+                      : "hover:bg-muted"
+                  }`}
                   onClick={() => {
-                    const activeWallet = wallets[0];
-                    if (activeWallet) {
-                      activeWallet.switchChain(Number(chain.chainId));
-                    }
-                    setSelectedChain({ id: chain.chainId, imageUrl: chain.chainIconURI, blockExplorerUrl: chain.blockExplorerUrls[0] });
+                    switchChain(Number(chain.chainId));
+                    setSelectedChain({
+                      id: chain.chainId,
+                      imageUrl: chain.chainIconURI,
+                      blockExplorerUrl: chain.blockExplorerUrls[0],
+                    });
                   }}
                 >
-                  <img src={chain.chainIconURI} alt={chain.networkName} width={24} height={24} className="rounded-full" />
+                  <img
+                    src={chain.chainIconURI}
+                    alt={chain.networkName}
+                    width={24}
+                    height={24}
+                    className="rounded-full"
+                  />
                   <span>{chain.networkName}</span>
                 </div>
               ))}
@@ -209,13 +233,15 @@ const SelectChainDialog = ({
               </div>
             ) : filteredTokens.length === 0 ? (
               <div className="text-gray-500 text-sm p-2">
-                {debouncedTokenSearch ? 'No tokens found matching your search.' : 'No tokens available for this chain.'}
+                {debouncedTokenSearch
+                  ? "No tokens found matching your search."
+                  : "No tokens available for this chain."}
               </div>
             ) : (
               <VirtualList
                 items={filteredTokens}
                 itemHeight={48}
-                containerHeight={400} 
+                containerHeight={400}
                 className="border rounded-lg"
                 renderItem={(token: any, index: number) => (
                   <div
@@ -227,18 +253,23 @@ const SelectChainDialog = ({
                     }}
                   >
                     <Image
-                      src={token.logoURI || '/images/logos/round_logo.png'}
+                      src={token.logoURI || "/images/logos/round_logo.png"}
                       alt={token.symbol}
                       width={24}
                       height={24}
                       className="rounded-full flex-shrink-0"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/images/logos/round_logo.png';
+                        (e.target as HTMLImageElement).src =
+                          "/images/logos/round_logo.png";
                       }}
                     />
                     <div className="flex flex-col flex-1 min-w-0">
-                      <span className="font-medium truncate">{token.symbol}</span>
-                      <span className="text-xs text-gray-500 truncate">{token.name}</span>
+                      <span className="font-medium truncate">
+                        {token.symbol}
+                      </span>
+                      <span className="text-xs text-gray-500 truncate">
+                        {token.name}
+                      </span>
                     </div>
                     {token.balance && (
                       <span className="text-xs text-gray-500">

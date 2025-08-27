@@ -11,6 +11,7 @@ import {
 import { PrivyClientConfig, PrivyProvider } from "@privy-io/react-auth";
 import { polygon } from "viem/chains";
 import { WagmiProvider, createConfig } from "@privy-io/wagmi";
+import { ChainProvider } from "@/contexts/chainManager.context";
 import config from "@/config/configuration";
 
 const privyConfig: PrivyClientConfig = {
@@ -60,7 +61,9 @@ export default function Providers(props: {
     >
       <QueryClientProvider client={queryClient}>
         <WagmiProvider config={wagmiConfig}>
-          {props.children}
+          <ChainProvider>
+            {props.children}
+          </ChainProvider>
         </WagmiProvider>
       </QueryClientProvider>
     </PrivyProvider>

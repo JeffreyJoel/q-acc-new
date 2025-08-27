@@ -4,6 +4,7 @@ import { useState, useEffect, memo } from "react";
 import Image from "next/image";
 import { ArrowDown, Loader2 } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
+import { useChainManager } from "@/contexts/chainManager.context";
 import { Address } from "viem";
 import {
   useTokenBalanceWithDecimals,
@@ -32,96 +33,101 @@ interface PayReceiveRowProps {
   estimatedAmount?: string;
   isQuoting?: boolean;
   onOpenModal?: () => void;
+  hasError?: boolean;
 }
 
-const PayReceiveRow = memo(({
-  label,
-  tokenSymbol,
-  iconSrc,
-  chainIconSrc,
-  isLoading,
-  balance,
-  usdValue,
-  control,
-  isInput = false,
-  estimatedAmount,
-  isQuoting = false,
-  onOpenModal,
-}: PayReceiveRowProps) => (
-  <div className="flex items-center justify-between bg-black px-4 py-6 h-full rounded-[18px] border border-white/10 text-white">
-    <div>
-      <span className="text-qacc-gray-light font-bold uppercase text-xs">
-        {label}
-      </span>
-      <div className="flex items-center gap-3">
-        <div className="relative">
-          <Image
-            src={iconSrc}
-            alt={tokenSymbol}
-            width={24}
-            height={24}
-            className="rounded-full cursor-pointer"
-            onClick={isInput ? onOpenModal : undefined}
-          />
-          {chainIconSrc && (
+const PayReceiveRow = memo(
+  ({
+    label,
+    tokenSymbol,
+    iconSrc,
+    chainIconSrc,
+    isLoading,
+    balance,
+    usdValue,
+    control,
+    isInput = false,
+    estimatedAmount,
+    isQuoting = false,
+    onOpenModal,
+    hasError = false,
+  }: PayReceiveRowProps) => (
+    <div className="flex items-center justify-between bg-black px-4 py-6 h-full rounded-[18px] border border-white/10 text-white">
+      <div>
+        <span className="text-qacc-gray-light font-bold uppercase text-xs">
+          {label}
+        </span>
+        <div className="flex items-center gap-3">
+          <div className="relative">
             <Image
-              src={chainIconSrc}
-              alt="Chain"
-              width={12}
-              height={12}
-              className="absolute -bottom-1 -right-1 rounded-full border border-black"
+              src={iconSrc}
+              alt={tokenSymbol}
+              width={24}
+              height={24}
+              className="rounded-full cursor-pointer"
+              onClick={isInput ? onOpenModal : undefined}
             />
-          )}
-        </div>
-        <span className="font-medium text-xl">{tokenSymbol}</span>
-      </div>
-
-    </div>
-    <div className="text-right">
-      {isInput ? (
-        <>
-          <div className="text-xs text-white/40 mt-1">
-            Balance: {Number(balance)?.toFixed(2) || "0.00"}
-          </div>
-          {control && (
-          <Controller
-            control={control}
-            name="swapAmount"
-            render={({ field }) => (
-              <input
-                type="number"
-                placeholder="0.0"
-                {...field}
-
-                className="bg-transparent text-xl font-bold text-right focus:outline-none w-32 text-white"
-                inputMode="decimal"
+            {chainIconSrc && (
+              <Image
+                src={chainIconSrc}
+                alt="Chain"
+                width={12}
+                height={12}
+                className="absolute -bottom-1 -right-1 rounded-full border border-black"
               />
             )}
-          />)}
-        </>
-      ) : (
-        <>
-          <div className="text-xs text-white/40 mt-1">
-            Balance: {balance || "0.00"}
           </div>
-          <div className="text-xl font-bold">
-            {isQuoting ? (
-              <div className="flex items-center gap-2 justify-end">
-                <Loader2 className="w-4 h-4 animate-spin" />
-              </div>
-            ) : (
-              estimatedAmount || "0"
+          <span className="font-medium text-xl">{tokenSymbol}</span>
+        </div>
+      </div>
+      <div className="text-right">
+        {isInput ? (
+          <>
+            <div className="text-xs text-white/40 mt-1">
+              Balance: {Number(balance)?.toFixed(2) || "0.00"}
+            </div>
+            {control && (
+              <Controller
+                control={control}
+                name="swapAmount"
+                render={({ field }) => (
+                  <input
+                    type="number"
+                    placeholder="0.0"
+                    {...field}
+                    className={`bg-transparent text-xl font-bold text-right focus:outline-none w-32 ${
+                      hasError ? "text-red-500" : "text-white"
+                    }`}
+                    inputMode="decimal"
+                  />
+                )}
+              />
             )}
-          </div>
-        </>
-      )}
+          </>
+        ) : (
+          <>
+            <div className="text-xs text-white/40 mt-1">
+              Balance: {balance || "0.00"}
+            </div>
+            <div className="text-xl font-bold">
+              {isQuoting ? (
+                <div className="flex items-center gap-2 justify-end">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                </div>
+              ) : (
+                estimatedAmount || "0"
+              )}
+            </div>
+          </>
+        )}
 
-      <div className="text-xs text-white/40 mt-6">
-        ~${(usdValue || 0).toFixed(2)}
+        <div className="text-xs text-white/40 mt-6">
+          ~${(usdValue || 0).toFixed(2)}
+        </div>
       </div>
     </div>
-  </div>
-));
+  )
+);
 
 interface QuickSwapTabProps {
   receiveTokenAddress?: string;
@@ -134,21 +140,7 @@ export default function QuickSwapTab({
   receiveTokenSymbol = "WMATIC",
   receiveTokenIcon = "https://raw.githubusercontent.com/axelarnetwork/axelar-configs/main/images/tokens/wmatic.svg",
 }: QuickSwapTabProps) {
-  const [slippageTolerance, setSlippageTolerance] = useState<string>("0.5%");
-  const [isQuoteValid, setIsQuoteValid] = useState<boolean>(false);
-  const [receiveTokenDecimals, setReceiveTokenDecimals] = useState<number>(18);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  const {
-    control,
-    watch,
-    reset,
-    formState: { errors },
-  } = useForm({
-    defaultValues: { swapAmount: "" },
-  });
-
-  const [selectedFrom, setSelectedFrom] = useState({
+  const DEFAULT_FROM_CHAIN_DETAILS = {
     chainId: "137",
     chainIcon: POLYGON_POS_CHAIN_IMAGE,
     tokenAddress: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
@@ -156,7 +148,19 @@ export default function QuickSwapTab({
     tokenIcon: POLYGON_POS_CHAIN_IMAGE,
     tokenDecimals: 18,
     blockExplorerUrl: config.SCAN_URL,
+  };
+  const [slippageTolerance, setSlippageTolerance] = useState<string>("0.5%");
+  const [isQuoteValid, setIsQuoteValid] = useState<boolean>(false);
+  const [receiveTokenDecimals, setReceiveTokenDecimals] = useState<number>(18);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [balanceError, setBalanceError] = useState<string | null>(null);
+  const [selectedFrom, setSelectedFrom] = useState(DEFAULT_FROM_CHAIN_DETAILS);
+
+  const { control, watch, reset } = useForm({
+    defaultValues: { swapAmount: "" },
   });
+
+  const { switchChain } = useChainManager();
 
   const { user: privyUser, authenticated } = usePrivy();
   const userAddress = privyUser?.wallet?.address;
@@ -166,19 +170,46 @@ export default function QuickSwapTab({
     data: fromBalanceData,
     isLoading: isFromBalanceLoading,
     refetch: refetchFromBalance,
-  } =
-    useTokenBalanceWithDecimals(
-      selectedFrom.tokenAddress.toLowerCase() as Address,
-      userAddress as Address,
-      Number(selectedFrom.chainId)
-    );
+  } = useTokenBalanceWithDecimals(
+    selectedFrom.tokenAddress.toLowerCase() as Address,
+    userAddress as Address,
+    Number(selectedFrom.chainId)
+  );
 
   const fromBalanceRaw = fromBalanceData?.formattedBalance ?? "0";
   const formattedFromBalance = formatBalance(parseFloat(fromBalanceRaw));
 
+  // Validate balance
+  useEffect(() => {
+    if (
+      !watch("swapAmount") ||
+      isNaN(parseFloat(watch("swapAmount"))) ||
+      parseFloat(watch("swapAmount")) <= 0
+    ) {
+      setBalanceError(null);
+      return;
+    }
+
+    if (parseFloat(watch("swapAmount")) > parseFloat(fromBalanceRaw)) {
+      setBalanceError(
+        `Insufficient ${selectedFrom.tokenSymbol} balance. Available: ${formattedFromBalance} ${selectedFrom.tokenSymbol}`
+      );
+    } else {
+      setBalanceError(null);
+    }
+  }, [
+    watch("swapAmount"),
+    fromBalanceRaw,
+    formattedFromBalance,
+    selectedFrom.tokenSymbol,
+  ]);
+
   useEffect(() => {
     if (fromBalanceData && typeof fromBalanceData.decimals === "number") {
-      setSelectedFrom((prev) => ({ ...prev, tokenDecimals: fromBalanceData.decimals }));
+      setSelectedFrom((prev) => ({
+        ...prev,
+        tokenDecimals: fromBalanceData.decimals,
+      }));
     }
   }, [fromBalanceData]);
 
@@ -187,12 +218,11 @@ export default function QuickSwapTab({
     data: receiveTokenBalance,
     isLoading: isReceiveTokenLoading,
     refetch: refetchReceiveBalance,
-  } =
-    useTokenBalanceWithDecimals(
-      receiveTokenAddress as Address,
-      userAddress as Address,
-      Number(selectedFrom.chainId)
-    );
+  } = useTokenBalanceWithDecimals(
+    receiveTokenAddress as Address,
+    userAddress as Address,
+    Number(selectedFrom.chainId)
+  );
 
   const { data: polUsdPrice } = useFetchPOLPriceSquid();
 
@@ -201,7 +231,10 @@ export default function QuickSwapTab({
 
   // Update receive token decimals whenever balance query returns
   useEffect(() => {
-    if (receiveTokenBalance && typeof receiveTokenBalance.decimals === "number") {
+    if (
+      receiveTokenBalance &&
+      typeof receiveTokenBalance.decimals === "number"
+    ) {
       setReceiveTokenDecimals(receiveTokenBalance.decimals);
     }
   }, [receiveTokenBalance]);
@@ -309,12 +342,18 @@ export default function QuickSwapTab({
           action: {
             label: "View on Explorer",
             onClick: () =>
-              window.open(`${selectedFrom.blockExplorerUrl}tx/${txHash}`, "_blank"),
+              window.open(
+                `${selectedFrom.blockExplorerUrl}tx/${txHash}`,
+                "_blank"
+              ),
           },
         });
+        handleChainSwitch();
       }
     } catch (error) {
       console.error("Swap execution error:", error);
+    } finally {
+      handleChainSwitch();
     }
   };
 
@@ -331,6 +370,21 @@ export default function QuickSwapTab({
     return "SWAP";
   };
 
+  const handleChainSwitch = () => {
+    if (selectedFrom.chainId !== DEFAULT_FROM_CHAIN_DETAILS.chainId) {
+      setSelectedFrom(DEFAULT_FROM_CHAIN_DETAILS);
+
+      switchChain(Number(DEFAULT_FROM_CHAIN_DETAILS.chainId));
+      setTimeout(
+        () =>
+          toast.info("Switched back to Polygon network", {
+            description: "Primary swap network restored.",
+          }),
+        1000
+      );
+    }
+  };
+
   const isSwapDisabled =
     !authenticated ||
     !isInitialized ||
@@ -338,7 +392,8 @@ export default function QuickSwapTab({
     !swapAmount ||
     parseFloat(swapAmount) <= 0 ||
     !isQuoteValid ||
-    Boolean(swapError && swapError.includes("not supported"));
+    Boolean(swapError && swapError.includes("not supported")) ||
+    !!balanceError;
 
   return (
     <>
@@ -352,6 +407,7 @@ export default function QuickSwapTab({
           // usdValue={0}
           control={control}
           isInput={true}
+          hasError={!!balanceError}
           onOpenModal={() => setIsModalOpen(true)}
         />
         <div className="absolute top-[265px] left-1/2 -translate-x-1/2 -translate-y-1/2 -my-6 bg-neutral-800 border-neutral-900 backdrop-blur-[40px] w-8 h-8 rounded-lg flex items-center justify-center">
@@ -359,7 +415,7 @@ export default function QuickSwapTab({
         </div>
         <PayReceiveRow
           label="RECEIVE"
-          tokenSymbol={receiveTokenSymbol }
+          tokenSymbol={receiveTokenSymbol}
           iconSrc={receiveTokenIcon}
           isLoading={isReceiveTokenLoading}
           balance={
