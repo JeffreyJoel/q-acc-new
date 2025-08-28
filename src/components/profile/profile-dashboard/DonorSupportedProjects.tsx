@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { getIpfsAddress } from "@/helpers/image";
+import { handleImageUrl } from "@/helpers/image";
 import { getPaymentAddresses } from "@/helpers/getPaymentAddresses";
 
 import { IconViewTransaction } from "@/components/icons/IconViewTransaction";
@@ -203,7 +203,7 @@ const DonarSupportedProjects = ({
             <div className="border rounded-md bg-neutral-800 p-1 block w-fit">
               <img
                 className="w-6 h-6 rounded-full"
-                src={getIpfsAddress(
+                src={handleImageUrl(
                   project.abc?.icon ||
                     "Qmeb6CzCBkyEkAhjrw5G9GShpKiVjUDaU8F3Xnf5bPHtm4"
                 )}
@@ -350,7 +350,7 @@ const DonarSupportedProjects = ({
             <div className='flex items-center gap-2'>
               <img
                 className='w-6 h-6 rounded-full'
-                src={getIpfsAddress(
+                src={handleImageUrl(
                   project.abc?.icon ||
                     'Qmeb6CzCBkyEkAhjrw5G9GShpKiVjUDaU8F3Xnf5bPHtm4',
                 )}

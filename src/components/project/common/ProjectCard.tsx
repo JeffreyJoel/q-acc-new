@@ -5,7 +5,7 @@ import type React from "react";
 import { IProject } from "@/types/project.type";
 import { formatAmount, formatNumber } from "@/helpers/donations";
 import { Spinner } from "@/components/loaders/Spinner";
-import { getIpfsAddress } from "@/helpers/image";
+import { handleImageUrl } from "@/helpers/image";
 import Image from "next/image";
 import { SupportButton } from "@/components/project/common/SupportButton";
 import { useProjectData } from "@/hooks/useProjectData";
@@ -228,7 +228,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
               <div className="flex gap-2 items-center justify-center">
                 <div className="w-6 h-6 relative rounded-full overflow-hidden">
                   <Image
-                    src={getIpfsAddress(project.abc?.icon!)}
+                    src={handleImageUrl(project.abc?.icon!)}
                     alt=""
                     width={48}
                     height={48}

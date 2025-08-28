@@ -11,9 +11,6 @@ export interface MirrorArticle {
   author?: string;
   mirrorXyzContentDigest?: string;
   imageURI: string;
-  featuredImageURI?: string;
-  coverImageURI?: string;
-  thumbnailURI?: string;
 }
 
 interface ArweaveTransaction {
@@ -63,7 +60,6 @@ export const fetchMirrorTransactions =
           query: `
           query {
             transactions(
-             owners:["Ky1c1Kkt-jZ9sY1hvLF5nCf6WWdBhIU5Un_BMYh-t3c"]
               tags: [
                 { name: "App-Name", values: ["MirrorXYZ"] }
                 {
@@ -175,6 +171,31 @@ export const fetchArticleContent = async (transactionId: string) => {
   }
 };
 
+// Utility: strip markdown syntax to plain text
+const stripMarkdown = (md: string): string => {
+  if (!md) return "";
+  // Remove code fences
+  let text = md.replace(/```[\s\S]*?```/g, " ");
+  // Remove inline code
+  text = text.replace(/`[^`]*`/g, " ");
+  // Remove images and links markup but keep alt text
+  text = text.replace(/!\[[^\]]*\]\([^)]*\)/g, " ");
+  text = text.replace(/\[[^\]]*\]\([^)]*\)/g, " ");
+  // Remove headings and emphasis characters
+  text = text.replace(/^#+\s+/gm, "");
+  text = text.replace(/[>*_~`#-]/g, "");
+  // Collapse whitespace
+  text = text.replace(/\s+/g, " ").trim();
+  return text;
+};
+
+// Utility: extract first image URL from markdown
+const extractFirstMarkdownImage = (md: string): string | undefined => {
+  if (!md) return undefined;
+  const match = md.match(/!\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/);
+  return match ? match[1] : undefined;
+};
+
 export const fetchMirrorArticles = async (
   limit?: number
 ): Promise<MirrorArticle[]> => {
@@ -182,7 +203,7 @@ export const fetchMirrorArticles = async (
     const transactions = await fetchMirrorTransactions();
     const transactionList = getArweaveTransactions(transactions);
 
-    // Apply limit if specified
+
     const limitedList = limit
       ? transactionList.slice(0, limit)
       : transactionList;
@@ -201,8 +222,12 @@ export const fetchMirrorArticles = async (
     );
 
     const articles = list
-      // .filter(article => article !== null)
       .map((article) => {
+        const rawBody = article.body || article.content?.body || article.content || "";
+        const cleanBody = stripMarkdown(rawBody);
+        const generatedDescription = cleanBody.substring(0, 200);
+        const imageFromBody = extractFirstMarkdownImage(rawBody);
+
         return {
           id: article.id || article.mirrorXyzContentDigest,
           title: article.title || article.content?.title || "Untitled Article",
@@ -210,15 +235,15 @@ export const fetchMirrorArticles = async (
             article.description ||
             article.content?.description ||
             article.wnft?.description ||
-            "",
-          body: article.body || article.content?.body || article.content || "",
+            `${generatedDescription}...`,
+          body: rawBody,
           timestamp:
             article.content?.timestamp ||
             article.timestamp ||
             article.arweaveTimestamp,
           author: article.author || article.content?.author || address,
           mirrorXyzContentDigest: article.mirrorXyzContentDigest,
-          imageURI: article.wnft?.imageURI,
+          imageURI: article.wnft?.imageURI || imageFromBody,
         };
       })
       .sort((a, b) => {

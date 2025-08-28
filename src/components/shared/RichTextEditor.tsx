@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import 'quill/dist/quill.snow.css';
 import { useFormContext, RegisterOptions } from 'react-hook-form';
 import { uploadToIPFS } from '@/services/ipfs';
-import { getIpfsAddress } from '@/helpers/image';
+import { handleImageUrl } from '@/helpers/image';
 
 const toolbarOptions = [
   ['bold', 'italic', 'underline', 'strike'], // toggled buttons
@@ -96,7 +96,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                     try {
                       const imageIpfsHash = await uploadToIPFS(file);
                       if (imageIpfsHash) {
-                        const imageUrl = getIpfsAddress(imageIpfsHash);
+                        const imageUrl = handleImageUrl(imageIpfsHash);
                         const range = quillInstance.getSelection();
                         if (range) {
                           removeBase64Image(quillInstance, range);
@@ -166,7 +166,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           try {
             const imageIpfsHash = await uploadToIPFS(file);
             if (imageIpfsHash) {
-              const imageUrl = getIpfsAddress(imageIpfsHash);
+              const imageUrl = handleImageUrl(imageIpfsHash);
               quillInstanceRef.current.insertEmbed(
                 range.index,
                 'image',

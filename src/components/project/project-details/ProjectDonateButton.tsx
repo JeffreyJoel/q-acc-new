@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 // import { Button, ButtonColor } from '../Button';
 import { useProjectContext } from "@/contexts/project.context";
 // import { IconTokenSchedule } from '@/components/icons/IconTokenSchedule';
-import { getIpfsAddress } from "@/helpers/image";
+import { handleImageUrl } from "@/helpers/image";
 import { checkUserOwnsNFT } from "@/helpers/token";
 import { useFetchActiveRoundDetails } from "@/hooks/useRounds";
 import useRemainingTime from "@/hooks/useRemainingTime";
@@ -202,7 +202,7 @@ const ProjectDonateButton = () => {
         <div className='flex gap-2'>
           <img
             className='w-6 h-6 rounded-full'
-            src={getIpfsAddress(
+            src={handleImageUrl(
               projectData.abc?.icon! ||
                 'Qmeb6CzCBkyEkAhjrw5G9GShpKiVjUDaU8F3Xnf5bPHtm4',
             )}
@@ -242,7 +242,7 @@ const ProjectDonateButton = () => {
           <div className="flex gap-2">
             <img
               className="w-6 h-6 rounded-full"
-              src={getIpfsAddress(
+              src={handleImageUrl(
                 projectData?.abc?.icon! ||
                   "Qmeb6CzCBkyEkAhjrw5G9GShpKiVjUDaU8F3Xnf5bPHtm4"
               )}
@@ -341,7 +341,7 @@ const ProjectDonateButton = () => {
       <div className="flex justify-start items-center gap-2 ">
         <img
           className="w-6 h-6 rounded-full"
-          src={getIpfsAddress(
+          src={handleImageUrl(
             projectData?.abc?.icon! ||
               "Qmeb6CzCBkyEkAhjrw5G9GShpKiVjUDaU8F3Xnf5bPHtm4"
           )}

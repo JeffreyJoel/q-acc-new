@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { formatDateWithOrdinal } from "@/helpers/date";
-import { getIpfsAddress } from "@/helpers/image";
+import { handleImageUrl } from "@/helpers/image";
 import Link from "next/link";
-  
+
 export const Blog = () => {
   const { articles, loading, error } = useMirrorArticles();
 
@@ -35,13 +35,13 @@ export const Blog = () => {
             BLOG
           </h1>
           <Link href={`https://mirror.xyz/qacc.eth`} target="_blank">
-          <Button
-            variant="outline"
-            className="px-3 py-2 border-peach-400 text-peach-400 hover:bg-peach-400 hover:text-qacc-black transition-colors text-xs font-medium rounded-lg"
-          >
-            ALL REPORTS ON MIRROR.XYZ
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
+            <Button
+              variant="outline"
+              className="px-3 py-2 border-peach-400 text-peach-400 hover:bg-peach-400 hover:text-qacc-black transition-colors text-xs font-medium rounded-lg"
+            >
+              ALL REPORTS ON MIRROR.XYZ
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
           </Link>
         </div>
 
@@ -49,15 +49,22 @@ export const Blog = () => {
           <div className="mt-12">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-14 ">
               {articles.slice(0, 2).map((article) => (
-                <Link href={`https://mirror.xyz/qacc.eth/${article.id}`} target="_blank" className="w-full cursor-pointer ">
+                <Link
+                  href={`https://mirror.xyz/qacc.eth/${article.id}`}
+                  target="_blank"
+                  className="w-full cursor-pointer "
+                >
                   <div className="w-full h-[300px] relative overflow-hidden rounded-3xl">
-                  <Image
-                    src={getIpfsAddress(article.imageURI) || "/images/banners/banner-lg.jpg"}
-                    alt={article.title}
-                    width={530}
-                    height={200}
-                    className="w-full rounded-3xl"
-                  />
+                    <Image
+                      src={
+                        handleImageUrl(article.imageURI) ||
+                        "/images/banners/banner-lg.jpg"
+                      }
+                      alt={article.title}
+                      width={530}
+                      height={200}
+                      className="w-full rounded-3xl"
+                    />
                   </div>
                   <div className="w-full mt-6">
                     <span className="h-[18px] w-fit px-2 py-1 rounded-md bg-[#202020] flex items-center text-white/30 text-[8px] font-bold uppercase mb-2">

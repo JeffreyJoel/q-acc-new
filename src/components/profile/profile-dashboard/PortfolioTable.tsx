@@ -2,7 +2,7 @@
 
 import { Address } from "viem";
 import Image from "next/image";
-import { getIpfsAddress } from "@/helpers/image";
+import { handleImageUrl } from "@/helpers/image";
 import type { IProject } from "@/types/project.type";
 import { usePrivy } from "@privy-io/react-auth";
 import { useClaimRewards, useIsActivePaymentReceiver, useReleasableForStream } from "@/hooks/useClaimRewards";
@@ -75,7 +75,7 @@ function PortfolioTableRow({ project, totalRewardTokens, inWallet, locked }: Por
       {/* Project cell */}
       <td className="py-4 flex items-center space-x-3">
         <Image
-          src={getIpfsAddress(
+          src={handleImageUrl(
             project.abc?.icon ||
               "Qmeb6CzCBkyEkAhjrw5G9GShpKiVjUDaU8F3Xnf5bPHtm4"
           )}

@@ -465,7 +465,7 @@ const MyProjects = ({projectData}:{projectData: IProject}) => {
                 <div className='flex gap-1 items-center'>
                   <img
                     className='w-6 h-6 rounded-full'
-                    src={getIpfsAddress(
+                    src={handleImageUrl(
                       projectData?.abc?.icon! ||
                         'Qmeb6CzCBkyEkAhjrw5G9GShpKiVjUDaU8F3Xnf5bPHtm4',
                     )}

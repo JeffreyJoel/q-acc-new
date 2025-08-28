@@ -357,7 +357,7 @@ export default function ProjectSupportedCard({
     // <div className="bg-white/[7%] rounded-3xl p-6 flex flex-col space-y-4">
     //   <div className="flex items-center space-x-4">
     //     <Image
-    //       src={getIpfsAddress(iconUrl)}
+    //       src={handleImageUrl(iconUrl)}
     //       alt={projectName}
     //       width={40}
     //       height={40}

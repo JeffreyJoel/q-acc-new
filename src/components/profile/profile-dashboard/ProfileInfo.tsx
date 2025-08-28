@@ -8,7 +8,7 @@ import { roundPoints } from "@/helpers/points";
 import { GitcoinVerificationBadge } from "../../verification-badges/GitcoinVerificationBadge";
 import { useAccount } from "wagmi";
 import { useModal } from "@/contexts/ModalContext";
-import { getIpfsAddress } from "@/helpers/image";
+import { handleImageUrl } from "@/helpers/image";
 import { CreateProjectButton } from "../../project/create/CreateProjectButton";
 import { usePrivy } from "@privy-io/react-auth";
 import { useDonorContext } from "@/contexts/donor.context";
@@ -37,7 +37,7 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
 
   let avatar;
   if (user?.avatar && !user.avatar.includes("https://gateway.pinata.cloud")) {
-    avatar = getIpfsAddress(user.avatar);
+    avatar = handleImageUrl(user.avatar);
   } else {
     avatar = user?.avatar;
   }
