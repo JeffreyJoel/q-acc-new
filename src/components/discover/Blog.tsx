@@ -6,10 +6,8 @@ import Image from "next/image";
 import { formatDateWithOrdinal } from "@/helpers/date";
 import { getIpfsAddress } from "@/helpers/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
   
 export const Blog = () => {
-  const router = useRouter();
   const { articles, loading, error } = useMirrorArticles();
 
   if (loading) {

@@ -16,8 +16,7 @@ export const useEnrichedProjects = (initialProjects: IProject[] | undefined) => 
     queryKey: ['enrichedProjects', initialProjects?.length ?? 0],
     queryFn: () => fetchAllProjectsData(initialProjects ?? []),
     enabled: !!initialProjects && initialProjects.length > 0,
-    staleTime: 1000 * 60 * 10, // 10 minutes
-    // Provide placeholder skeletons so the UI can render instantly
+    staleTime: 1000 * 60 * 10,
     placeholderData: () => {
       if (!initialProjects) return [];
       return initialProjects.map<EnrichedProjectData>((p) => ({

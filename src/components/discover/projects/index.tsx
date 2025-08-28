@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ProjectsCarousel } from "./ProjectsCarousel";
 import { useFetchAllProjects } from "@/hooks/useProjects";
 import { ProjectTile } from "./ProjectTile";
@@ -9,9 +10,8 @@ import { useEnrichedProjects } from "@/hooks/useEnrichedProjects";
 import { extractVideoId } from "@/helpers";
 
 function Projects() {
+  const [activeTile, setActiveTile] = useState<string | null>(null);
   const { data: allProjects, isLoading, error } = useFetchAllProjects();
-
-  console.log(allProjects?.projects);
 
   const carouselItems = (allProjects?.projects || [])
     .filter((project: any) => project.rank === 1)
@@ -47,7 +47,9 @@ function Projects() {
       season: project.seasonNumber || "",
       slug: project.slug || "",
       reelId: extractVideoId(project.socialMedia?.find((media: any) => media.type === "REEL_VIDEO")?.link || ""),
+
     }));
+    console.log(tiles);
 
   const { data: enrichedProjects, isLoading: isEnrichedLoading } =
     useEnrichedProjects(allProjects?.projects);
@@ -94,6 +96,8 @@ function Projects() {
               season={tile.season}
               slug={tile.slug}
               reelId={tile.reelId}
+              activeTile={activeTile}
+              setActiveTile={setActiveTile}
             />
           ))}
         </div>
