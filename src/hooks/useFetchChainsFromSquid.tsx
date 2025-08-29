@@ -78,23 +78,15 @@ export const useFetchChainsFromSquid = (): UseQueryResult<{ chains: ISquidChain[
   return useQuery<{ chains: ISquidChain[] }, Error>({
     queryKey: ['squid-data'],
     queryFn: async () => {
-      // Fetch list of chains
       const chainsResponse = await fetch('https://apiplus.squidrouter.com/v2/chains', { headers });
       const chainsJson: ISquidChainResponse = await chainsResponse.json();
-
-      // For now, we'll fetch a limited set of popular tokens to avoid the 70k+ token issue
-      // In production, you'd want to implement a more sophisticated token fetching strategy
-      const tokensResponse = await fetch('https://apiplus.squidrouter.com/v2/tokens', { headers });
-      // const tokensJson: { tokens: any[] } = await tokensResponse.json();
 
       return { chains: chainsJson.chains};
     },
     staleTime: Infinity,
-    // cacheTime is not supported by react-query config here
   });
 };
 
-// Efficient hook for fetching tokens by chain with search
 export const useFetchTokensByChain = (
   chainId: string | null,
   searchTerm: string = '',
@@ -105,17 +97,13 @@ export const useFetchTokensByChain = (
     queryFn: async () => {
       if (!chainId) return [];
 
-      // Since the API doesn't support server-side filtering, we'll fetch all tokens
-      // but implement client-side filtering with optimizations
       const tokensResponse = await fetch('https://apiplus.squidrouter.com/v2/tokens', { headers });
       const tokensJson: { tokens: any[] } = await tokensResponse.json();
 
-      // Filter by chain ID
       let filteredTokens = tokensJson.tokens.filter(
         (token: any) => token.chainId === chainId
       );
 
-      // Apply search term if provided
       if (searchTerm.trim()) {
         const term = searchTerm.toLowerCase();
         filteredTokens = filteredTokens.filter(
@@ -126,9 +114,7 @@ export const useFetchTokensByChain = (
         );
       }
 
-      // Sort by relevance (tokens with balance first, then alphabetically)
       return filteredTokens.sort((a, b) => {
-        // Prioritize tokens that match search term exactly in symbol
         if (searchTerm) {
           const aExactSymbol = a.symbol?.toLowerCase() === searchTerm.toLowerCase();
           const bExactSymbol = b.symbol?.toLowerCase() === searchTerm.toLowerCase();
@@ -136,17 +122,16 @@ export const useFetchTokensByChain = (
           if (!aExactSymbol && bExactSymbol) return 1;
         }
 
-        // Sort alphabetically by symbol
         return (a.symbol || '').localeCompare(b.symbol || '');
       });
     },
     enabled: enabled && !!chainId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 };
 
-// Hook for debounced search
+//TODO: Create a custom debounce hook
 export const useDebounce = (value: string, delay: number) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
 

@@ -15,7 +15,7 @@ import TeamSection from "./TeamSection";
 import TokenHolders from "./TokenHolders";
 import ProjectStats from "./ProjectStats";
 import Link from "next/link";
-import QuickSwapWidget from "../swap/QuickSwapWidget";
+import SquidSwapWidget from "../swap/SquidSwapWidget";
 import { getPoolAddressByPair } from "@/helpers/getTokensListedData";
 import config from "@/config/configuration";
 import { useEffect, useState } from "react";
@@ -80,7 +80,7 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
                 priority
               />
               {/* Overlay for better text readability */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/80 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/85 to-transparent" />
               <div className="relative z-10 h-full flex flex-col justify-between p-8 md:px-16 md:py-11">
                 <div className="flex-1 flex flex-col justify-center">
                   <div className="max-w-lg">
@@ -119,7 +119,7 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
 
             {isTokenListed ? (
               <div className="w-full lg:w-[30%] h-full">
-                <QuickSwapWidget
+                <SquidSwapWidget
                  contractAddress={project.abc?.fundingManagerAddress || ''}
                   receiveTokenAddress={project.abc?.issuanceTokenAddress || ""}
                   receiveTokenSymbol={project.abc?.tokenTicker || ""}

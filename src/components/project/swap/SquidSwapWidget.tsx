@@ -2,11 +2,9 @@
 
 import { useState } from "react";
 import BondingCurveSwap from "./BondingCurveSwap";
-import QuickSwapTab from "./QuickSwapTab";
-// import SquidWidgetComponent from "./SquidWidget";
+import SquidSwapTab from "./SquidSwapTab";
 
-
-export default function QuickSwapWidget({
+export default function SquidSwapWidget({
   contractAddress,
   receiveTokenAddress,
   receiveTokenSymbol,
@@ -17,13 +15,13 @@ export default function QuickSwapWidget({
   receiveTokenSymbol: string;
   receiveTokenIcon: string;
 }) {
-  const [tab, setTab] = useState<"quickswap" | "direct">("quickswap");
+  const [tab, setTab] = useState<"squidswap" | "direct">("squidswap");
 
   const TabButton = ({
     id,
     label,
   }: {
-    id: "quickswap" | "direct";
+    id: "squidswap" | "direct";
     label: string;
   }) => (
     <button
@@ -31,7 +29,7 @@ export default function QuickSwapWidget({
       className={`flex-1  text-center py-2 h-9 items-center rounded-full font-bold text-sm transition-colors
         ${
           tab === id
-            ? id === "quickswap"
+            ? id === "squidswap"
               ? "bg-blue-600"
               : "bg-peach-400 text-black"
             : "bg-black/30"
@@ -50,13 +48,13 @@ export default function QuickSwapWidget({
 
       {/* Tabs */}
       <div className="flex bg-black/75 h-11 px-1 items-center rounded-full">
-        <TabButton id="quickswap" label="QUICKSWAP" />
+        <TabButton id="squidswap" label="SQUIDSWAP" />
         <TabButton id="direct" label="SWAP DIRECTLY" />
       </div>
 
       {/* Content */}
-      {tab === "quickswap" ? (
-        <QuickSwapTab
+      {tab === "squidswap" ? (
+        <SquidSwapTab
           // receiveTokenAddress={receiveTokenAddress}
           // receiveTokenSymbol={receiveTokenSymbol}
           // receiveTokenIcon={receiveTokenIcon}

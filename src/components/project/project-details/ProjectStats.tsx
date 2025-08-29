@@ -28,7 +28,6 @@ interface ProjectStatsProps {
 }
 
 export default function ProjectStats({ project }: ProjectStatsProps) {
-  // Shared donation data
   const [donationData, setDonationData] = useState<{ donations: any[] } | null>(
     null
   );
@@ -40,17 +39,14 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
   const [transactionCount, setTransactionCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Token price and listing status
   const { isTokenListed, currentTokenPrice } = useGetCurrentTokenPrice(
     project.abc?.issuanceTokenAddress
   );
 
-  // Bonding curve supply details (needed when token is not listed)
   const { data: supplyDetails } = useTokenSupplyDetails(
     project.abc?.fundingManagerAddress || ""
   );
 
-  // Market cap and change data
   const [marketCap, setMarketCap] = useState(0);
   const [marketCapChange24h, setMarketCapChange24h] = useState(0);
   const [marketCapChange7d, setMarketCapChange7d] = useState(0);
@@ -80,7 +76,6 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
 
   const tokenPriceUSD = tokenPricePOL * polPriceNumber;
 
-  // Fetch donation data once
   useEffect(() => {
     if (!project?.id) return;
     (async () => {
@@ -132,7 +127,6 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
           setMarketCapChange24h(res24.pctChange);
           setMarketCapChange7d(res7d.pctChange);
         } else if (isTokenListed && project.abc?.issuanceTokenAddress) {
-          // If token is listed, get market cap and price deltas from GeckoTerminal
           const issuanceTokenAddress = project.abc.issuanceTokenAddress;
           const [marketCapData, gecko] = await Promise.all([
             getMarketCap(
@@ -157,7 +151,6 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
           );
 
           setMarketCap(marketCapData * polPriceNumber);
-          // Price change percentages not available for unlisted tokens – leave as zero
           setMarketCapChange24h(0);
           setMarketCapChange7d(0);
         }
@@ -190,15 +183,15 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
           </div>
         )}
 
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 lg:gap-6">
-            <h3 className="mt-0 lg:mt-4 text-[22px] font-anton text-center  sm:text-right text-white/30 w-fit sm:w-[78px] leading-none">
+          <div className="my-auto flex flex-col sm:flex-row justify-between items-center gap-4 lg:gap-6">
+            <h3 className="text-[22px] font-anton text-center  sm:text-right text-white/30 w-fit sm:w-[78px] leading-none">
               <span className="">
                 Q/ACC 
               </span>
               <br className="hidden sm:block" /> 
               <span className="ml-2 sm:ml-0">ROUNDS</span>
             </h3>
-            <div className="mt-0 lg:mt-4  flex justify-between items-center w-full gap-4 lg:gap-6">
+            <div className="flex justify-between items-center w-full gap-4 lg:gap-6">
               {/* Supporters Count */}
               <div className="space-y-0.1 flex-1 text-center">
                 <div className="text-white text-center text-xl md:text-2xl font-bold">
@@ -242,7 +235,7 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
 
       {/* Market Data Card */}
       <div className="bg-white/5 rounded-3xl p-3 md:p-5 backdrop-blur-lg bg-opacity-80">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 lg:gap-6">
+        <div className="my-auto flex flex-col sm:flex-row justify-between items-center gap-4 lg:gap-6">
           <h3 className="text-[22px] font-anton text-center  sm:text-right text-white/30 w-fit sm:w-[78px] leading-none">
             <span className="">MARKET</span>
             <br className="hidden sm:block" />

@@ -135,11 +135,13 @@ interface QuickSwapTabProps {
   receiveTokenIcon?: string;
 }
 
-export default function QuickSwapTab({
+export default function SquidSwapTab({
   receiveTokenAddress = "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
   receiveTokenSymbol = "WMATIC",
   receiveTokenIcon = "https://raw.githubusercontent.com/axelarnetwork/axelar-configs/main/images/tokens/wmatic.svg",
 }: QuickSwapTabProps) {
+  const { data: polUsdPrice } = useFetchPOLPriceSquid();
+
   const DEFAULT_FROM_CHAIN_DETAILS = {
     chainId: "137",
     chainIcon: POLYGON_POS_CHAIN_IMAGE,
@@ -147,6 +149,7 @@ export default function QuickSwapTab({
     tokenSymbol: "POL",
     tokenIcon: POLYGON_POS_CHAIN_IMAGE,
     tokenDecimals: 18,
+    tokenUsdPrice: polUsdPrice,
     blockExplorerUrl: config.SCAN_URL,
   };
   const [slippageTolerance, setSlippageTolerance] = useState<string>("0.5%");
@@ -223,8 +226,6 @@ export default function QuickSwapTab({
     userAddress as Address,
     Number(selectedFrom.chainId)
   );
-
-  const { data: polUsdPrice } = useFetchPOLPriceSquid();
 
   const { currentTokenPrice: receiveTokenPriceInPOL } =
     useGetCurrentTokenPrice(receiveTokenAddress);
@@ -312,6 +313,18 @@ export default function QuickSwapTab({
 
     const priceInPOL = tokenPriceInPOL ?? 1;
     return balanceNum * priceInPOL * polUsdPrice;
+  };
+
+  const calculateUsdFromUsdPrice = (
+    amount?: string | number,
+    tokenUsdPrice?: number
+  ) => {
+    if (amount === undefined || amount === null) return 0;
+    if (!tokenUsdPrice) return 0;
+    const numericAmount =
+      typeof amount === "string" ? parseFloat(amount) : amount;
+    if (isNaN(numericAmount)) return 0;
+    return numericAmount * tokenUsdPrice;
   };
 
   const handleSwap = async () => {
@@ -404,7 +417,11 @@ export default function QuickSwapTab({
           iconSrc={selectedFrom.tokenIcon}
           chainIconSrc={selectedFrom.chainIcon}
           balance={formattedFromBalance}
-          // usdValue={0}
+          usdValue={
+            swapAmount
+              ? calculateUsdFromUsdPrice(swapAmount, selectedFrom.tokenUsdPrice)
+              : 0
+          }
           control={control}
           isInput={true}
           hasError={!!balanceError}
@@ -424,9 +441,9 @@ export default function QuickSwapTab({
               : undefined
           }
           usdValue={
-            receiveTokenBalance
+            quote?.toAmount
               ? calculateUsdValue(
-                  receiveTokenBalance.formattedBalance,
+                  quote.toAmount,
                   receiveTokenPriceInPOL ?? undefined
                 )
               : 0
@@ -437,38 +454,6 @@ export default function QuickSwapTab({
         />
       </div>
 
-      {/* Swap Details */}
-      {/* {quote && isQuoteValid && (
-        <div className="mt-4 p-3 bg-white/5 rounded-lg border border-white/10">
-          <div className="text-xs text-white/60 space-y-1">
-            <div className="flex justify-between">
-              <span>Expected Output:</span>
-              <span className="text-white">
-                {formatBalance(parseFloat(quote.toAmount))} {receiveTokenSymbol}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span>Minimum Output:</span>
-              <span className="text-white">
-                {formatBalance(parseFloat(quote.toAmountMin))}{" "}
-                {receiveTokenSymbol}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span>Price Impact:</span>
-              <span className="text-white">
-                {parseFloat(quote.priceImpact).toFixed(3)}%
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span>Slippage Tolerance:</span>
-              <span className="text-white">{slippageTolerance}</span>
-            </div>
-          </div>
-        </div>
-      )} */}
-
-      {/* Swap Button */}
       {!authenticated ? (
         <ConnectWalletButton />
       ) : (
@@ -484,14 +469,14 @@ export default function QuickSwapTab({
         </button>
       )}
 
-      <div className="w-full text-xs text-white/40 text-center mt-2 flex items-center justify-center gap-1">
+      <div className="w-full text-xs text-white/40 text-center mt-1 flex items-center justify-center gap-1">
         Powered by
         <Image
-          src="/images/logos/quickswap-logo-full.svg"
+          src="/images/logos/squidrouter-logo.svg"
           alt="Squid Router"
           width={100}
-          height={16}
-          className="ml-1.5"
+          height={80}
+          className="ml-1.5 w-7 h-auto opacity-30"
         />
       </div>
       <SelectChainDialog
@@ -506,6 +491,7 @@ export default function QuickSwapTab({
             tokenSymbol: token.symbol,
             tokenIcon: token.logoURI,
             tokenDecimals: token.decimals,
+            tokenUsdPrice: token.usdPrice,
           });
           setIsModalOpen(false);
         }}
