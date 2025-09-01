@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { FC } from 'react';
+import { EProjectSocialMediaType } from '@/types/project.type';
 import { type RegisterOptions, useFormContext } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 
@@ -21,6 +22,7 @@ export const SocialMediaInput: FC<SocialMediaInputProps> = ({
   rules,
 }) => {
   const { register } = useFormContext();
+  const fieldName = name === EProjectSocialMediaType.X ? 'twitter' : name.toLowerCase();
 
   return (
     <div className='flex gap-12 items-center '>
@@ -36,8 +38,9 @@ export const SocialMediaInput: FC<SocialMediaInputProps> = ({
       </div>
       <div className='w-full'>
         <Input 
-          {...register(name, rules)} 
+          {...register(fieldName, rules)} 
           placeholder={placeholder}
+          
           className="border border-neutral-700 rounded-xl focus:ring-peach-400 focus:border-peach-400 outline-none placeholder:text-white/30"
         />
       </div>

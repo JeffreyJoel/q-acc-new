@@ -21,6 +21,9 @@ import { handleImageUrl } from "@/helpers/image";
 import { useUpdateProject } from "@/hooks/useUpdateProject";
 import { toast } from "sonner";
 import { IProjectCreation } from "@/types/project.type";
+import { useFormContext } from "react-hook-form";
+
+// import { SimpleEditor } from "@/components/tiptap/tiptap-templates/simple/simple-editor";
 
 const socialMediaLinks = [
   {
@@ -159,7 +162,7 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
     }
   }, [formData]);
 
-  // ===== Logo Upload Handling =====
+  // Logo Upload Handling
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const logoFileInputRef = useRef<HTMLInputElement>(null);
   const logoUploadAbortController = useRef<AbortController | null>(null);
@@ -205,7 +208,7 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
     [setFormData, formData.logo]
   );
 
-  // ===== Banner Upload Handling =====
+  // Banner Upload Handling
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const bannerFileInputRef = useRef<HTMLInputElement>(null);
   const bannerUploadAbortController = useRef<AbortController | null>(null);
@@ -252,11 +255,10 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
     [setFormData, formData.banner]
   );
 
-  // ===== Social Media Links dynamic handling =====
+  // Social Media Links dynamic handling
   const defaultSelectedLinks = socialMediaLinks
     .filter((s) => {
       const key = s.name.toLowerCase();
-      // if formData has value or required (website, twitter) then include
       if (key === "website" || key === "x") return true;
       return (formData as any)[key]?.length;
     })
@@ -362,7 +364,7 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                     })}
                     placeholder="My First Project"
                     maxLength={55}
-                    className="font-medium text-lg rounded-xl border border-qacc-gray-light/[24%] focus:ring-peach-400 focus:border-peach-300 outline-none pr-16"
+                    className="font-medium text-white text-lg rounded-xl border border-qacc-gray-light/[24%] focus:ring-peach-400 focus:border-peach-300 outline-none pr-16"
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-neutral-500">
                     {projectNameValue.length}/55
@@ -391,7 +393,7 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                     placeholder="Enter project teaser"
                     maxLength={100}
                     rows={4}
-                    className="font-medium text-lg rounded-xl border border-qacc-gray-light/[24%] focus:border-peach-300 outline-none pr-16"
+                    className="font-medium text-white text-lg rounded-xl border border-qacc-gray-light/[24%] focus:border-peach-300 outline-none pr-16"
                   />
                   <span className="absolute right-4 bottom-3 text-sm text-neutral-500">
                     {projectTeaserValue.length}/100
@@ -615,6 +617,26 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                   })}
                 </div>
               </div>
+            </section>
+
+            <section className="space-y-3 bg-black/50 p-8 rounded-2xl">
+              <p className="text-peach-400 font-anton text-[22px] uppercase tracking-wide">
+                Project Description
+              </p>
+              {/* <SimpleEditor /> */}
+              <RichTextEditor
+                name="projectDescription"
+                rules={{
+                  required: "Project description is required",
+                  minLength: {
+                    value: 200,
+                    message:
+                      "Project description must be at least 200 characters",
+                  },
+                }}
+                defaultValue={projectData?.description || ""}
+                maxLength={500}
+              />
             </section>
 
             {/* <section className="flex flex-col gap-6">

@@ -141,10 +141,10 @@
   font-display: auto;
   src: url("/fonts/TuskerGrotesk-8700Bold.woff2") format("woff2");
 }
-
+/* 
 .ql-toolbar.ql-snow{
   border-color:var(--neutral-800) !important;
-}
+} */
 
 /* Styling to remove the top and bottom arrows in the number input component */
 input[type="number"]::-webkit-outer-spin-button,
