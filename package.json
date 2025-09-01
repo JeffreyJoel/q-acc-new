@@ -48,6 +48,7 @@
     "react-dom": "^18",
     "react-dropzone": "^14.3.8",
     "react-hook-form": "^7.57.0",
+    "react-icons": "^5.5.0",
     "react-quill": "^2.0.0",
     "react-scroll": "^1.9.3",
     "react-share": "^5.2.2",

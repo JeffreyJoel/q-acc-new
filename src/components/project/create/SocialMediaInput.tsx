@@ -28,17 +28,17 @@ export const SocialMediaInput: FC<SocialMediaInputProps> = ({
         <Image
           src={`/images/icons/social/${iconName}`}
           alt={`${label} icon`}
-          width={24}
-          height={24}
-          className="filter invert"
+          width={20}
+          height={20}
+          className="filter invert-[20%]"
         />
-        <label>{label}</label>
+        <label className='text-qacc-gray-light text-lg font-medium'>{label}</label>
       </div>
       <div className='w-full'>
         <Input 
           {...register(name, rules)} 
           placeholder={placeholder}
-          className="border border-neutral-700 focus:ring-peach-400 focus:border-peach-400 outline-none"
+          className="border border-neutral-700 rounded-xl focus:ring-peach-400 focus:border-peach-400 outline-none placeholder:text-white/30"
         />
       </div>
     </div>
