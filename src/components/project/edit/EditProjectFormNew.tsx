@@ -317,16 +317,18 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="w-full max-w-5xl mx-auto flex flex-col gap-16 pt-10 my-28 rounded-2xl">
+        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-0 max-w-5xl mx-auto flex flex-col gap-8 md:gap-16 md:pt-10 my-28">
           <div className="flex flex-row justify-between items-center">
-            <h1 className="text-[40px] font-anton text-white">Edit Project</h1>
+            <h1 className="text-[28px] md:text-[40px] font-anton text-white">
+              Edit Project
+            </h1>
 
-            <div className="flex flex-row items-center gap-6">
-              <button className="border border-white/30 py-[10px] px-[20px] rounded-xl text-white/30 text-lg uppercase font-medium">
+            <div className="flex flex-row items-center gap-2 md:gap-6">
+              <button className="border border-white/30 text-[13px] md:text-lg py-2 px-3 md:py-[10px] md:px-[20px] rounded-xl text-white/30 uppercase font-medium">
                 Cancel
               </button>
               <button
-                className="bg-peach-400 text-black py-[10px] px-[20px] rounded-xl text-lg uppercase font-medium hover:bg-peach-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="bg-peach-400 text-black py-2 px-3 md:py-[10px] md:px-[20px] rounded-xl text-[13px] md:text-lg uppercase font-medium hover:bg-peach-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 type="submit"
                 disabled={isSaving}
               >
@@ -343,16 +345,16 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
           </div>
 
           <main className="space-y-3">
-            <section className="bg-white/[7%] p-8 rounded-2xl space-y-8">
+            <section className="bg-white/[7%] p-4 sm:p-6 md:p-8 rounded-2xl space-y-8">
               <p className="text-peach-400 font-anton text-[22px] uppercase tracking-wide">
                 General Info
               </p>
 
-              <div className="flex items-center gap-6">
-                <label className="w-1/3 text-qacc-gray-light font-medium text-lg">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
+                <label className="w-full md:w-1/3 text-qacc-gray-light font-medium text-sm md:text-lg">
                   Project Name
                 </label>
-                <div className="relative flex-1">
+                <div className="w-full relative flex-1">
                   <Input
                     {...register("projectName", {
                       required: "Project name is required",
@@ -364,7 +366,7 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                     })}
                     placeholder="My First Project"
                     maxLength={55}
-                    className="font-medium text-white text-lg rounded-xl border border-qacc-gray-light/[24%] focus:ring-peach-400 focus:border-peach-300 outline-none pr-16"
+                    className="font-medium text-white text-sm md:text-lg rounded-xl border border-qacc-gray-light/[24%] focus:ring-peach-400 focus:border-peach-300 outline-none pr-16"
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-neutral-500">
                     {projectNameValue.length}/55
@@ -377,11 +379,11 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                 )}
               </div>
 
-              <div className="flex items-start gap-6">
-                <label className="w-1/3 text-qacc-gray-light font-medium text-lg">
+              <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6">
+                <label className="w-full md:w-1/3 text-qacc-gray-light font-medium text-sm md:text-lg">
                   Project Short Description
                 </label>
-                <div className="relative flex-1">
+                <div className="w-full relative flex-1">
                   <Textarea
                     {...register("projectTeaser", {
                       required: "Project teaser is required",
@@ -393,7 +395,7 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                     placeholder="Enter project teaser"
                     maxLength={100}
                     rows={4}
-                    className="font-medium text-white text-lg rounded-xl border border-qacc-gray-light/[24%] focus:border-peach-300 outline-none pr-16"
+                    className="font-medium text-white text-sm md:text-lg rounded-xl border border-qacc-gray-light/[24%] focus:border-peach-300 outline-none pr-16"
                   />
                   <span className="absolute right-4 bottom-3 text-sm text-neutral-500">
                     {projectTeaserValue.length}/100
@@ -406,15 +408,15 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                 )}
               </div>
 
-              <div className="flex items-center gap-6">
-                <label className="w-1/3 text-qacc-gray-light font-medium text-lg">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 sm:gap-4 md:gap-6">
+                <label className="w-full md:w-1/3 text-qacc-gray-light font-medium text-sm md:text-lg">
                   Project & Token icon
                 </label>
-                <div className="w-full flex items-center justify-end gap-6">
+                <div className="w-full flex items-center justify-start md:justify-end gap-4 md:gap-6">
                   {isUploadingLogo ? (
                     <span
                       onClick={cancelLogoUpload}
-                      className="flex items-center gap-2 text-white font-medium text-lg cursor-pointer"
+                      className="flex items-center gap-2 text-white font-medium text-sm md:text-lg cursor-pointer"
                     >
                       <IconX /> Cancel Upload
                     </span>
@@ -425,14 +427,14 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                           logo: previousLogo ?? null,
                         })
                       }
-                      className="flex items-center gap-2 text-white hover:text-red-500 font-medium text-lg cursor-pointer"
+                      className="flex items-center gap-2 text-white hover:text-red-500 font-medium text-sm md:text-lg cursor-pointer"
                     >
                       <IconX /> Delete
                     </span>
                   ) : null}
 
                   <span
-                    className={`flex items-center gap-2 text-white font-medium text-lg cursor-pointer ${
+                    className={`flex items-center gap-2 text-white font-medium text-sm md:text-lg cursor-pointer ${
                       isUploadingLogo ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                     onClick={
@@ -456,7 +458,7 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                       alt="Upload"
                       width={124}
                       height={124}
-                      className="rounded-full object-cover w-[124px] h-[124px]"
+                      className="rounded-full object-cover md:w-[124px] md:h-[124px] w-[80px] h-[80px] block"
                     />
                     {isUploadingLogo && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-full">
@@ -469,8 +471,8 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-6">
-                <label className="w-1/3 text-qacc-gray-light font-medium text-lg">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
+                <label className="w-full md:w-1/3 text-qacc-gray-light font-medium text-sm md:text-lg">
                   Cover image
                 </label>
                 <div className="w-full flex-col gap-6">
@@ -489,23 +491,24 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                       />
                       {isUploadingBanner && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-xl">
-                          <span className="text-lg text-white animate-pulse">
+                          <span className="text-sm md:text-lg text-white animate-pulse">
                             Uploading...
                           </span>
                         </div>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center justify-between gap-6 mt-4">
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-start md:justify-between gap-4 md:gap-6 mt-4">
                     {/* Image fit type toggle */}
-                    <div className="flex items-center gap-3">
-                      <p className="text-qacc-gray-light font-medium text-lg">
+                    <div className="w-full md:w-fit flex justify-between md:justify-start items-center gap-3">
+                      <p className="text-qacc-gray-light font-medium text-sm md:text-lg">
                         Image fit type
                       </p>
-                      <button
+                   <div className="flex gap-3">
+                   <button
                         type="button"
                         onClick={() => setBannerFitType("fill")}
-                        className={`px-6 py-1 rounded-2xl text-lg font-medium ${
+                        className={`px-6 py-2 md:py-1 rounded-2xl text-sm md:text-lg font-medium ${
                           bannerFitType === "fill"
                             ? "bg-qacc-gray-light text-black"
                             : "bg-qacc-gray-light/[12%] text-qacc-gray-light/50"
@@ -516,7 +519,7 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                       <button
                         type="button"
                         onClick={() => setBannerFitType("fit")}
-                        className={`px-6 py-1 rounded-2xl text-lg font-medium ${
+                        className={`px-6 py-2 md:py-1 rounded-2xl text-sm md:text-lg font-medium ${
                           bannerFitType === "fit"
                             ? "bg-qacc-gray-light text-black"
                             : "bg-qacc-gray-light/[12%] text-qacc-gray-light/50"
@@ -524,12 +527,13 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                       >
                         Fit
                       </button>
+                   </div>
                     </div>
-                    <div className="flex gap-6">
+                    <div className="w-full md:w-fit flex justify-between md:justify-start gap-6">
                       {isUploadingBanner ? (
                         <span
                           onClick={cancelBannerUpload}
-                          className="flex items-center gap-2 text-white font-medium text-lg cursor-pointer"
+                          className="flex items-center gap-2 text-white font-medium text-sm md:text-lg cursor-pointer"
                         >
                           <IconX /> Cancel Upload
                         </span>
@@ -540,14 +544,14 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                               banner: previousBanner ?? null,
                             })
                           }
-                          className="flex items-center gap-2 text-white hover:text-red-500 font-medium text-lg cursor-pointer"
+                          className="flex items-center gap-2 text-white hover:text-red-500 font-medium text-sm md:text-lg cursor-pointer"
                         >
                           <IconX /> Delete
                         </span>
                       ) : null}
 
                       <span
-                        className={`flex items-center gap-2 text-white font-medium text-lg cursor-pointer ${
+                        className={`flex items-center gap-2 text-white font-medium text-sm md:text-lg cursor-pointer ${
                           isUploadingBanner
                             ? "opacity-50 cursor-not-allowed"
                             : ""
@@ -575,7 +579,7 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
             </section>
 
             {/* LINKS SECTION */}
-            <section className="bg-white/[7%] p-8 rounded-2xl space-y-8">
+            <section className="bg-white/[7%] p-4 sm:p-6 md:p-8 rounded-2xl space-y-8">
               <p className="text-peach-400 font-anton text-[22px] uppercase tracking-wide">
                 Links
               </p>
@@ -592,8 +596,8 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
               </div>
 
               {/* add more links */}
-              <div className="flex items-center justify-between gap-6">
-                <p className="text-qacc-gray-light text-lg font-medium mt-4 mb-2">
+              <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between md:gap-6 gap-4">
+                <p className="text-qacc-gray-light text-sm md:text-lg font-medium mt-4 mb-2">
                   Add more links
                 </p>
                 <div className="flex flex-wrap gap-3">
@@ -619,7 +623,7 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
               </div>
             </section>
 
-            <section className="space-y-3 bg-black/50 p-8 rounded-2xl">
+            <section className="space-y-3 bg-black/50 p-4 sm:p-6 md:p-8 rounded-2xl">
               <p className="text-peach-400 font-anton text-[22px] uppercase tracking-wide">
                 Project Description
               </p>
@@ -638,62 +642,14 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                 maxLength={500}
               />
             </section>
-
-            {/* <section className="flex flex-col gap-6">
-              <div>
-                <h2 className="text-2xl">Tell us about your project...</h2>
-                <p className="text-sm mt-2">
-                  <span className="text-neutral-300">
-                    Aim for 200-500 words.
-                  </span>
-                </p>
-              </div>
-              <RichTextEditor
-                name="projectDescription"
-                rules={{
-                  required: "Project description is required",
-                  minLength: {
-                    value: 200,
-                    message:
-                      "Project description must be at least 200 characters",
-                  },
-                }}
-                defaultValue={projectData?.description || ""}
-                maxLength={500}
-              />
-            </section> */}
-
-            {/* <section className="flex flex-col gap-6">
-              <div>
-                <h2 className="text-2xl">Social Media Links</h2>
-                <p className="text-sm mt-2">
-                  <span className="text-neutral-300">
-                    Add your project's social media links (optional)
-                  </span>
-                </p>
-              </div>
-              <div className="flex flex-col gap-6">
-                {socialMediaLinks.map((socialMedia) => (
-                  <SocialMediaInput key={socialMedia.name} {...socialMedia} />
-                ))}
-              </div>
-            </section> */}
-
-            {/* <section className="flex flex-col gap-6 w-full mx-auto">
-              <label className="text-4xl font-bold text-neutral-300">
-                Add an image to your project
-              </label>
-              <p>Displayed in the header of the project page.</p>
-              <Dropzone name="banner" onDrop={handleDrop} />
-            </section> */}
           </main>
 
           <div className="flex flex-row items-center gap-6 justify-between">
-            <button className="border border-white/30 py-[10px] px-[20px] rounded-xl text-white/30 text-lg uppercase font-medium">
+            <button className="border border-white/30 py-2 px-3 md:py-[10px] md:px-[20px] rounded-xl text-white/30 text-[13px] md:text-lg uppercase font-medium">
               Cancel
             </button>
             <button
-              className="bg-peach-400 text-black py-[10px] px-[20px] rounded-xl text-lg uppercase font-medium hover:bg-peach-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="bg-peach-400 text-black py-2 px-3 md:py-[10px] md:px-[20px] rounded-xl text-[13px] md:text-lg uppercase font-medium hover:bg-peach-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               type="submit"
               disabled={isSaving}
             >

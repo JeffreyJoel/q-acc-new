@@ -4,9 +4,7 @@ import { useFormContext, RegisterOptions } from 'react-hook-form';
 import { uploadToIPFS } from '@/services/ipfs';
 import { handleImageUrl } from '@/helpers/image';
 
-// ------------------------
-// Custom dark theme for the Rich-Text editor – matches the design reference
-// ------------------------
+// Custom dark theme for the Rich-Text editor
 const customStyles = `
   .custom-editor-container {
     background: #0c0c0c;

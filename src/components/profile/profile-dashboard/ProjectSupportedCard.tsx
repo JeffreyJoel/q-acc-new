@@ -136,7 +136,6 @@ export default function ProjectSupportedCard({
 
   const [days, hours, minutes, seconds] = useCountdown(unlockDate || "");
 
-  // Format inWallet with two decimals and split
   const inWalletStr = inWallet.toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,

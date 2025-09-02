@@ -34,14 +34,14 @@ export const SocialMediaInput: FC<SocialMediaInputProps> = ({
           height={20}
           className="filter invert-[20%]"
         />
-        <label className='text-qacc-gray-light text-lg font-medium'>{label}</label>
+        <label className='text-qacc-gray-light text-sm md:text-lg font-medium'>{label}</label>
       </div>
       <div className='w-full'>
         <Input 
           {...register(fieldName, rules)} 
           placeholder={placeholder}
           
-          className="border border-neutral-700 rounded-xl focus:ring-peach-400 focus:border-peach-400 outline-none placeholder:text-white/30"
+          className="border border-neutral-700 rounded-xl focus:ring-peach-400 focus:border-peach-400 outline-none placeholder:text-white/30 text-sm md:text-lg"
         />
       </div>
     </div>
