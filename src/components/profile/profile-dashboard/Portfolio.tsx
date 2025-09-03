@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useDonorContext } from "@/contexts/donor.context";
 import { usePrivy } from "@privy-io/react-auth";
 import { fetchEVMTokenBalances } from "@/helpers/token";
 import { useVestingSchedules } from "@/hooks/useVestingSchedules";
 import { PortfolioTable, PortfolioTableRowProps } from "./PortfolioTable";
 import ProjectSupportedCard from "./ProjectSupportedCard";
-import { getDifferenceFromPeriod } from "@/helpers/date";
 import type { IProject } from "@/types/project.type";
 
 export default function Portfolio() {

@@ -1,32 +1,23 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
-import { useState, useMemo, useCallback, useEffect } from "react";
-import Stats from "./Stats";
-import { MyVerifications } from "./MyVerification";
+import { useState, useMemo } from "react";
 import { Address } from "viem";
 import { useAccount } from "wagmi";
-import DonorSupports from "./DonorSupports";
-import { useSearchParams, useRouter } from "next/navigation";
 import { useAddressWhitelist } from "@/hooks/useAddressWhitelist";
 import MyProjects from "./MyProjects";
 import { usePrivy } from "@privy-io/react-auth";
 import { useDonorContext } from "@/contexts/donor.context";
-import {
-  ProjectsTokensSkeleton,
-  TabContentSkeleton,
-  VerificationsSkeleton,
-} from "@/components/loaders/ProfilePageLoaders";
+import { ProjectsTokensSkeleton } from "@/components/loaders/ProfilePageLoaders";
 import { useFetchProjectByUserId } from "@/hooks/useProjects";
-import { fetchUserDonationsCount } from "@/services/donation.service";
+import Portfolio from "./Portfolio";
 
 interface ProfileTabProps {
   userAddress: Address;
 }
 
 export default function ProfileTab({ userAddress }: ProfileTabProps) {
-  const [activeTab, setActiveTab] = useState("stats");
-  const [donationCount, setDonationCount] = useState(0);
+  const [activeTab, setActiveTab] = useState("tokens");
 
   const { data: addrWhitelist, isLoading: whitelistLoading } =
     useAddressWhitelist();
@@ -36,8 +27,6 @@ export default function ProfileTab({ userAddress }: ProfileTabProps) {
     user?.id ? parseInt(user.id) : 0
   );
   const { user: privyUser, authenticated } = usePrivy();
-  const searchParams = useSearchParams();
-  const router = useRouter();
 
   const ConnectedUserAddress = privyUser?.wallet?.address || wagmiAddress;
 
@@ -49,179 +38,46 @@ export default function ProfileTab({ userAddress }: ProfileTabProps) {
     );
   }, [ConnectedUserAddress, userAddress]);
 
-  const handleTabChange = useCallback(
-    (tab: string) => {
-      setActiveTab(tab);
-
-      const params = new URLSearchParams(searchParams.toString());
-
-      switch (tab) {
-        case "tokens":
-          params.set("tab", "contributions");
-          break;
-        case "verifications":
-          params.set("tab", "verification");
-          break;
-        case "stats":
-          params.set("tab", "stats");
-          break;
-        case "projects":
-          params.set("tab", "projects");
-          break;
-      }
-
-      router.replace(`?${params.toString()}`, { scroll: false });
-    },
-    [searchParams, router]
-  );
-
-  useEffect(() => {
-    const urlTab = searchParams.get("tab");
-
-    switch (urlTab) {
-      case "contributions":
-        setActiveTab("tokens");
-        break;
-      case "verification":
-        setActiveTab(isOwnProfile ? "verifications" : "stats");
-        break;
-      case "projects":
-        setActiveTab(isOwnProfile && addrWhitelist ? "projects" : "stats");
-        break;
-      case "stats":
-        setActiveTab("stats");
-        break;
-      default:
-        setActiveTab("stats");
-        break;
-    }
-  }, [searchParams, isOwnProfile]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user?.id) {
-        return;
-      }
-      try {
-        const res = await fetchUserDonationsCount(parseInt(user?.id));
-        if (res) {
-          setDonationCount(res.totalCount);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchData();
-  });
-
-  const profileLabel = isOwnProfile ? "My" : "User";
   const isLoading = donorContextLoading || whitelistLoading;
 
   return (
     <div className="mt-12 rounded-2xl">
       <Tabs value={activeTab} className="w-full">
-        <TabsList className="bg-transparent flex flex-nowrap p-0 h-auto mb-8">
-          <TabsTrigger
-            value="stats"
-            className={`px-3 py-2 sm:py-3 sm:px-6 flex-none rounded-full ${
-              activeTab === "stats"
-                ? "bg-neutral-800 shadow-sm text-peach-400"
-                : "bg-transparent"
-            }`}
-            onClick={() => handleTabChange("stats")}
-            disabled={isLoading}
-          >
-            {profileLabel} Stats
-          </TabsTrigger>
-
-          {isOwnProfile && addrWhitelist && (
+        {projectData && (
+          <TabsList className="flex mx-auto w-1/3 rounded-full bg-black p-1 mb-8">
             <TabsTrigger
-              value="projects"
-              className={`px-6 py-3 flex gap-2 items-center rounded-full ${
-                activeTab === "projects"
-                  ? "bg-neutral-800 shadow-sm text-peach-400"
-                  : "bg-transparent"
-              }`}
-              onClick={() => handleTabChange("projects")}
+              value="tokens"
+              className="px-6 py-1 flex w-1/2 gap-2 items-center justify-center rounded-full text-sm md:text-base font-medium text-qacc-gray-light data-[state=active]:bg-peach-400 data-[state=active]:text-black focus:outline-none transition-colors"
+              onClick={() => setActiveTab("tokens")}
               disabled={isLoading}
             >
-              <span>{profileLabel} Projects</span>
-              <span
-                className={`inline-flex items-center text-xs  min-w-6 min-h-6 font-medium rounded-full justify-center ${
-                  activeTab === "projects"
-                    ? "bg-peach-400 text-neutral-900"
-                    : "bg-neutral-700 text-white"
-                }`}
+              <span>MY TOKENS</span>
+            </TabsTrigger>
+            {isOwnProfile && (
+              <TabsTrigger
+                value="projects"
+                className="px-6 py-1 flex w-1/2 gap-2 items-center justify-center rounded-full text-sm font-medium text-qacc-gray-light data-[state=active]:bg-peach-400 data-[state=active]:text-black focus:outline-none transition-colors"
+                onClick={() => setActiveTab("projects")}
+                disabled={isLoading}
               >
-                {!projectData ? 0 : 1}
-              </span>
-            </TabsTrigger>
-          )}
-
-          <TabsTrigger
-            value="tokens"
-            className={`px-6 py-3 flex gap-2 items-center rounded-full ${
-              activeTab === "tokens"
-                ? "bg-neutral-800 shadow-sm text-peach-400"
-                : "bg-transparent"
-            }`}
-            onClick={() => handleTabChange("tokens")}
-            disabled={isLoading}
-          >
-            <span>{profileLabel} Tokens</span>
-            <span
-              className={`inline-flex items-center text-xs  min-w-6 min-h-6 font-medium rounded-full justify-center ${
-                activeTab === "tokens"
-                  ? "bg-peach-400 text-neutral-900"
-                  : "bg-neutral-700 text-white"
-              }`}
-            >
-              {donationCount}
-            </span>
-          </TabsTrigger>
-          {isOwnProfile && (
-            <TabsTrigger
-              value="verifications"
-              className={`px-6 py-3 rounded-full ${
-                activeTab === "verifications"
-                  ? "bg-neutral-800 shadow-sm text-peach-400"
-                  : "bg-transparent"
-              }`}
-              onClick={() => handleTabChange("verifications")}
-              disabled={isLoading}
-            >
-              {profileLabel} Verifications
-            </TabsTrigger>
-          )}
-        </TabsList>
-
-        <TabsContent value="stats" className="">
-          {isLoading ? <TabContentSkeleton /> : <Stats />}
-        </TabsContent>
-
-        {isOwnProfile && (
-          <TabsContent value="projects" className="">
-            {isLoading ? (
-              <ProjectsTokensSkeleton />
-            ) : (
-              <MyProjects projectData={projectData!} />
+                <span>MY PROJECTS</span>
+              </TabsTrigger>
             )}
-          </TabsContent>
+          </TabsList>
         )}
-        <TabsContent value="tokens" className="">
+
+        <TabsContent value="projects" className="">
           {isLoading ? (
             <ProjectsTokensSkeleton />
           ) : (
-            <DonorSupports isOwnProfile={!!isOwnProfile} />
+            <MyProjects projectData={projectData!} />
           )}
         </TabsContent>
 
-        {isOwnProfile && (
-          <TabsContent value="verifications" className="">
-            {isLoading ? <VerificationsSkeleton /> : <MyVerifications />}
-          </TabsContent>
-        )}
+        <TabsContent value="tokens" className="">
+          <Portfolio />
+          {/* {isLoading ? <ProjectsTokensSkeleton /> : <Portfolio />} */}
+        </TabsContent>
       </Tabs>
     </div>
   );

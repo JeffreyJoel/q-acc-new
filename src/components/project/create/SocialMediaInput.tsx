@@ -25,8 +25,8 @@ export const SocialMediaInput: FC<SocialMediaInputProps> = ({
   const fieldName = name === EProjectSocialMediaType.X ? 'twitter' : name.toLowerCase();
 
   return (
-    <div className='flex gap-12 items-center '>
-      <div className='flex gap-2 items-center mb-2 w-36'>
+    <div className='flex items-center gap-6 md:gap-12'>
+      <div className='w-20 md:w-1/3 flex gap-2 items-center mb-2'>
         <Image
           src={`/images/icons/social/${iconName}`}
           alt={`${label} icon`}
@@ -34,9 +34,9 @@ export const SocialMediaInput: FC<SocialMediaInputProps> = ({
           height={20}
           className="filter invert-[20%]"
         />
-        <label className='text-qacc-gray-light text-sm md:text-lg font-medium'>{label}</label>
+        <label className=' text-qacc-gray-light text-sm md:text-lg font-medium'>{label}</label>
       </div>
-      <div className='w-full'>
+      <div className='md:w-2/3 relative flex-1'>
         <Input 
           {...register(fieldName, rules)} 
           placeholder={placeholder}

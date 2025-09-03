@@ -22,6 +22,8 @@ import { useUpdateProject } from "@/hooks/useUpdateProject";
 import { toast } from "sonner";
 import { IProjectCreation } from "@/types/project.type";
 import { useFormContext } from "react-hook-form";
+import { TeamForm } from "@/components/project/create/TeamForm";
+import { TeamMember } from "@/types/project.type";
 
 // import { SimpleEditor } from "@/components/tiptap/tiptap-templates/simple/simple-editor";
 
@@ -125,6 +127,7 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
   const {
     handleSubmit,
     register,
+    setValue,
     formState: { errors },
     reset,
   } = methods;
@@ -273,6 +276,31 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
     setSelectedLinks((prev) => [...prev, type]);
   };
 
+  // ================= TEAM MEMBERS HANDLING =================
+  // Watch the current list of team members in the form state
+  const teamMembers =
+    (useWatch({ control: methods.control, name: "team" }) as TeamMember[]) ||
+    [];
+
+  // Ensure at least one empty team member exists when the form is first loaded
+  useEffect(() => {
+    if (!teamMembers?.length) {
+      setValue("team", [{ name: "", image: null }]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const addTeamMember = () => {
+    setValue("team", [...teamMembers, { name: "", image: null }]);
+  };
+
+  const removeTeamMember = (index: number) => {
+    setValue(
+      "team",
+      teamMembers.filter((_, i) => i !== index)
+    );
+  };
+
   const { mutateAsync: updateProject, isPending: isSaving } =
     useUpdateProject(projectId);
 
@@ -299,6 +327,7 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
         image: data.banner || undefined,
         icon: data.logo || undefined,
         socialMedia: socialMedia.length ? socialMedia : undefined,
+        teamMembers: data.team?.length ? data.team : undefined,
       };
 
       await updateProject(projectPayload);
@@ -504,30 +533,30 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                       <p className="text-qacc-gray-light font-medium text-sm md:text-lg">
                         Image fit type
                       </p>
-                   <div className="flex gap-3">
-                   <button
-                        type="button"
-                        onClick={() => setBannerFitType("fill")}
-                        className={`px-6 py-2 md:py-1 rounded-2xl text-sm md:text-lg font-medium ${
-                          bannerFitType === "fill"
-                            ? "bg-qacc-gray-light text-black"
-                            : "bg-qacc-gray-light/[12%] text-qacc-gray-light/50"
-                        }`}
-                      >
-                        Fill
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setBannerFitType("fit")}
-                        className={`px-6 py-2 md:py-1 rounded-2xl text-sm md:text-lg font-medium ${
-                          bannerFitType === "fit"
-                            ? "bg-qacc-gray-light text-black"
-                            : "bg-qacc-gray-light/[12%] text-qacc-gray-light/50"
-                        }`}
-                      >
-                        Fit
-                      </button>
-                   </div>
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setBannerFitType("fill")}
+                          className={`px-6 py-2 md:py-1 rounded-2xl text-sm md:text-lg font-medium ${
+                            bannerFitType === "fill"
+                              ? "bg-qacc-gray-light text-black"
+                              : "bg-qacc-gray-light/[12%] text-qacc-gray-light/50"
+                          }`}
+                        >
+                          Fill
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBannerFitType("fit")}
+                          className={`px-6 py-2 md:py-1 rounded-2xl text-sm md:text-lg font-medium ${
+                            bannerFitType === "fit"
+                              ? "bg-qacc-gray-light text-black"
+                              : "bg-qacc-gray-light/[12%] text-qacc-gray-light/50"
+                          }`}
+                        >
+                          Fit
+                        </button>
+                      </div>
                     </div>
                     <div className="w-full md:w-fit flex justify-between md:justify-start gap-6">
                       {isUploadingBanner ? (
@@ -641,6 +670,37 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                 defaultValue={projectData?.description || ""}
                 maxLength={500}
               />
+            </section>
+
+            {/* Team Section */}
+            <section className="bg-white/[7%] p-4 sm:p-6 md:p-8 rounded-2xl space-y-8">
+              <p className="text-peach-400 font-anton text-[22px] uppercase tracking-wide">
+                Team
+              </p>
+
+              {/* EXISTING TEAM MEMBERS */}
+              <div className="flex flex-col gap-6">
+                {teamMembers?.map((member, index) => (
+                  <TeamForm
+                    key={index}
+                    index={index}
+                    teamMember={member}
+                    removeMember={() => removeTeamMember(index)}
+                    isEdit
+                  />
+                ))}
+              </div>
+
+              <div className="pt-8  flex justify-between items-center">
+                <b>More team members?</b>
+                <button
+                  type="button"
+                  onClick={addTeamMember}
+                  className="bg-qacc-gray-light px-3 py-3 md:py-1 rounded-xl text-sm md:text-base text-black font-medium"
+                >
+                  Add a new team member
+                </button>
+              </div>
             </section>
           </main>
 

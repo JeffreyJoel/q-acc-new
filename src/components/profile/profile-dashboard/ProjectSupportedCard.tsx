@@ -162,7 +162,7 @@ export default function ProjectSupportedCard({
           className="rounded-2xl w-full h-full object-center object-fill"
         />
 
-        <div className="absolute top-0 right-0 w-full h-full bg-black/70 rounded-2xl"></div>
+        <div className="absolute top-0 right-0 w-full h-full bg-black/80 rounded-2xl"></div>
 
         <div className="absolute top-0 px-8 left-0 w-full h-full flex flex-col justify-center">
           <div className="flex gap-2 items-center">
@@ -352,37 +352,5 @@ export default function ProjectSupportedCard({
         </table>
       </div>
     </div>
-
-    // <div className="bg-white/[7%] rounded-3xl p-6 flex flex-col space-y-4">
-    //   <div className="flex items-center space-x-4">
-    //     <Image
-    //       src={handleImageUrl(iconUrl)}
-    //       alt={projectName}
-    //       width={40}
-    //       height={40}
-    //       className="rounded-full"
-    //     />
-    //     <div>
-    //       <h3 className="text-white font-bold text-xl">{tokenSymbol}</h3>
-    //       <p className="text-qacc-gray-light text-sm">{projectName}</p>
-    //     </div>
-    //   </div>
-
-    //   <div className="flex items-center overflow-hidden">
-    //     <p className="text-white font-mono text-sm">{truncateAddress(address)}</p>
-    //     <CopyButton text={address} className="ml-2" iconColor="text-white" />
-    //     <Link
-    //       href={`${explorerUrl}${address}`}
-    //       target="_blank"
-    //       className="ml-2"
-    //     >
-    //       <ExternalLink className="w-5 h-5 text-white" />
-    //     </Link>
-    //   </div>
-
-    //   <div className="bg-white/[15%] uppercase text-xs font-medium tracking-wide text-white py-2 px-4 rounded-full">
-    //     {unlockIn}
-    //   </div>
-    // </div>
   );
 }

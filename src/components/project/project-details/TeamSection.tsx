@@ -1,5 +1,7 @@
 "use client";
 import { IconX } from "@/components/icons/IconX";
+import { IconLinkedin } from "@/components/icons/IconLinkedin";
+import { IconFarcaster } from "@/components/icons/IconFarcaster";
 import { TeamMember as TeamMemberType } from "@/types/project.type";
 import Image from "next/image";
 import Link from "next/link";
@@ -37,14 +39,42 @@ export default function TeamSection({ teamMembers }: TeamSectionProps) {
               />
               <div>
                 <h3 className="text-white font-medium text-lg md:text-xl mb-2">{member.name}</h3>
-                <Link
-                  href={`https://twitter.com/${member.twitter}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-[24px] h-[24px] block"
-                >
-                  <IconX color="white" fillOpacity={0.5} size={24} />
-                </Link>
+
+                {/* Social Icons */}
+                <div className="flex items-center gap-3">
+                  {member.twitter && (
+                    <Link
+                      href={`${member.twitter}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-[24px] h-[24px] block hover:opacity-75"
+                    >
+                      <IconX color="white" size={24} />
+                    </Link>
+                  )}
+
+                  {member.linkedin && (
+                    <Link
+                      href={member.linkedin.startsWith("http") ? member.linkedin : `https://linkedin.com/in/${member.linkedin}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-[24px] h-[24px] block hover:opacity-75"
+                    >
+                      <IconLinkedin color="white" size={24} />
+                    </Link>
+                  )}
+
+                  {member.farcaster && (
+                    <Link
+                      href={member.farcaster.startsWith("http") ? member.farcaster : `https://warpcast.com/${member.farcaster.replace("@", "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-[24px] h-[24px] block hover:opacity-75"
+                    >
+                      <IconFarcaster color="white" size={24} />
+                    </Link>
+                  )}
+                </div>
               </div>
             </div>
           ))}
