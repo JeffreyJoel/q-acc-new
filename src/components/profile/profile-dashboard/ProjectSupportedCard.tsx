@@ -19,19 +19,21 @@ import { Address } from "viem";
 import { shortenAddressLarger } from "@/helpers/address";
 import { useVestingSchedules } from "@/hooks/useVestingSchedules";
 import { useCountdown } from "@/hooks/useCountdown";
+import { useDonorContext } from "@/contexts/donor.context";
+import { useReleasedForStream } from "@/hooks/useClaimRewards";
+import { ethers } from "ethers";
+import { useGetCurrentTokenPrice } from "@/hooks/useGetCurrentTokenPrice";
+import { useTokenPrice } from "@/hooks/useTokens";
+import { formatDateMonthDayYear } from "@/helpers/date";
 
 interface ProjectSupportedCardProps {
   project: IProject;
   inWallet: number;
-  locked: number;
-  claimable: number;
 }
 
 export default function ProjectSupportedCard({
   project,
-  inWallet,
-  locked,
-  claimable,
+  inWallet
 }: ProjectSupportedCardProps) {
   const [isTokenClaimable, setIsTokenClaimable] = useState(false);
   const { user: privyUser } = usePrivy();
@@ -78,7 +80,14 @@ export default function ProjectSupportedCard({
     paymentProcessorAddress: paymentAddresses.paymentProcessorAddress || "",
     client: paymentAddresses.paymentRouterAddress || "",
     receiver: address,
-    streamId: BigInt(2),
+    streamIds: [
+      BigInt(1),
+      BigInt(2),
+      BigInt(3),
+      BigInt(4),
+      BigInt(5),
+      BigInt(6),
+    ],
   });
 
   const isActivePaymentReceiver = useIsActivePaymentReceiver({
@@ -127,7 +136,6 @@ export default function ProjectSupportedCard({
       period.type === "supporters" && period.season === project.seasonNumber
   )?.cliff;
 
-  // If no cliff date found for the project's season, fallback to season 2
   if (!unlockDate) {
     unlockDate = allVestingData.find(
       (period) => period.type === "supporters" && period.season === 2
@@ -151,9 +159,69 @@ export default function ProjectSupportedCard({
     return { whole, frac };
   }
 
+  const { donationsGroupedByProject } = useDonorContext();
+
+  const released = useReleasedForStream({
+    paymentProcessorAddress: paymentAddresses.paymentProcessorAddress || "",
+    client: paymentAddresses.paymentRouterAddress || "",
+    receiver: address,
+    streamIds: [
+      BigInt(1),
+      BigInt(2),
+      BigInt(3),
+      BigInt(4),
+      BigInt(5),
+      BigInt(6),
+    ],
+  });
+
+  const [lockedTokens, setLockedTokens] = useState(0);
+
+  const projectDonations =
+    donationsGroupedByProject[Number(project.id)] || [];
+
+  const totalTokensReceived = projectDonations.reduce(
+    (sum: number, donation: any) => sum + (donation.rewardTokenAmount || 0),
+    0,
+  );
+
+  const availableToClaim = releasable.data
+    ? Number(ethers.formatUnits(releasable.data, 18))
+    : 0;
+
+  const tokensAlreadyClaimed = released.data
+    ? Number(ethers.formatUnits(released.data, 18))
+    : 0;
+
+  useEffect(() => {
+    setLockedTokens(totalTokensReceived - tokensAlreadyClaimed);
+  }, [totalTokensReceived, tokensAlreadyClaimed]);
+
+  // token price
+  const { currentTokenPrice } = useGetCurrentTokenPrice(
+    project.abc?.issuanceTokenAddress,
+  );
+  const { data: POLPrice } = useTokenPrice();
+  const tokenPriceUsd = (currentTokenPrice || 0) * Number(POLPrice || 0);
+
+  const totalAmountPerToken = inWallet + lockedTokens + availableToClaim;
+  const totalAmountPerTokenInUSD = totalAmountPerToken * tokenPriceUsd;
+
+  // Update claimable state based on availability
+  useEffect(() => {
+    setIsTokenClaimable(
+      !!availableToClaim && availableToClaim > 0 &&
+      !!isActivePaymentReceiver.data,
+    );
+  }, [availableToClaim, isActivePaymentReceiver.data]);
+
+  // Aliases for UI compatibility
+  const locked = lockedTokens;
+  const claimable = availableToClaim;
+
   return (
-    <div className="w-full grid grid-cols-12 gap-6 items-start mb-8">
-      <div className="col-span-4 h-40 relative">
+    <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-6 items-start mb-8">
+      <div className="col-span-12 md:col-span-4 h-60 md:h-40 relative">
         <Image
           src={handleImageUrl(project.image || "")}
           alt={project.title || ""}
@@ -219,14 +287,13 @@ export default function ProjectSupportedCard({
         </div>
       </div>
 
-      <div className="col-span-8 py-5 px-6 bg-white/[5%] rounded-3xl">
-        <div className="flex flex-row justify-between items-center flex-1 gap-4 lg:gap-6">
+      <div className="col-span-12 md:col-span-8 py-5 px-6 bg-white/[5%] rounded-3xl">
+        <div className="hidden overflow-x-auto overflow-y-hidden md:flex flex-nowrap flex-row justify-center items-center flex-1 gap-8 lg:gap-10">
           <h3 className="text-[22px] font-anton text-right text-white/30 flex items-end gap-2 leading-none">
             <span className="">
               YOUR <br />${project.abc?.tokenTicker}
             </span>
           </h3>
-          {/* Supporters Count */}
           <div className="space-y-0.1">
             <div className="text-white text-2xl text-center font-bold">
               {inWallet > 0 ? (
@@ -284,8 +351,14 @@ export default function ProjectSupportedCard({
 
           <div className="space-y-0.1">
             <div className="text-white text-center text-2xl font-bold">
-              {" "}
-              <span className="text-white/30">0</span>
+              {totalAmountPerToken > 0 ? (
+                <>
+                  {formatValue(totalAmountPerToken).whole}
+                  <span className="text-base align-bottom">.{formatValue(totalAmountPerToken).frac}</span>
+                </>
+              ) : (
+                <span className="text-white/30">0</span>
+              )}
             </div>
             <span className="text-white/30 text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">
               Your Total Tokens
@@ -294,8 +367,14 @@ export default function ProjectSupportedCard({
 
           <div className="space-y-0.1">
             <div className="text-white text-center text-2xl font-bold">
-              {" "}
-              <span className="text-white/30">0</span>
+              {totalAmountPerTokenInUSD > 0 ? (
+                <>
+                  {formatValue(totalAmountPerTokenInUSD).whole}
+                  <span className="text-base align-bottom">.{formatValue(totalAmountPerTokenInUSD).frac}</span>
+                </>
+              ) : (
+                <span className="text-white/30">0</span>
+              )}
             </div>
             <span className="text-white/30 text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">
               Value in USD
@@ -313,43 +392,154 @@ export default function ProjectSupportedCard({
           </div>
         </div>
 
-        <table className="w-full table-fixed whitespace-nowrap mt-8">
-          <thead className="py-8 border-y border-white/5">
-            {/* Label Row */}
-            <tr className="text-[10px] uppercase text-qacc-gray-light/60">
-              <th className="w-[120px] px-4 py-2 text-left">
-                Contributions Date
-              </th>
-              <th className="w-[120px] px-4 py-2 text-right">Price</th>
-              <th className="w-[120px] px-4 py-2 text-right">Amount</th>
-              <th className="w-[120px] px-4 py-2 text-right">Token</th>
-              <th className="w-[250px] px-4 py-2 text-right">
-                Vesting Stream From → Until
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y  divide-white/5">
-            <tr className="text-sm font-bold font-ibm-mono">
-              <td className="w-[120px] px-4 py-2 text-left">May 13, 2025</td>
-              <td className="w-[120px] px-4 py-2 text-right">$0.00</td>
-              <td className="w-[120px] px-4 py-2 text-right">
-                {/* <Link
-                  href={`https://polygonscan.com/address/${project.abc?.fundingManagerAddress}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white/30 flex items-center gap-1 hover:text-white"
-                >
-                  100 POL <ArrowUpRight className="w-4 h-4 text-white/30" />
-                </Link> */}
-                100 POL <ArrowUpRight className="w-4 h-4 inline-block" />
-              </td>
-              <td className="w-[120px] px-4 py-2 text-right">1000 PACK</td>
-              <td className="w-[250px] px-4 py-2 text-right">
-                May 13, 2025 → May 13, 2026
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        {/* Mobile View */}
+        <div className=" flex flex-col md:hidden">
+          <h3 className="text-[22px] font-anton text-center text-white/30 uppercase leading-none mb-4">
+            YOUR{" "}
+            <span className="text-peach-400">${project.abc?.tokenTicker}</span>{" "}
+            Tokens
+          </h3>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-0.1">
+              <div className="text-white text-center text-2xl font-bold">
+                {totalAmountPerToken > 0 ? (
+                  <>
+                    {formatValue(totalAmountPerToken).whole}
+                    <span className="text-base align-bottom">.{formatValue(totalAmountPerToken).frac}</span>
+                  </>
+                ) : (
+                  <span className="text-white/30">0</span>
+                )}
+              </div>
+              <span className="text-white/30 text-center font-medium text-[11px] md:text-[13px] leading-normal flex items-center justify-center gap-0.5">
+                Your Total Tokens
+              </span>
+            </div>
+
+            <div className="space-y-0.1">
+              <div className="text-white text-center text-2xl font-bold">
+                {totalAmountPerTokenInUSD > 0 ? (
+                  <>
+                    {formatValue(totalAmountPerTokenInUSD).whole}
+                    <span className="text-base align-bottom">.{formatValue(totalAmountPerTokenInUSD).frac}</span>
+                  </>
+                ) : (
+                  <span className="text-white/30">0</span>
+                )}
+              </div>
+              <span className="text-white/30 text-center font-medium text-[11px] md:text-[13px] leading-normal flex items-center justify-center gap-0.5">
+                Value in USD
+              </span>
+            </div>
+
+            <div className="space-y-0.1">
+              <div className="text-white text-center text-2xl font-bold">
+                {" "}
+                <span className="text-white/30">0</span>
+              </div>
+              <span className="text-white/30 text-center font-medium text-[11px] md:text-[13px] leading-normal flex items-center justify-center gap-0.5">
+                ROI
+              </span>
+            </div>
+
+            <div className="space-y-0.1">
+              <div className="text-white text-2xl text-center font-bold">
+                {inWallet > 0 ? (
+                  <>
+                    {formatValue(inWallet).whole}
+                    <span className="text-base align-bottom">
+                      .{formatValue(inWallet).frac}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-white/30">0</span>
+                )}
+              </div>
+              <div className="text-white/30 text-center font-medium text-[11px] md:text-[13px] leading-normal">
+                In Wallet
+              </div>
+            </div>
+            <div className="space-y-0.1">
+              <div className="text-white text-center text-2xl font-bold">
+                {locked > 0 ? (
+                  <>
+                    {formatValue(locked).whole}
+                    <span className="text-base align-bottom">
+                      .{formatValue(locked).frac}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-white/30">0</span>
+                )}
+              </div>
+              <div className="text-white/30 text-center font-medium text-[11px] md:text-[13px] leading-normal">
+                Locked ${project.abc?.tokenTicker}
+              </div>
+            </div>
+
+            <div className="space-y-0.1">
+              <div className="text-white text-center text-2xl font-bold">
+                {claimable > 0 ? (
+                  <>
+                    {formatValue(claimable).whole}
+                    <span className="text-base align-bottom">
+                      .{formatValue(claimable).frac}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-white/30">0</span>
+                )}
+              </div>
+              <span className="text-white/30 text-center font-medium text-[11px] md:text-[13px] leading-normal flex items-center justify-center gap-0.5">
+                Available to claim
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto mt-8">
+          <table className="min-w-full table-fixed whitespace-nowrap">
+            <thead className="py-8 border-y border-white/5">
+              {/* Label Row */}
+              <tr className="text-[10px] uppercase text-qacc-gray-light/60">
+                <th className="w-[120px] px-4 py-2 text-left">
+                  Contributions Date
+                </th>
+                <th className="w-[120px] px-4 py-2 text-right">Price</th>
+                <th className="w-[120px] px-4 py-2 text-right">Amount</th>
+                <th className="w-[120px] px-4 py-2 text-right">Token</th>
+                <th className="w-[250px] px-4 py-2 text-right">
+                  Vesting Stream From → Until
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y  divide-white/5">
+              {projectDonations.map((donation: any) => (
+                <tr key={donation.id} className="text-sm font-bold font-ibm-mono">
+                  <td className="w-[120px] px-4 py-2 text-left">
+                    {formatDateMonthDayYear(donation.createdAt)}
+                  </td>
+                  <td className="w-[120px] px-4 py-2 text-right">
+                    {donation.valueUsd ? `$${donation.valueUsd.toFixed(2)}` : "$0.00"}
+                  </td>
+                  <td className="w-[120px] px-4 py-2 text-right">
+                    {donation.amount?.toFixed(2)} POL
+                  </td>
+                  <td className="w-[120px] px-4 py-2 text-right">
+                    {donation.rewardTokenAmount?.toFixed(2) || 0} {project.abc?.tokenTicker}
+                  </td>
+                  <td className="w-[250px] px-4 py-2 text-right">
+                    {donation.rewardStreamStart && donation.rewardStreamEnd ? (
+                      `${formatDateMonthDayYear(donation.rewardStreamStart)} → ${formatDateMonthDayYear(donation.rewardStreamEnd)}`
+                    ) : (
+                      "---"
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

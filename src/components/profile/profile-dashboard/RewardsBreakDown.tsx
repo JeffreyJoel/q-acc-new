@@ -82,6 +82,7 @@ const RewardsBreakDown: React.FC = () => {
             addresses.paymentProcessorAddress
           ) {
             setPaymentAddresses(addresses);
+            console.log(addresses.paymentProcessorAddress, addresses.paymentRouterAddress);
             return;
           }
         } catch (error) {
@@ -99,17 +100,24 @@ const RewardsBreakDown: React.FC = () => {
   }, [projectId, project]);
 
   const releasable = useReleasableForStream({
-    paymentProcessorAddress: project?.abc?.paymentProcessorAddress!,
-    client: project?.abc?.paymentRouterAddress!,
+    paymentProcessorAddress: paymentAddresses.paymentProcessorAddress || "",
+    client: paymentAddresses.paymentRouterAddress || "",
     receiver: address,
-    streamId: BigInt(1),
+    streamIds: [
+      BigInt(1),
+      BigInt(2),
+      BigInt(3),
+      BigInt(4),
+      BigInt(5),
+      BigInt(6),
+    ],
   });
 
   const released = useReleasedForStream({
-    paymentProcessorAddress: project?.abc?.paymentProcessorAddress!,
-    client: project?.abc?.paymentRouterAddress!,
+    paymentProcessorAddress: paymentAddresses.paymentProcessorAddress || "",
+    client: paymentAddresses.paymentRouterAddress || "",
     receiver: address,
-    streamId: BigInt(1),
+    streamIds: [BigInt(1), BigInt(2), BigInt(3)],
   });
 
   const availableToClaim = releasable.data
@@ -119,6 +127,7 @@ const RewardsBreakDown: React.FC = () => {
   const tokensAlreadyClaimed = released.data
     ? Number(ethers.formatUnits(released.data, 18)) // Format BigInt data to decimal
     : 0;
+
 
   const isActivePaymentReceiver = useIsActivePaymentReceiver({
     paymentProcessorAddress: paymentAddresses.paymentProcessorAddress || "",
@@ -250,7 +259,7 @@ const RewardsBreakDown: React.FC = () => {
         </div>
 
         {/* Claim Rewards */}
-        {totalTokensReceived > 0 ? (
+        {totalTokensReceived >= 0 ? (
           <div className="flex flex-col gap-4 font-redHatText w-full p-8 border rounded-xl">
             <div className="flex justify-between p-2">
               <div className="flex gap-2">

@@ -158,7 +158,14 @@ const DonarSupportedProjects = ({
     paymentProcessorAddress: paymentAddresses.paymentProcessorAddress || "",
     client: paymentAddresses.paymentRouterAddress || "",
     receiver: address,
-    streamId: BigInt(2),
+    streamIds: [
+      BigInt(1),
+      BigInt(2),
+      BigInt(3),
+      BigInt(4),
+      BigInt(5),
+      BigInt(6),
+    ],
   });
 
   const isActivePaymentReceiver = useIsActivePaymentReceiver({

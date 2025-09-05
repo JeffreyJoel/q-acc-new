@@ -5,12 +5,13 @@ import { useState, useMemo } from "react";
 import { Address } from "viem";
 import { useAccount } from "wagmi";
 import { useAddressWhitelist } from "@/hooks/useAddressWhitelist";
-import MyProjects from "./MyProjects";
+import MyProjects from "./MyProjectsNew";
 import { usePrivy } from "@privy-io/react-auth";
 import { useDonorContext } from "@/contexts/donor.context";
 import { ProjectsTokensSkeleton } from "@/components/loaders/ProfilePageLoaders";
 import { useFetchProjectByUserId } from "@/hooks/useProjects";
 import Portfolio from "./Portfolio";
+import DonorSupports from "./DonorSupports";
 
 interface ProfileTabProps {
   userAddress: Address;
@@ -44,10 +45,10 @@ export default function ProfileTab({ userAddress }: ProfileTabProps) {
     <div className="mt-12 rounded-2xl">
       <Tabs value={activeTab} className="w-full">
         {projectData && (
-          <TabsList className="flex mx-auto w-1/3 rounded-full bg-black p-1 mb-8">
+          <TabsList className="flex mx-auto w-full sm:w-1/2 md:w-1/3 rounded-full bg-black p-1 mb-8">
             <TabsTrigger
               value="tokens"
-              className="px-6 py-1 flex w-1/2 gap-2 items-center justify-center rounded-full text-sm md:text-base font-medium text-qacc-gray-light data-[state=active]:bg-peach-400 data-[state=active]:text-black focus:outline-none transition-colors"
+              className="px-4 md:px-6 py-1 flex w-1/2 gap-2 items-center justify-center rounded-full text-sm md:text-base font-medium text-qacc-gray-light data-[state=active]:bg-peach-400 data-[state=active]:text-black focus:outline-none transition-colors"
               onClick={() => setActiveTab("tokens")}
               disabled={isLoading}
             >
@@ -56,7 +57,7 @@ export default function ProfileTab({ userAddress }: ProfileTabProps) {
             {isOwnProfile && (
               <TabsTrigger
                 value="projects"
-                className="px-6 py-1 flex w-1/2 gap-2 items-center justify-center rounded-full text-sm font-medium text-qacc-gray-light data-[state=active]:bg-peach-400 data-[state=active]:text-black focus:outline-none transition-colors"
+                className="px-4 md:px-6 py-1 flex w-1/2 gap-2 items-center justify-center rounded-full text-sm md:text-base font-medium text-qacc-gray-light data-[state=active]:bg-peach-400 data-[state=active]:text-black focus:outline-none transition-colors"
                 onClick={() => setActiveTab("projects")}
                 disabled={isLoading}
               >
@@ -76,6 +77,7 @@ export default function ProfileTab({ userAddress }: ProfileTabProps) {
 
         <TabsContent value="tokens" className="">
           <Portfolio />
+          {/* <DonorSupports isOwnProfile={true} /> */}
           {/* {isLoading ? <ProjectsTokensSkeleton /> : <Portfolio />} */}
         </TabsContent>
       </Tabs>

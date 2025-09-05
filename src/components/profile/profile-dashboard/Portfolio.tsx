@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 import { useDonorContext } from "@/contexts/donor.context";
 import { usePrivy } from "@privy-io/react-auth";
 import { fetchEVMTokenBalances } from "@/helpers/token";
-import { useVestingSchedules } from "@/hooks/useVestingSchedules";
-import { PortfolioTable, PortfolioTableRowProps } from "./PortfolioTable";
+import { PortfolioTable } from "./PortfolioTable";
 import ProjectSupportedCard from "./ProjectSupportedCard";
 import type { IProject } from "@/types/project.type";
 
@@ -14,7 +13,6 @@ export default function Portfolio() {
   const { user } = usePrivy();
   const userAddress = user?.wallet?.address;
   const [balances, setBalances] = useState<Record<string, number>>({});
-  const { data: schedules } = useVestingSchedules();
 
   useEffect(() => {
     if (!userAddress) return;
@@ -36,54 +34,28 @@ export default function Portfolio() {
       .catch(console.error);
   }, [donationsGroupedByProject, userAddress]);
 
-  const cardData = Object.entries(donationsGroupedByProject).map(
+  const portfolioData = Object.entries(donationsGroupedByProject).map(
     ([projectId, donations]) => {
       const project = donations[0].project as IProject;
-          const totalRewardTokens = donations.reduce(
-            (sum: number, d: any) => sum + (d.rewardTokenAmount || 0),
-            0
-          );
           const inWallet =
             balances[project.abc!.issuanceTokenAddress as string] || 0;
-          const locked = totalRewardTokens - inWallet;
-          const claimable = 0;
       return {
-        key: projectId,
         project: project,
         inWallet: inWallet,
-        locked: locked,
-        claimable: claimable,
       };
     }
   );
 
-  const rows: PortfolioTableRowProps[] = Object.entries(
-    donationsGroupedByProject
-  ).map(([projectId, donations]) => {
-    const project = donations[0].project as IProject;
-    const totalRewardTokens = donations.reduce(
-      (sum: number, d: any) => sum + (d.rewardTokenAmount || 0),
-      0
-    );
-    const inWallet =
-      balances[project.abc!.issuanceTokenAddress as string] || 0;
-    const locked = totalRewardTokens - inWallet;
-    return { project, totalRewardTokens, inWallet, locked };
-  });
-
   return (
     <div className="space-y-12">
  
-      <PortfolioTable rows={rows} />
+      <PortfolioTable rows={portfolioData}  />
 
       <div className="">
-        {cardData.map((card) => (
+        {portfolioData.map((card) => (
           <ProjectSupportedCard
-            key={card.key}
             project={card.project}
             inWallet={card.inWallet}
-            locked={card.locked}
-            claimable={card.claimable}
           />
         ))}
       </div>

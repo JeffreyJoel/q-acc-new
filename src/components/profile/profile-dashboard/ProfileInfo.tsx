@@ -5,18 +5,18 @@ import { CopyButton } from "../../shared/CopyButton";
 import Image from "next/image";
 import { Address } from "viem";
 import { roundPoints } from "@/helpers/points";
-import { GitcoinVerificationBadge } from "../../verification-badges/GitcoinVerificationBadge";
+// import { GitcoinVerificationBadge } from "../../verification-badges/GitcoinVerificationBadge";
 import { useAccount } from "wagmi";
 import { useModal } from "@/contexts/ModalContext";
 import { handleImageUrl } from "@/helpers/image";
-import { CreateProjectButton } from "../../project/create/CreateProjectButton";
+// import { CreateProjectButton } from "../../project/create/CreateProjectButton";
 import { usePrivy } from "@privy-io/react-auth";
 import { useDonorContext } from "@/contexts/donor.context";
 import { Spinner } from "@/components/loaders/Spinner";
-import { useFetchProjectsCountByUserId } from "@/hooks/useFetchProjectsCountByUserId";
+// import { useFetchProjectsCountByUserId } from "@/hooks/useFetchProjectsCountByUserId";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { SelfVerificationBadge } from "@/components/verification-badges/SelfVerification";
+// import { SelfVerificationBadge } from "@/components/verification-badges/SelfVerification";
 
 export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
   const { user, loading: donorContextLoading } = useDonorContext();
@@ -93,37 +93,37 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
     <>
       <div className="">
         <div className="flex items-center justify-between w-full">
-          <div className="flex">
-            <div className="w-[120px] h-[120px] rounded-full border-[1px] border-peach-100/30 bg-black overflow-hidden mr-4">
+          <div className="flex ">
+            {/* <div className="w-[80px] h-[80px] md:w-[120px] md:h-[120px] rounded-full border-[1px] border-peach-100/30 bg-black overflow-hidden mr-4"> */}
               <Image
                 src={avatar || "/images/user.png"}
                 alt="User avatar"
                 width={120}
                 height={120}
-                className="w-full h-full rounded-full object-cover"
+                className=" w-[80px] h-[80px] md:w-[120px] md:h-[120px] rounded-full object-cover mr-4"
               />
-            </div>
+            {/* </div> */}
 
             <div>
               {isOwnProfile && (
-                <div className="flex gap-2 items-end">
-                  <p className="text-[40px] font-anton leading-none">
+                <div className="flex flex-col md:flex-row gap-2 md:items-end">
+                  <p className="text-[36px] md:text-[40px] font-anton leading-none">
                     {user?.fullName}
                   </p>
                   {user?.username && (
-                    <span className="text-[20px] font-anton text-qacc-gray-light">
+                    <span className="text-[16px] md:text-[20px] font-anton text-qacc-gray-light">
                       @{user?.username}
                     </span>
                   )}
                 </div>
               )}
               {isOwnProfile && (
-                <p className="text-white/50 text-lg font-medium mt-2">
+                <p className="text-white/50 text-sm md:text-lg font-medium mt-2">
                   {user?.email}
                 </p>
               )}
               <div className="flex  items-center">
-                <span className="font-ibm-mono text-white/50 text-lg font-medium">
+                <span className="font-ibm-mono text-white/50 text-sm md:text-lg font-medium">
                   {" "}
                   {userAddress.slice(0, 8)}...
                   {userAddress.slice(
@@ -140,9 +140,9 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
                   href={`https://polygonscan.com/address/${userAddress}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white/50 text-lg font-medium"
+                  className="text-white/50 text-sm md:text-lg font-medium"
                 >
-                  <ArrowUpRight className="w-5 h-5 ml-2" />
+                  <ArrowUpRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
                 </Link>
               </div>
 
@@ -155,7 +155,7 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
 
               <div className="w-fit flex justify-between items-center bg-white/10 rounded-xl px-5 py-2 mt-5">
                 <span className="text-white text-base font-medium mr-4">
-                  Q/ACC Points
+                  <span className="hidden sm:inline-flex">Q/ACC</span> Points
                 </span>
                 <div className="flex items-center">
                   <div className="bg-black rounded-full w-5 h-5 flex items-center justify-center">
@@ -175,11 +175,11 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
             </div>
           </div>
 
-          <div className="flex gap-4">
+          {/* <div className="flex gap-4">
             <GitcoinVerificationBadge userAddress={userAddress} />
-            {/* <SelfVerificationBadge userAddress={userAddress} /> */}
+            <SelfVerificationBadge userAddress={userAddress} />
 
-          </div>
+          </div> */}
           {/* <div className="flex gap-3"> */}
           {/* {isOwnProfile && userProjectsCount === 0 && (
               <CreateProjectButton className="bg-peach-400 text-black px-4 py-2 rounded-md font-medium hover:bg-peach-300 transition-colors" />
