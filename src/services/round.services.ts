@@ -67,7 +67,7 @@ export const fetchVestingSchedules = async () => {
   try {
     const res = await requestGraphQL<{
       vestingSchedules: IVestingSchedule[];
-    }>(GET_VESTING_SCHEDULES, {}, { url: "https://staging.qacc-be.generalmagic.io/graphql" });
+    }>(GET_VESTING_SCHEDULES, {});
     return res?.vestingSchedules;
   } catch (error) {
     console.error(error);

@@ -243,6 +243,7 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
                 <Link
                   href={`/profile/${walletAddress}`}
                   onClick={handleMyAccountClick}
+                  prefetch
                 >
                   <div className="flex items-center gap-3 px-4 py-3 hover:bg-peach-400/10 transition-colors duration-150 text-gray-200">
                     <UserCircle2 className="h-5 w-5" />

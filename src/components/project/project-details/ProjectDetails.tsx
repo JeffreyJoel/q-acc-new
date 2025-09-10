@@ -1,6 +1,6 @@
 "use client";
 
-import { useFetchProjectBySlug } from "@/hooks/useProjects";
+import { useProjectContext } from "@/contexts/project.context";
 import { GeckoTerminalChart } from "./GeckoTerminal";
 
 import Image from "next/image";
@@ -22,15 +22,15 @@ import { useEffect, useState } from "react";
 import VestingSchedule from "@/components/vesting-schedule/VestingSchedule";
 import { handleImageUrl } from "@/helpers/image";
 
-export default function ProjectDetails({ params }: { params: { id: string } }) {
+export default function ProjectDetails() {
   const [projectPoolAddress, setProjectPoolAddress] = useState<string | null>(
     null
   );
   const [isTokenListed, setIsTokenListed] = useState<boolean>(false);
 
-  const { data: project, isLoading, error } = useFetchProjectBySlug(params.id);
+  const { projectData: project, isLoading, error } = useProjectContext();
 
-  console.log(project);
+  // console.log(project);
 
   useEffect(() => {
     const fetchPoolAddress = async () => {

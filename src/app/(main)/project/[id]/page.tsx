@@ -61,14 +61,13 @@ const ProjectPage = async ({ params }: ProjectPageProps) => {
     ? params.id[0]
     : params.id;
 
-
   const initialData = await fetchProjectBySlug(slug);
 
   if (!initialData) {
     redirect('/404');
   }
 
-  return <ProjectView slug={slug} />;
+  return <ProjectView slug={slug} initialData={initialData} />;
 };
 
 export default ProjectPage;

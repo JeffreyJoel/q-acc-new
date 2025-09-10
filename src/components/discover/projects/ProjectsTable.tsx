@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { EnrichedProjectData } from "@/services/projectData.service";
 import { useTokenHolders } from "@/hooks/useTokenHolders";
 import { SearchIcon } from "lucide-react";
@@ -150,16 +151,14 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
               </div>
             </div>
             {tableProjects.map((project, idx) => (
-              <div
-                onClick={() => {
-                  router.push(`/project/${project.slug}`);
-                }}
+              <Link href={`/project/${project.slug}`}
                 key={idx}
                 className={`${
                   idx == tableProjects.length - 1
                     ? ""
                     : "border-b border-white/5"
                 } flex items-center gap-3  px-6 hover:bg-[#232323] transition-colors h-[80px] cursor-pointer`}
+                prefetch
               >
                 <Image
                   src={project.logo}
@@ -181,7 +180,7 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
                     </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
 
