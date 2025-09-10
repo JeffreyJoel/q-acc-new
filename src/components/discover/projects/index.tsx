@@ -86,7 +86,7 @@ function Projects() {
           <ProjectsCarousel tips={carouselItems} />
         </div>
 
-        <div className="flex flex-row gap-4 lg:mt-10 overflow-x-auto">
+        <div className="flex flex-row gap-4 lg:mt-10 overflow-x-auto scrollbar-hide">
           {tiles.map((tile) => (
             <ProjectTile
               key={tile.text}

@@ -140,7 +140,7 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
        </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto scrollbar-hide">
         <div className="flex gap-4 min-w-[1000px]">
           {/* PROJECT, TOKEN Section */}
           <div className="flex-1 min-w-[250px]">

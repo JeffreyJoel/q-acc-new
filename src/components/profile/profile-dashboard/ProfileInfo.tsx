@@ -100,7 +100,7 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
                 alt="User avatar"
                 width={120}
                 height={120}
-                className=" w-[80px] h-[80px] md:w-[120px] md:h-[120px] rounded-full object-cover mr-4"
+                className=" w-[80px] h-[80px] md:w-[120px] md:h-[120px] rounded-full border-[1px] border-peach-100/30 bg-black overflow-hidden object-cover mr-4"
               />
             {/* </div> */}
 
@@ -147,7 +147,7 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
               </div>
 
               <p
-                className="text-peach-400 text-xs uppercase font-medium mt-2"
+                className="text-peach-400 text-xs uppercase font-medium mt-2 cursor-pointer"
                 onClick={() => user && openUpdateProfileModal(user, false)}
               >
                 Edit Profile
