@@ -34,8 +34,7 @@ export const useTokenHolderTags = (projectName: string) => {
     queryFn: async () => {
       const res = await requestGraphQL<{ tokenHoldersByProject: ITokenHolding[] }>(
         GET_TOKEN_HOLDERS_BY_PROJECT,
-        { projectName },
-        {url: "https://staging.qacc-be.generalmagic.io/graphql"}
+        { projectName }
       );
       return res.tokenHoldersByProject;
     },
