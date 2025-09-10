@@ -216,7 +216,7 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
           </button>
 
           {isMenuOpen && (
-            <div className="absolute right-0 bottom-full mb-2 md:bottom-auto md:mt-2 md:top-full w-64 bg-neutral-800 rounded-2xl shadow-xl ring-1 ring-white/10 z-40 animate-in slide-in-from-bottom-2 md:slide-in-from-top-2 duration-200">
+            <div className="absolute right-0 bottom-full mb-2 lg:bottom-auto lg:mt-2 lg:top-full w-64 bg-neutral-800 rounded-2xl shadow-xl ring-1 ring-white/10 z-40 animate-in slide-in-from-bottom-2 lg:slide-in-from-top-2 duration-200">
               {/* Header with UserPill */}
               <div className="py-2 border-b border-neutral-700 relative">
                 <div className="cursor-pointer hover:bg-peach-400/10 [&_.privy-modal]:z-[100] [&_[role='dialog']]:z-[100] [&_[data-radix-popper-content-wrapper]]:z-[100]">

@@ -1,17 +1,17 @@
-import { Address, parseEther, formatUnits } from 'viem';
+import { Address, parseEther, formatUnits, erc20Abi } from 'viem';
 import config from '@/config/configuration';
 import WRAPPED_POL_ABI from '@/lib/abi/wrappedPol';
 
 // Standard ERC20 ABI for balance checking
-const ERC20_ABI = [
-  {
-    inputs: [{ internalType: 'address', name: 'account', type: 'address' }],
-    name: 'balanceOf',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-];
+// const ERC20_ABI = [
+//   {
+//     inputs: [{ internalType: 'address', name: 'account', type: 'address' }],
+//     name: 'balanceOf',
+//     outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+//     stateMutability: 'view',
+//     type: 'function',
+//   },
+// ];
 
 /**
  * Check user's POL balance
@@ -34,7 +34,7 @@ export async function checkPOLBalance(
       // ERC20 token - use balanceOf
       const balance = await publicClient.readContract({
         address: config.ERC_TOKEN_ADDRESS as Address,
-        abi: ERC20_ABI,
+        abi: erc20Abi,
         functionName: 'balanceOf',
         args: [userAddress as Address],
       });
@@ -56,7 +56,7 @@ export async function checkWPOLBalance(
   try {
     const balance = await publicClient.readContract({
       address: config.BONDING_CURVE_COLLATERAL_TOKEN as Address,
-      abi: ERC20_ABI,
+      abi: erc20Abi,
       functionName: 'balanceOf',
       args: [userAddress as Address],
     });

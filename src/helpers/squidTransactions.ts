@@ -4,7 +4,7 @@ import config from '@/config/configuration';
 import { getConnectorClient } from 'wagmi/actions';
 import { Account, Chain, Transport } from 'viem';
 import { Client } from 'viem';
-import { config as wagmiConfig } from '@/providers/PrivyProvider';
+import { wagmiConfig } from '@/providers/PrivyProvider';
 const integratorId: string = config.SQUID_INTEGRATOR_ID;
 
 

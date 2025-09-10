@@ -35,7 +35,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ConnectWalletButton from "@/components/shared/wallet/SwapConnectWalletButton";
-import { Button } from "@/components/ui/button";
 
 interface BondingCurveSwapProps {
   contractAddress: string;
@@ -186,7 +185,7 @@ const PayReceiveRow = ({
               Balance: {balance || "0.00"}
             </div>
             <div className="text-xl font-bold">
-              {Number(formattedReceiveAmount).toFixed(6) || "0"}
+              {Number(formattedReceiveAmount).toFixed(1) || "0"}
             </div>
           </>
         )}
@@ -440,12 +439,10 @@ function BuyMode({
     balance: userAddress && payBalance
       ? formatBalance(parseFloat(payBalance.formattedBalance))
       : "0.00",
-    usdValue: userAddress && payBalance
-      ? calculateUsdValue(payBalance.formattedBalance, 1)
-      : 0,
+    usdValue: payAmount ? calculateUsdValue(payAmount, 1) : 0,
     selectableTokens: [
       { symbol: "POL", icon: POLYGON_POS_CHAIN_IMAGE },
-      { symbol: "WPOL", icon: POLYGON_POS_CHAIN_IMAGE },
+      { symbol: "WPOL", icon: "https://raw.githubusercontent.com/axelarnetwork/axelar-configs/main/images/tokens/wmatic.svg" },
     ],
     selectedToken: selectedPayToken,
     onTokenSelect: (symbol: string) =>
@@ -462,7 +459,7 @@ function BuyMode({
       : "0.00",
     usdValue: userAddress && receiveTokenBalance
       ? calculateUsdValue(
-          receiveTokenBalance.formattedBalance,
+          minAmountOut,
           receiveTokenPriceInPOL ?? undefined
         )
       : 0,
@@ -501,7 +498,7 @@ function BuyMode({
         />
       </div>
       {userAddress ? (
-        <Button
+        <button
           type="submit"
           className="mt-4 mb-1 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full disabled:opacity-50"
           disabled={
@@ -518,7 +515,7 @@ function BuyMode({
           ) : (
             "BUY"
           )}
-        </Button>
+        </button>
       ) : (
         <ConnectWalletButton />
       )}
@@ -646,7 +643,7 @@ function SellMode({
         data.payAmount,
         minAmountOut,
         handleStatusUpdate,
-        true // skipUnwrap
+        true 
       );
       toast.success(
         <div>
@@ -677,9 +674,9 @@ function SellMode({
     balance: userAddress && receiveTokenBalance
       ? formatBalance(parseFloat(receiveTokenBalance.formattedBalance))
       : "0.00",
-    usdValue: userAddress && receiveTokenBalance
+    usdValue: payAmount
       ? calculateUsdValue(
-          receiveTokenBalance.formattedBalance,
+          payAmount,
           receiveTokenPriceInPOL ?? undefined
         )
       : 0,
@@ -689,12 +686,12 @@ function SellMode({
 
   const receiveRowProps = {
     tokenSymbol: "WPOL",
-    iconSrc: POLYGON_POS_CHAIN_IMAGE,
+    iconSrc: "https://raw.githubusercontent.com/axelarnetwork/axelar-configs/main/images/tokens/wmatic.svg",
     balance: userAddress && receiveBalance
       ? formatBalance(parseFloat(receiveBalance.formattedBalance))
       : "0.00",
     usdValue: userAddress && receiveBalance
-      ? calculateUsdValue(receiveBalance.formattedBalance, 1)
+      ? calculateUsdValue(minAmountOut, 1)
       : 0,
   };
 
@@ -733,7 +730,7 @@ function SellMode({
       {userAddress ? (
         <button
           type="submit"
-          className="mt-4 mb-1 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full disabled:opacity-50"
+          className="mt-4 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full transition-all flex items-center justify-center gap-2  disabled:opacity-50"
           disabled={
             isProcessing ||
             !!balanceError ||

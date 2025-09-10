@@ -182,20 +182,20 @@ const VestingScheduleFull: React.FC<VestingScheduleFullProps> = ({ projects = []
 
   // Token icons component for Season 1
   const TokenIcons = ({ projects }: { projects: IProject[] }) => (
-    <div className="flex -space-x-2 items-center">
+    <div className="flex -space-x-1 md:-space-x-2 items-center">
       {projects.slice(0, 6).map((project, index) => (
         <div key={project.id || index} className="relative group">
           {project.abc?.icon ? (
             <Image
               src={project?.icon || ""}
               alt={project.abc.tokenTicker || project.title || 'Token'}
-              className="w-6 h-6 rounded-full object-cover bg-black"
+              className="w-4 h-4 md:w-6 md:h-6 rounded-full object-cover bg-black"
               width={24}
               height={24}
             />
           ) : null}
           <div 
-            className="w-6 h-6 bg-gradient-to-br from-peach-400 to-peach-600 rounded-full flex items-center justify-center text-xs font-bold text-black"
+            className="w-4 h-4 md:w-6 md:h-6 bg-gradient-to-br from-peach-400 to-peach-600 rounded-full flex items-center justify-center text-xs font-bold text-black"
             style={{ display: project.abc?.icon ? 'none' : 'flex' }}
           >
             {project.abc?.tokenTicker?.charAt(0) || project.title?.charAt(0) || 'T'}
@@ -210,20 +210,20 @@ const VestingScheduleFull: React.FC<VestingScheduleFullProps> = ({ projects = []
 
   // Token icons component for Season 2
   const Season2TokenIcons = ({ projects }: { projects: IProject[] }) => (
-    <div className="flex -space-x-2 items-center">
+    <div className="flex -space-x-1 md:-space-x-2 items-center">
       {projects.slice(0, 4).map((project, index) => (
         <div key={project.id || index} className="relative group">
           {project?.icon ? (
             <Image
               src={project?.icon}
               alt={project?.abc?.tokenTicker || project.title || 'Token'}
-              className="w-6 h-6 rounded-full object-cover bg-black"
+              className="w-4 h-4 md:w-6 md:h-6 rounded-full object-cover bg-black"
               width={24}
               height={24}
             />
           ) : null}
           <div 
-            className="w-6 h-6 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white"
+            className="w-4 h-4 md:w-6 md:h-6 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white"
             style={{ display: project.abc?.icon ? 'none' : 'flex' }}
           >
             {project.abc?.tokenTicker?.charAt(0) || project.title?.charAt(0) || 'T'}
@@ -237,10 +237,10 @@ const VestingScheduleFull: React.FC<VestingScheduleFullProps> = ({ projects = []
   );
 
   return (
-    <div className="max-w-7xl mx-auto mt-16 text-white">
+    <div className="max-w-7xl mx-auto mt-6 md:mt-16 text-white">
       {/* Header */}
-      <div className="text-center mb-16">
-        <h1 className=" text-[64px] font-anton text-white tracking-tight">
+      <div className="text-center mb-8 md:mb-16">
+        <h1 className="text-[42px] md:text-[64px] font-anton text-white tracking-tight">
           VESTING SCHEDULE
         </h1>
       </div>
@@ -248,7 +248,7 @@ const VestingScheduleFull: React.FC<VestingScheduleFullProps> = ({ projects = []
       {/* Chart Container */}
       <div
         ref={containerRef}
-        className="relative group pb-0 w-8/12 mx-auto"
+        className="relative group pb-0 w-full max-w-10/12 h-full lg:w-8/12 mx-auto overflow-x-clip"
         onMouseEnter={handleContainerMouseEnter}
         onMouseLeave={handleContainerMouseLeave}
       >
@@ -307,8 +307,8 @@ const VestingScheduleFull: React.FC<VestingScheduleFullProps> = ({ projects = []
                   >
                     {/* Label and Icons */}
                     <div className="flex items-center justify-between w-full px-4">
-                      <div className="flex items-center space-x-3">
-                        <span className="font-bold text-xs text-[#020202]">
+                      <div className="flex items-center space-x-1 md:space-x-3">
+                        <span className="font-bold text-[10px] md:text-xs text-[#020202]">
                           {period.displayName}
                         </span>
                         {period.type === "team" && <TokenIcons projects={season1Projects} />}
@@ -318,7 +318,7 @@ const VestingScheduleFull: React.FC<VestingScheduleFullProps> = ({ projects = []
 
                   {/* Unlock section */}
                   <div
-                    className={`absolute top-0 bottom-0 rounded-r-lg flex items-center justify-center px-4 ${
+                    className={`absolute top-0 bottom-0 rounded-r-lg flex items-center justify-center px-2 md:px-4 ${
                       period.type === "team"
                         ? "bg-qacc-gray-light"
                         : "bg-peach-400"
@@ -332,10 +332,10 @@ const VestingScheduleFull: React.FC<VestingScheduleFullProps> = ({ projects = []
                     }}
                   >
                     <div className="text-center flex items-center justify-center gap-1">
-                      <span className="text-[#020202]/40 font-bold text-xs">
+                      <span className="text-[#020202]/40 font-bold text-[9px] md:text-xs">
                         Unlock
                       </span>
-                      <span className="text-[#020202]/30 text-xs">
+                      <span className="text-[#020202]/30 text-[8px] md:text-xs">
                         {formatDate(period.cliff)}
                       </span>
                     </div>
@@ -417,9 +417,9 @@ const VestingScheduleFull: React.FC<VestingScheduleFullProps> = ({ projects = []
                     }}
                   >
                     {/* Label and Icons */}
-                    <div className="flex items-center justify-between w-full px-4">
-                      <div className="flex items-center space-x-3">
-                        <span className="font-bold text-xs text-[#020202]">
+                    <div className="flex items-center justify-between w-full px-2 md:px-4">
+                      <div className="flex items-center space-x-1 md:space-x-3">
+                        <span className="font-bold text-[10px] md:text-xs text-[#020202]">
                           {period.displayName}
                         </span>
                         {period.type === "team" && <Season2TokenIcons projects={season2Projects} />}
@@ -429,7 +429,7 @@ const VestingScheduleFull: React.FC<VestingScheduleFullProps> = ({ projects = []
 
                   {/* Unlock section */}
                   <div
-                    className={`absolute top-0 bottom-0 rounded-r-lg flex items-center justify-center px-4 ${
+                    className={`absolute top-0 bottom-0 rounded-r-lg flex items-center justify-center px-2 md:px-4 ${
                       period.type === "team"
                         ? "bg-qacc-gray-light"
                         : "bg-peach-400"
@@ -443,10 +443,10 @@ const VestingScheduleFull: React.FC<VestingScheduleFullProps> = ({ projects = []
                     }}
                   >
                     <div className="text-center flex items-center justify-center gap-1">
-                      <span className="text-[#020202]/40 font-bold text-xs">
+                      <span className="text-[#020202]/40 font-bold text-[10px] md:text-xs">
                         Unlock
                       </span>
-                      <span className="text-[#020202]/30 text-xs">
+                      <span className="text-[#020202]/30 text-[10px] md:text-xs">
                         {formatDate(period.cliff)}
                       </span>
                     </div>
@@ -554,7 +554,7 @@ const VestingScheduleFull: React.FC<VestingScheduleFullProps> = ({ projects = []
         </div>
 
         <div
-          className="absolute px-3 py-2 w-1/3 bg-gradient-to-r from-qacc-gray-light/10 to-qacc-gray-light/5 rounded-lg flex items-center"
+          className="absolute px-3 py-2 w-1/2 md:w-1/3 bg-gradient-to-r from-qacc-gray-light/10 to-qacc-gray-light/5 rounded-lg flex items-center"
           style={{ left: `${getDatePosition(new Date("2025-10-01"))}%` }}
         >
           <span className="text-qacc-gray-light/60 text-xs font-bold">

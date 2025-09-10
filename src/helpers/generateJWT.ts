@@ -1,7 +1,6 @@
-import { Connector, signMessage as wagmiSignMessage } from '@wagmi/core';
-// import { wagmiAdapter } from '@/config/wagmi';
+import { signMessage as wagmiSignMessage } from '@wagmi/core';
 import config from '@/config/configuration';
-import { config as wagmiConfig } from '@/providers/PrivyProvider';
+import { wagmiConfig } from '@/providers/PrivyProvider';
 import { Address } from 'viem';
 import { ethers } from 'ethers';
 

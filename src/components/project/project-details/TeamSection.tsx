@@ -1,5 +1,7 @@
 "use client";
 import { IconX } from "@/components/icons/IconX";
+import { IconLinkedin } from "@/components/icons/IconLinkedin";
+import { IconFarcaster } from "@/components/icons/IconFarcaster";
 import { TeamMember as TeamMemberType } from "@/types/project.type";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,7 +14,7 @@ export default function TeamSection({ teamMembers }: TeamSectionProps) {
   return (
     <div className="bg-black/50 px-6 lg:px-8 py-8 rounded-3xl">
       <div className="flex flex-row items-baseline gap-2">
-        <h2 className="text-[40px] font-anton">Team</h2>
+        <h2 className="text-2xl md:text-[40px] font-anton">Team</h2>
         <span className="text-white/30 text-2xl font-anton">
           {teamMembers && teamMembers.length}
         </span>
@@ -33,18 +35,46 @@ export default function TeamSection({ teamMembers }: TeamSectionProps) {
                 alt={member.name}
                 width={100}
                 height={100}
-                className="w-[80px] h-[80px] rounded-full object-cover"
+                className="w-[48px] h-[48px] md:w-[80px] md:h-[80px] rounded-full object-cover"
               />
               <div>
-                <h3 className="text-white font-medium text-xl mb-2">{member.name}</h3>
-                <Link
-                  href={`https://twitter.com/${member.twitter}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-[24px] h-[24px] block"
-                >
-                  <IconX color="white" fillOpacity={0.5} size={24} />
-                </Link>
+                <h3 className="text-white font-medium text-lg md:text-xl mb-2">{member.name}</h3>
+
+                {/* Social Icons */}
+                <div className="flex items-center gap-3">
+                  {member.twitter && (
+                    <Link
+                      href={`${member.twitter}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-[24px] h-[24px] block hover:opacity-75"
+                    >
+                      <IconX color="white" size={24} />
+                    </Link>
+                  )}
+
+                  {member.linkedin && (
+                    <Link
+                      href={member.linkedin.startsWith("http") ? member.linkedin : `https://linkedin.com/in/${member.linkedin}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-[24px] h-[24px] block hover:opacity-75"
+                    >
+                      <IconLinkedin color="white" size={24} />
+                    </Link>
+                  )}
+
+                  {member.farcaster && (
+                    <Link
+                      href={member.farcaster.startsWith("http") ? member.farcaster : `https://warpcast.com/${member.farcaster.replace("@", "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-[24px] h-[24px] block hover:opacity-75"
+                    >
+                      <IconFarcaster color="white" size={24} />
+                    </Link>
+                  )}
+                </div>
               </div>
             </div>
           ))}

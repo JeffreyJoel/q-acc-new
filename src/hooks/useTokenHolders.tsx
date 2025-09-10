@@ -23,7 +23,7 @@ export const useTokenHolders = (
       return res.json();
     },
     enabled: (options?.enabled ?? true) && Boolean(tokenAddress),
-    staleTime: options?.staleTime ?? 1000 * 60 * 5, // 5 minutes
+    staleTime: options?.staleTime ?? 1000 * 60 * 5,
   });
 };
 

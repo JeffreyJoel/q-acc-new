@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import React from "react";
 import { useFormContext } from "react-hook-form";
@@ -7,6 +7,12 @@ import { Input } from "@/components/ui/input";
 import { SocialMediaInput } from "@/components/project/create/SocialMediaInput";
 import { validators } from "@/components/project/create/validators";
 import { TeamMember } from "@/types/project.type";
+import { IconX } from "@tabler/icons-react";
+import { PiCloudArrowUpBold } from "react-icons/pi";
+import Image from "next/image";
+import { uploadToIPFS } from "@/services/ipfs";
+import { handleImageUrl } from "@/helpers/image";
+import { useState, useRef, useCallback } from "react";
 
 interface TeamFormProps {
   index: number;
@@ -42,7 +48,50 @@ export const TeamForm: React.FC<TeamFormProps> = ({
   removeMember,
   isEdit = false,
 }) => {
-  const { setValue, register } = useFormContext();
+  const { setValue, register, watch } = useFormContext();
+
+  // Avatar upload handling similar to project icon upload
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const avatarFileInputRef = useRef<HTMLInputElement>(null);
+  const avatarUploadAbortController = useRef<AbortController | null>(null);
+
+  const triggerAvatarFileSelect = () => avatarFileInputRef.current?.click();
+
+  const cancelAvatarUpload = () => {
+    if (avatarUploadAbortController.current) {
+      avatarUploadAbortController.current.abort();
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const rawAvatar = watch(`team.${index}.image`, null) as any;
+  const avatarUrl: string | null = React.useMemo(() => {
+    if (!rawAvatar) return null;
+    if (typeof rawAvatar === "string") return rawAvatar;
+    if (rawAvatar?.ipfsHash) return handleImageUrl(rawAvatar.ipfsHash);
+    return null;
+  }, [rawAvatar]);
+
+  const handleAvatarFileChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      setIsUploadingAvatar(true);
+
+      const controller = new AbortController();
+      avatarUploadAbortController.current = controller;
+
+      const ipfsHash = await uploadToIPFS(file, undefined, controller.signal);
+
+      setIsUploadingAvatar(false);
+
+      if (ipfsHash) {
+        setValue(`team.${index}.image`, handleImageUrl(ipfsHash));
+      }
+    },
+    [index, setValue]
+  );
 
   const handleDrop = (name: string, file: File, ipfsHash: string) => {
     if (file) {
@@ -51,45 +100,108 @@ export const TeamForm: React.FC<TeamFormProps> = ({
   };
 
   return (
-    <section className="bg-neutral-800 p-8 flex flex-col gap-8 rounded-2xl mt-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl mb-8">{isEdit ? "Edit" : "Add"} Your Team</h1>
-        <div
+    <section className={`flex flex-col gap-6 ${index > 0 ? "mt-8 border-t border-white/10 pt-8" : ""}`}>
+      <div className="flex justify-between mr-2">
+        <p className="text-white font-medium text-sm md:text-lg">
+          Team Member {index + 1}
+        </p>
+        <span
           onClick={removeMember}
-          className="border p-3 rounded-full min-w-[150px] text-center bg-giv-500 text-white font-bold cursor-pointer"
+          className="flex items-center gap-2 text-red-500 font-medium text-sm md:text-lg cursor-pointer"
         >
-          Remove
+          <IconX /> Remove
+        </span>
+      </div>
+      <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-12">
+        <label className="md:w-1/3 text-qacc-gray-light font-medium text-sm md:text-lg">
+          Name
+        </label>
+        {/* Name */}
+        <div className="w-full md:w-2/3 relative flex-1">
+          <Input
+            {...register(`team.${index}.name`)}
+            placeholder="Name"
+            className="text-white text-sm md:text-lg rounded-xl border border-qacc-gray-light/[24%] focus:ring-peach-400 focus:border-peach-300 outline-none"
+          />
         </div>
       </div>
 
-      <Input
-        {...register(`team.${index}.name`)}
-        placeholder="James Smith"
-        className="border border-neutral-700 focus:ring-peach-400 focus:border-peach-400 outline-none"
-      />
-      <div>
-        <h2 className="text-2xl">Social Media Links</h2>
-        <p className="text-sm mt-2">
-          <span className="text-neutral-300">
-            Add your project's social media links (optional)
-          </span>
+      <div className="mt-6 space-y-4">
+        <p className="text-qacc-gray-light font-medium text-sm md:text-lg">
+          Social Media Links (optional)
         </p>
+
+        <div className="flex flex-col gap-6">
+          {socialMediaLinks.map((socialMedia) => (
+            <SocialMediaInput
+              key={socialMedia.name}
+              {...socialMedia}
+              name={`team.${index}.${socialMedia.name}`}
+            />
+          ))}
+        </div>
       </div>
-      <div className="flex flex-col gap-6">
-        {socialMediaLinks.map((socialMedia) => (
-          <SocialMediaInput
-            key={socialMedia.name}
-            {...socialMedia}
-            name={`team.${index}.${socialMedia.name}`}
-          />
-        ))}
-      </div>
-      <div className="flex flex-col gap-6 w-full mx-auto">
-        <label className="text-4xl font-bold text-neutral-300">
-          Upload an Avatar
+
+      {/* Avatar upload */}
+      <div className="w-full flex flex-col md:flex-row items-start md:items-center md:justify-between gap-6 md:gap-12">
+        <label className="text-qacc-gray-light font-medium text-sm md:text-lg">
+          Profile Picture (optional)
         </label>
-        <p>Displayed in the header of the project page.</p>
-        <Dropzone name={`team.${index}.image`} onDrop={handleDrop} />
+
+        <div className="flex items-center gap-6">
+          {/* Upload/Delete/Cancel controls */}
+          {isUploadingAvatar ? (
+            <span
+              onClick={cancelAvatarUpload}
+              className="flex items-center gap-2 text-white font-medium text-sm md:text-lg cursor-pointer"
+            >
+              <IconX /> Cancel Upload
+            </span>
+          ) : avatarUrl ? (
+            <span
+              onClick={() => setValue(`team.${index}.image`, null)}
+              className="flex items-center gap-2 text-white hover:text-red-500 font-medium text-sm md:text-lg cursor-pointer"
+            >
+              <IconX /> Delete
+            </span>
+          ) : null}
+
+          <span
+            className={`flex items-center gap-2 text-white font-medium text-sm md:text-lg cursor-pointer ${
+              isUploadingAvatar ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            onClick={!isUploadingAvatar ? triggerAvatarFileSelect : undefined}
+          >
+            <PiCloudArrowUpBold /> Upload
+          </span>
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleAvatarFileChange}
+            ref={avatarFileInputRef}
+            className="hidden"
+          />
+
+          {/* Preview */}
+
+          <div className="relative">
+            <Image
+              src={avatarUrl || "/images/user.png"}
+              alt="Avatar"
+              width={124}
+              height={124}
+              className="rounded-full object-cover md:w-[124px] md:h-[124px] w-[80px] h-[80px]"
+            />
+            {isUploadingAvatar && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-full">
+                <span className="text-xs text-white animate-pulse">
+                  Uploading...
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </section>
   );

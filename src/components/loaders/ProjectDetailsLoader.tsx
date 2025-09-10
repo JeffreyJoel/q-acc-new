@@ -82,15 +82,11 @@ export default function ProjectDetailsLoader() {
           {Array(20)
             .fill(0)
             .map((_, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <div
-                  className={`w-1.5 ${Math.random() > 0.5 ? "bg-red-500" : "bg-green-500"} animate-pulse`}
-                  style={{ height: `${20 + Math.random() * 80}px` }}
-                ></div>
-                <div
-                  className="w-0.5 bg-neutral-700 animate-pulse"
-                  style={{ height: `${10 + Math.random() * 20}px` }}
-                ></div>
+              <div key={i} className="flex flex-col items-center gap-1">
+                {/* Static skeleton bar */}
+                <div className="w-1.5 h-20 bg-neutral-700 animate-pulse"></div>
+                {/* Static skeleton wick */}
+                <div className="w-0.5 h-4 bg-neutral-700 animate-pulse"></div>
               </div>
             ))}
         </div>

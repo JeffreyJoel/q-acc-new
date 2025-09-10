@@ -9,8 +9,10 @@ import {
 } from "wagmi";
 
 import { PrivyClientConfig, PrivyProvider } from "@privy-io/react-auth";
-import { polygon, polygonAmoy, mainnet } from "viem/chains";
+import { polygon } from "viem/chains";
 import { WagmiProvider, createConfig } from "@privy-io/wagmi";
+import { ChainProvider } from "@/contexts/chainManager.context";
+import config from "@/config/configuration";
 
 const privyConfig: PrivyClientConfig = {
   embeddedWallets: {
@@ -29,21 +31,22 @@ const privyConfig: PrivyClientConfig = {
     accentColor: "#FBBA80",
   },
   defaultChain: polygon,
-  supportedChains: [polygon, mainnet, polygonAmoy],
+  supportedChains: config.SUPPORTED_CHAINS,
   
 };
 
-export const config = createConfig({
-  chains: [polygon, polygonAmoy],
+const transports = Object.fromEntries(
+  config.SUPPORTED_CHAINS.map((chain) => [chain.id, http()])
+)
+
+export const wagmiConfig = createConfig({
+  chains: config.SUPPORTED_CHAINS,
   // connectors: [injected()],
-  // storage: createStorage({
-  //   storage: cookieStorage,
-  // }),
-  ssr: false,
-  transports: {
-    [polygon.id]: http(),
-    [polygonAmoy.id]: http(),
-  },
+  storage: createStorage({
+    storage: cookieStorage,
+  }),
+  ssr: true,
+  transports,
 });
 
 export default function Providers(props: {
@@ -57,8 +60,10 @@ export default function Providers(props: {
       config={privyConfig}
     >
       <QueryClientProvider client={queryClient}>
-        <WagmiProvider config={config}>
-          {props.children}
+        <WagmiProvider config={wagmiConfig}>
+          <ChainProvider>
+            {props.children}
+          </ChainProvider>
         </WagmiProvider>
       </QueryClientProvider>
     </PrivyProvider>

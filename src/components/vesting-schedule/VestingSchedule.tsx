@@ -238,7 +238,7 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
     <div className="bg-white/5 p-6 rounded-3xl text-white">
       {/* Header */}
       <div className="flex items-center gap-6 mb-10">
-        <h1 className="text-[40px] font-anton text-white tracking-wide">
+        <h1 className="text-2xl md:text-[40px] font-anton text-white tracking-wide">
           VESTING SCHEDULE
         </h1>
 
@@ -247,10 +247,10 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
           alt="Vesting Schedule"
           width={32}
           height={32}
-          className="rounded-full"
+          className="rounded-full h-6 w-6 md:h-8 md:w-8"
         />
 
-        <p className="text-peach-400 text-[40px] font-anton tracking-wide">
+        <p className="text-peach-400 text-xl md:text-[40px] font-anton tracking-wide">
           ${projectTicker}
         </p>
       </div>
@@ -388,7 +388,7 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
         {/* Today Line */}
         {todayPosition >= 0 && (
           <div
-            className="absolute top-0 w-[1px] bg-[#D6644F] pointer-events-none h-[190px] transition-all duration-100 ease-in-out"
+            className="absolute -top-2 w-[1px] bg-[#D6644F] pointer-events-none h-[160px] transition-all duration-100 ease-in-out"
             style={{ left: `${todayPosition}%` }}
           >
             {/* Top circle */}

@@ -37,3 +37,9 @@ export const capitalizeFirstLetter = (str: string) => {
     }
 
   };
+
+  export const extractVideoId = (url: string) => {
+    if (!url) return "";
+    const match = url.match(/(?:v=|\/shorts\/)([^?&\/]+)/);
+    return match && match[1] ? match[1] : "";
+  };

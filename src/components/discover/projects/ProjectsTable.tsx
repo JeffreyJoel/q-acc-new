@@ -80,18 +80,20 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
   });
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-12 mt-20">
+    <div className="w-full max-w-7xl mx-auto lg:px-8 py-12 mt-20">
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
-        <h1 className="font-anton text-white text-5xl md:text-6xl uppercase leading-none mb-2">
-          Projects
-          <br />
-          Data
+        <h1 className="font-anton text-white text-[42px] lg:text-6xl uppercase leading-none mb-2">
+          Projects 
+          <br className="hidden lg:block" />
+          <span className="ml-2 lg:ml-0">Data</span>
         </h1>
 
-        <div className="flex gap-1 mt-4">
+       <div className="flex flex-row gap-4 items-center justify-between w-full">
+
+       <div className="flex gap-2 md:gap-1 lg:mt-4">
           <button
             onClick={() => setActiveTab("all")}
-            className={`px-3 py-2 rounded-lg text-xs uppercase transition-colors font-medium ${
+            className={`w-fit px-2 md:px-3 py-2 rounded-lg text-[10px] sm:text-xs uppercase transition-colors font-medium ${
               activeTab === "all"
                 ? "bg-peach-400 text-black"
                 : "bg-peach-400/10 text-peach-400/50 hover:bg-peach-400/20"
@@ -101,7 +103,7 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
           </button>
           <button
             onClick={() => setActiveTab("season2")}
-            className={`px-3 py-2 rounded-lg text-xs uppercase transition-colors font-medium ${
+            className={`w-fit px-2 md:px-3 py-2 rounded-lg text-[10px] sm:text-xs uppercase transition-colors font-medium ${
               activeTab === "season2"
                 ? "bg-peach-400 text-black"
                 : "bg-peach-400/10 text-peach-400/50 hover:bg-peach-400/20"
@@ -111,7 +113,7 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
           </button>
           <button
             onClick={() => setActiveTab("season1")}
-            className={`px-3 py-2 rounded-lg text-xs uppercase transition-colors font-medium ${
+            className={`w-fit px-2 md:px-3 py-2 rounded-lg text-[10px] sm:text-xs uppercase transition-colors font-medium ${
               activeTab === "season1"
                 ? "bg-peach-400 text-black"
                 : "bg-peach-400/10 text-peach-400/50 hover:bg-peach-400/20"
@@ -120,7 +122,7 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
             Season 1
           </button>
         </div>
-        <div className="flex items-center gap-2 w-full md:w-72">
+        <div className="flex items-center gap-2 w-1/2 md:w-72">
           <div className="relative w-full">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <SearchIcon className="h-4 w-4 text-qacc-gray-light/60" />
@@ -134,6 +136,7 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
             />
           </div>
         </div>
+       </div>
       </div>
 
       <div className="overflow-x-auto">

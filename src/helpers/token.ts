@@ -4,7 +4,7 @@ import axios from "axios";
 
 import { Address, erc20Abi, formatUnits, parseUnits } from "viem";
 import { multicall, getBalance, getPublicClient } from "wagmi/actions";
-import { config as wagmiConfig } from "@/providers/PrivyProvider";
+import { wagmiConfig } from "@/providers/PrivyProvider";
 
 import config from "@/config/configuration";
 import { SquidTokenType } from "./squidTransactions";
@@ -14,16 +14,24 @@ export const AddressZero = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
 
 export const fetchBalanceWithDecimals = async (
   tokenAddress: Address,
-  userAddress: Address
+  userAddress: Address,
+  chainId?: number
 ) => {
   try {
+    const supportedChainIds = wagmiConfig.chains.map((c) => c.id);
+    const isSupported =
+      chainId !== undefined && supportedChainIds.includes(chainId as 137 | 80002);
+
     if (tokenAddress === AddressZero) {
-      const client = getPublicClient(wagmiConfig);
+      const client = getPublicClient(wagmiConfig, {
+        // Only provide chainId if supported by the current wagmiConfig to avoid ChainNotConfiguredError.
+        chainId: isSupported ? (chainId as 137 | 80002) : undefined,
+      });
       const balance = await client?.getBalance({ address: userAddress });
       const formattedBalance = formatUnits(balance!, 18);
       return {
         formattedBalance: formattedBalance,
-        decimals: 18, // Native token always has 18 decimals
+        decimals: 18, 
       };
     } else {
       const balance = await readContract(wagmiConfig, {
@@ -31,11 +39,13 @@ export const fetchBalanceWithDecimals = async (
         abi: erc20Abi,
         functionName: "balanceOf",
         args: [userAddress],
+        chainId: isSupported ? (chainId as 137 | 80002) : undefined,
       });
       const decimals = await readContract(wagmiConfig, {
         address: tokenAddress,
         abi: erc20Abi,
         functionName: "decimals",
+        chainId: isSupported ? (chainId as 137 | 80002) : undefined,
       });
       const formattedBalance = formatUnits(balance, decimals);
       return {
