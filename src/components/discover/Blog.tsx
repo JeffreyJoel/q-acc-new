@@ -53,6 +53,7 @@ export const Blog = () => {
                   href={`https://mirror.xyz/qacc.eth/${article.id}`}
                   target="_blank"
                   className="w-full cursor-pointer "
+                  key={article.id}
                 >
                   <div className="w-full h-[300px] relative overflow-hidden rounded-3xl">
                     <Image

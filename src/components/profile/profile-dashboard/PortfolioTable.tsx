@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Address } from "viem";
 import Image from "next/image";
 import { handleImageUrl } from "@/helpers/image";
@@ -144,8 +144,7 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange }: PortfolioTab
 
   useEffect(() => {
     setLockedTokens(totalTokensReceived - tokensAlreadyClaimed);
-    console.log(tokensAlreadyClaimed);
-  }, [releasable, released, totalTokensReceived]);
+  }, [totalTokensReceived, tokensAlreadyClaimed]);
 
   // This is the total amount of a token in the wallet, locked, and available to claim
   const totalAmountPerToken = inWallet + lockedTokens + availableToClaim;
@@ -232,6 +231,13 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
     setRowTotalsUSD((prev) => ({ ...prev, [projectId]: value }));
   }, []);
 
+  const rowCallbacks = useMemo(() => {
+    return rows.map((row) => ({
+      projectId: row.project.id,
+      callback: (value: number) => handleRowTotalChange(Number(row.project.id), value),
+    }));
+  }, [rows, handleRowTotalChange]);
+
   const portfolioTotalUSD = Object.values(rowTotalsUSD).reduce(
     (sum, val) => sum + val,
     0
@@ -286,16 +292,17 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
             </tr>
           </thead>
           <tbody className="divide-y  divide-white/5">
-            {rows.map((row) => (
-              <PortfolioTableRow
-                key={row.project.id}
-                project={row.project}
-                inWallet={row.inWallet}
-                onTotalUSDChange={(value) =>
-                  handleRowTotalChange(Number(row.project.id), value)
-                }
-              />
-            ))}
+            {rows.map((row) => {
+              const rowCallback = rowCallbacks.find(cb => cb.projectId === String(row.project.id));
+              return (
+                <PortfolioTableRow
+                  key={row.project.id}
+                  project={row.project}
+                  inWallet={row.inWallet}
+                  onTotalUSDChange={rowCallback?.callback}
+                />
+              );
+            })}
           </tbody>
         </table>
       </div>

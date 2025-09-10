@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { formatUnits } from "viem";
 import { formatDateMonthDayYear, isMiddleOfThePeriod } from "@/helpers/date";
@@ -6,14 +8,18 @@ import { fetchProjectDonationsById } from "@/services/donation.service";
 import {
   calculateTotalDonations,
   calculateUniqueDonors,
-  formatAmount,
+  formatAmount
 } from "@/helpers/donations";
 import { useFetchAllRoundDetails } from "@/hooks/useRounds";
 import { IEarlyAccessRound, IQfRound } from "@/types/round.type";
-import { useTokenPrice } from "@/hooks/useTokens";
+import { useTokenPrice, useFetchPOLPriceSquid } from "@/hooks/useTokens";
+import { useGetCurrentTokenPrice } from "@/hooks/useGetCurrentTokenPrice";
 import {
   useTokenPriceRange,
   useTokenPriceRangeStatus,
+  calculateMarketCapChange,
+  getMarketCap,
+  fetchGeckoMarketCap,
 } from "@/services/tokenPrice.service";
 import {
   useClaimCollectedFee,
@@ -24,11 +30,17 @@ import { useFetchActiveRoundDetails } from "@/hooks/useRounds";
 import { calculateCapAmount } from "@/helpers/round";
 import { EProjectSocialMediaType } from "@/types/project.type";
 import { useTokenSupplyDetails } from "@/hooks/useTokens";
-import { Eye, Pencil } from "lucide-react";
+import { useTokenHolders } from "@/hooks/useTokenHolders";
+import { useVestingSchedules } from "@/hooks/useVestingSchedules";
+import { useCountdown } from "@/hooks/useCountdown";
+import { Eye, Pencil, Loader2 } from "lucide-react";
 import { IProject } from "@/types/project.type";
 import { toast } from "sonner";
+import { Spinner } from "@/components/loaders/Spinner";
 import { handleImageUrl } from "@/helpers/image";
 import { useRouter } from "next/navigation";
+import { formatNumber } from "@/helpers/donations";
+import { formatPercentageChange } from "@/helpers";
 
 const MyProjects = ({ projectData }: { projectData: IProject }) => {
   const projectId = projectData?.id;
@@ -39,12 +51,55 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
   const [uniqueDonars, setUniqueDonars] = useState<number>(0);
   const [totalAmount, setTotalAmount] = useState<number>(0);
   const { data: POLPrice } = useTokenPrice();
-  // Dummy placeholders for wallet/token stats (replace with real data when available)
-  const inWallet = 0;
-  const locked = 0;
-  const claimable = 0;
-  const totalAmountPerToken = 0;
-  const totalAmountPerTokenInUSD = 0;
+  const { data: POLPriceSquid } = useFetchPOLPriceSquid();
+
+  // Real data calculations
+  const { isTokenListed, currentTokenPrice } = useGetCurrentTokenPrice(
+    projectData?.abc?.issuanceTokenAddress
+  );
+
+  const { data: tokenHolderData } = useTokenHolders(
+    projectData?.abc?.issuanceTokenAddress || "",
+    { enabled: !!projectData?.abc?.issuanceTokenAddress }
+  );
+  const tokenHoldersCount = tokenHolderData?.totalHolders ?? 0;
+
+  const [marketCap, setMarketCap] = useState(0);
+  const [marketCapChange24h, setMarketCapChange24h] = useState(0);
+  const [marketCapChange7d, setMarketCapChange7d] = useState(0);
+  const [marketCapLoading, setMarketCapLoading] = useState(false);
+  const [tokenPricePOL, setTokenPricePOL] = useState(0);
+  const [tokenPriceUSD, setTokenPriceUSD] = useState(0);
+
+  const polPriceNumber = Number(POLPriceSquid);
+
+  const { data: vestingSchedules } = useVestingSchedules();
+
+  const allVestingData =
+    vestingSchedules?.map((schedule, index) => {
+      const nameLower = schedule.name.toLowerCase();
+      const seasonMatch = nameLower.match(/season (\d+)/);
+      const season = seasonMatch ? parseInt(seasonMatch[1]) : 0;
+
+      return {
+        name: nameLower.replace(/\s+/g, "-"),
+        displayName: schedule.name,
+        type: (nameLower.includes("projects") ? "team" : "supporters") as
+          | "team"
+          | "supporters",
+        season,
+        order: index,
+        start: new Date(schedule.start),
+        cliff: new Date(schedule.cliff),
+        end: new Date(schedule.end),
+      };
+    }) || [];
+
+  let unlockDate = allVestingData.find(
+    (period) => period.type === "team" && period.season === (projectData?.seasonNumber || 2)
+  )?.cliff;
+
+  const [days, hours, minutes, seconds] = useCountdown(unlockDate || "");
 
   function formatValue(value: number) {
     const valueStr = value.toLocaleString(undefined, {
@@ -83,6 +138,26 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
   const { data: tokenDetails } = useTokenSupplyDetails(
     projectData?.abc?.fundingManagerAddress!
   );
+
+  // Calculate token prices when dependencies change
+  useEffect(() => {
+    const calculatedTokenPricePOL = isTokenListed
+      ? currentTokenPrice || 0
+      : (() => {
+        if (!tokenDetails) return 0;
+        const reserveRatio = Number(tokenDetails.reserve_ration);
+        const reserve = Number(tokenDetails.collateral_supply);
+        const supply = Number(tokenDetails.issuance_supply);
+        if (!reserveRatio || !supply) return 0;
+        return (reserve / (supply * reserveRatio)) * 1.1;
+      })();
+
+    const calculatedTokenPriceUSD = calculatedTokenPricePOL * polPriceNumber;
+
+    setTokenPricePOL(calculatedTokenPricePOL);
+    setTokenPriceUSD(calculatedTokenPriceUSD);
+  }, [isTokenListed, currentTokenPrice, tokenDetails, polPriceNumber]);
+
   // Check if Round 1 has started
   const round1Started = round1
     ? new Date().toISOString().split("T")[0] >=
@@ -193,6 +268,76 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
     }
   }, [projectData]);
 
+  // Calculate market cap data
+  useEffect(() => {
+    if (!donations.length || !projectData?.abc?.fundingManagerAddress) return;
+    const fundingManagerAddress = projectData.abc.fundingManagerAddress;
+    setMarketCapLoading(true);
+    (async () => {
+      try {
+        if (donations.length && activeRoundDetails) {
+          // 24-hour change
+          const res24 = await calculateMarketCapChange(
+            donations,
+            fundingManagerAddress,
+            24,
+            activeRoundDetails.startDate
+          );
+
+          // 7-day change
+          const res7d = await calculateMarketCapChange(
+            donations,
+            fundingManagerAddress,
+            24 * 7,
+            activeRoundDetails.startDate
+          );
+
+          setMarketCap(res24.marketCap * polPriceNumber);
+          setMarketCapChange24h(res24.pctChange);
+          setMarketCapChange7d(res7d.pctChange);
+        } else if (isTokenListed && projectData.abc?.issuanceTokenAddress) {
+          const issuanceTokenAddress = projectData.abc.issuanceTokenAddress;
+          const [marketCapData, gecko] = await Promise.all([
+            getMarketCap(
+              isTokenListed,
+              issuanceTokenAddress,
+              fundingManagerAddress
+            ),
+            fetchGeckoMarketCap(issuanceTokenAddress),
+          ]);
+
+          setMarketCap(marketCapData);
+          setMarketCapChange24h(gecko?.pctChange24h ?? 0);
+          setMarketCapChange7d(gecko?.pctChange7d ?? 0);
+        } else if (!isTokenListed && projectData.abc?.issuanceTokenAddress) {
+          // For tokens not listed, derive market cap from bonding curve parameters
+          const issuanceTokenAddress = projectData.abc.issuanceTokenAddress;
+          const marketCapData = await getMarketCap(
+            false,
+            issuanceTokenAddress,
+            fundingManagerAddress,
+            donations
+          );
+
+          setMarketCap(marketCapData * polPriceNumber);
+          setMarketCapChange24h(0);
+          setMarketCapChange7d(0);
+        }
+      } catch (error) {
+        console.error("Error fetching market cap data:", error);
+      } finally {
+        setMarketCapLoading(false);
+      }
+    })();
+  }, [
+    donations,
+    projectData?.abc?.fundingManagerAddress,
+    activeRoundDetails,
+    isTokenListed,
+    polPriceNumber,
+    tokenDetails,
+  ]);
+
   const projectCollateralFeeCollected = useProjectCollateralFeeCollected({
     contractAddress: projectData?.abc?.fundingManagerAddress!,
   });
@@ -245,14 +390,6 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
     );
   }
 
-  // Setup project image
-  const backgroundImage = projectData?.image
-    ? `url(${projectData?.image})`
-    : "";
-
-  const website = projectData.socialMedia?.find(
-    (social) => social.type === EProjectSocialMediaType.WEBSITE
-  )?.link;
 
   return (
     <div className="">
@@ -352,8 +489,8 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
 
           <div className="flex gap-4 justify-between pb-4">
             <p className="text-white font-medium">Unlock Remaining</p>
-            <span className="font-medium text-white font-ibm-mono">
-              {formatAmount(claimableFeesFormated)} WPOL
+            <span className="font-medium text-white/30 font-ibm-mono">
+            {days}d {hours}h {minutes}m {seconds}s
             </span>
           </div>
         </div>
@@ -361,97 +498,128 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
 
       {filteredRoundData.activeRound && (filteredRoundData.activeRound as any).startDate && (
         <div className="mt-4 space-y-4">
-          <div className="py-5 px-20 bg-white/[5%] rounded-3xl">
+          {/* TEAM TOKENS */}
+          <div className="py-5 px-4 md:px-12 bg-white/[5%] rounded-3xl">
+            {/* Mobile Layout */}
+            <div className="block md:hidden">
+              <h3 className="text-[22px] font-anton text-center text-white/30 mb-4">
+                Team Tokens
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-0.1">
+                  <div className="text-white text-center text-xl font-bold">
+                    {formatAmount(mintedTokenAmounts)}
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    Team Tokens
+                  </div>
+                </div>
+                <div className="space-y-0.1">
+                  <div className="text-white text-center text-xl font-bold">
+                    ${formatAmount(mintedTokenAmounts * tokenPriceUSD)}
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    Value
+                  </div>
+                </div>
+                <div className="space-y-0.1">
+                  <div className="text-white text-center text-xl font-bold">
+                    {tokenDetails?.issuance_supply ? ((Number(mintedTokenAmounts) / Number(tokenDetails.issuance_supply)) * 100).toFixed(1) : "0"}%
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    % of Total
+                  </div>
+                </div>
+                <div className="space-y-0.1">
+                  <div className="text-white text-center text-xl font-bold">
+                    {formatAmount(claimableFeesFormated)}
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    Available to claim
+                  </div>
+                </div>
+                <div className="space-y-0.1">
+                  <div className="text-white text-center text-xl font-bold">
+                    {unlockDate ? (
+                      <span className="text-white">
+                        {unlockDate.toLocaleString('default', { month: 'short', day: 'numeric' })}
+                      </span>
+                    ) : (
+                      <span className="text-white/30">N/A</span>
+                    )}
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    Unlock Date
+                  </div>
+                </div>
+                <div className="space-y-0.1">
+                  <div className="text-white text-center text-xl font-bold">
+                    {unlockDate ? (
+                      <span className="text-white">
+                        {formatDateMonthDayYear(unlockDate.toISOString())}
+                      </span>
+                    ) : (
+                      <span className="text-white/30">N/A</span>
+                    )}
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    Vesting Until
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop Layout */}
             <div className="hidden md:flex flex-nowrap flex-row justify-between items-center flex-1 gap-8 lg:gap-10">
-              <h3 className="text-[22px] font-anton text-right text-white/30 flex items-end gap-2 leading-none">
+              <h3 className="text-[22px] font-anton text-right text-white/30 flex items-end gap-2 leading-none w-fit">
                 <span className="">
                   Team <br /> Tokens
                 </span>
               </h3>
-              <div className="space-y-0.1">
+              <div className="space-y-0.1 flex-1 text-center">
                 <div className="text-white text-2xl text-center font-bold">
-                  {inWallet > 0 ? (
-                    <>
-                      {formatValue(inWallet).whole}
-                      <span className="text-base align-bottom">
-                        .{formatValue(inWallet).frac}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-white/30">0</span>
-                  )}
+                  {formatAmount(mintedTokenAmounts)}
                 </div>
                 <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
                   Team Tokens
                 </div>
               </div>
 
-              {/* Total Raised */}
-              <div className="space-y-0.1">
+              <div className="space-y-0.1 flex-1 text-center">
                 <div className="text-white text-center text-2xl font-bold">
-                  {locked > 0 ? (
-                    <>
-                      {formatValue(locked).whole}
-                      <span className="text-base align-bottom">
-                        .{formatValue(locked).frac}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-white/30">0</span>
-                  )}
+                  ${formatAmount(mintedTokenAmounts * tokenPriceUSD)}
                 </div>
                 <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
                   Value
                 </div>
               </div>
 
-              <div className="space-y-0.1">
+              <div className="space-y-0.1 flex-1 text-center">
                 <div className="text-white text-center text-2xl font-bold">
-                  {claimable > 0 ? (
-                    <>
-                      {formatValue(claimable).whole}
-                      <span className="text-base align-bottom">
-                        .{formatValue(claimable).frac}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-white/30">0</span>
-                  )}
+                  {tokenDetails?.issuance_supply ? ((Number(mintedTokenAmounts) / Number(tokenDetails.issuance_supply)) * 100).toFixed(1) : "0"}%
                 </div>
                 <span className="text-white/30 text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">
                   % of Total
                 </span>
               </div>
 
-              <div className="space-y-0.1">
+              <div className="space-y-0.1 flex-1 text-center">
                 <div className="text-white text-center text-2xl font-bold">
-                  {totalAmountPerToken > 0 ? (
-                    <>
-                      {formatValue(totalAmountPerToken).whole}
-                      <span className="text-base align-bottom">
-                        .{formatValue(totalAmountPerToken).frac}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-white/30">0</span>
-                  )}
+                  {formatAmount(claimableFeesFormated)}
                 </div>
                 <span className="text-white/30 text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">
                   Available to claim
                 </span>
               </div>
 
-              <div className="space-y-0.1">
-                <div className="text-white text-center text-2xl font-bold">
-                  {totalAmountPerTokenInUSD > 0 ? (
-                    <>
-                      {formatValue(totalAmountPerTokenInUSD).whole}
-                      <span className="text-base align-bottom">
-                        .{formatValue(totalAmountPerTokenInUSD).frac}
-                      </span>
-                    </>
+              <div className="space-y-0.1 flex-1 text-center">
+                <div className="text-white text-center text-xl font-bold">
+                  {unlockDate ? (
+                    <span className="text-white">
+                      {unlockDate.toLocaleString('default', { month: 'short', day: 'numeric' })}
+                    </span>
                   ) : (
-                    <span className="text-white/30">0</span>
+                    <span className="text-white/30">N/A</span>
                   )}
                 </div>
                 <span className="text-white/30 text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">
@@ -459,10 +627,15 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
                 </span>
               </div>
 
-              <div className="space-y-0.1">
-                <div className="text-white text-center text-2xl font-bold">
-                  {" "}
-                  <span className="text-white/30">0</span>
+              <div className="space-y-0.1 flex-1 text-center">
+                <div className="text-white text-center text-xl font-bold">
+                  {unlockDate ? (
+                    <span className="text-white">
+                      {formatDateMonthDayYear(unlockDate.toISOString())}
+                    </span>
+                  ) : (
+                    <span className="text-white/30">N/A</span>
+                  )}
                 </div>
                 <span className="text-white/30 text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">
                   Vesting Until
@@ -471,100 +644,118 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
             </div>
           </div>
 
-          <div className="py-5 px-20 bg-white/[5%] rounded-3xl">
+
+          {/* Q/ACC ROUNDS */}
+          <div className="py-5 px-4 md:px-20 bg-white/[5%] rounded-3xl">
+            {/* Mobile Layout */}
+            <div className="block md:hidden">
+              <h3 className="text-[22px] font-anton text-center text-white/30 mb-4">
+                Q/ACC ROUNDS
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-0.1">
+                  <div className="text-white text-center text-xl font-bold">
+                    {uniqueDonars || 0}
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    Supporters
+                  </div>
+                </div>
+                <div className="space-y-0.1">
+                  <div className="text-white text-center text-xl font-bold">
+                    {totalDonationsCount}
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    Transactions
+                  </div>
+                </div>
+                <div className="space-y-0.1">
+                  <div className="text-white text-center text-xl font-bold">
+                    {formatAmount(totalAmount)} POL
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    Total Raised
+                  </div>
+                </div>
+                <div className="space-y-0.1">
+                  <div className="text-white text-center text-xl font-bold">
+                    ≈ ${formatAmount(totalAmount * polPriceNumber)}
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    USD Value
+                  </div>
+                </div>
+                <div className="space-y-0.1">
+                  <div className="text-white text-center text-xl font-bold">
+                    {formatAmount(claimedTributes)} POL
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    Tributes Received
+                  </div>
+                </div>
+                <div className="space-y-0.1">
+                  <div className="text-white text-center text-xl font-bold">
+                    {formatAmount(claimableFeesFormated)} POL
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    Available to Claim
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop Layout */}
             <div className="hidden md:flex flex-nowrap flex-row justify-between items-center flex-1 gap-8 lg:gap-10">
-              <h3 className="text-[22px] font-anton text-right text-white/30 flex items-end gap-2 leading-none">
+              <h3 className="text-[22px] font-anton text-right text-white/30 flex items-end gap-2 leading-none w-fit">
                 <span className="">
                   Q/ACC
                   <br />
                   ROUNDS
                 </span>
               </h3>
-              <div className="space-y-0.1">
+              <div className="space-y-0.1 flex-1 text-center">
                 <div className="text-white text-2xl text-center font-bold">
-                  {inWallet > 0 ? (
-                    <>
-                      {formatValue(inWallet).whole}
-                      <span className="text-base align-bottom">
-                        .{formatValue(inWallet).frac}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-white/30">0</span>
-                  )}
+                  {uniqueDonars || 0}
                 </div>
                 <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
                   Supporters
                 </div>
               </div>
 
-              {/* Total Raised */}
-              <div className="space-y-0.1">
+              <div className="space-y-0.1 flex-1 text-center">
                 <div className="text-white text-center text-2xl font-bold">
-                  {locked > 0 ? (
-                    <>
-                      {formatValue(locked).whole}
-                      <span className="text-base align-bottom">
-                        .{formatValue(locked).frac}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-white/30">0</span>
-                  )}
+                  {totalDonationsCount}
                 </div>
                 <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
                   Transactions
                 </div>
               </div>
 
-              <div className="space-y-0.1">
+              <div className="space-y-0.1 flex-1 text-center">
                 <div className="text-white text-center text-2xl font-bold">
-                  {claimable > 0 ? (
-                    <>
-                      {formatValue(claimable).whole}
-                      <span className="text-base align-bottom">
-                        .{formatValue(claimable).frac}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-white/30">0</span>
-                  )}
+                  {formatAmount(totalAmount)} POL
                 </div>
-                <span className="text-white/30 text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">
-                  Raised = 0
-                </span>
+                <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                  Total Raised ≈ ${formatAmount(totalAmount * polPriceNumber)}
+                </div>
               </div>
 
-              <div className="space-y-0.1">
+              <div className="space-y-0.1 flex-1 text-center">
                 <div className="text-white text-center text-2xl font-bold">
-                  {totalAmountPerToken > 0 ? (
-                    <>
-                      {formatValue(totalAmountPerToken).whole}
-                      <span className="text-base align-bottom">
-                        .{formatValue(totalAmountPerToken).frac}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-white/30">0</span>
-                  )}
+                  <div className="flex flex-col gap-0.5">
+                    <span>{formatAmount(claimedTributes)} POL</span>
+                  </div>
                 </div>
                 <span className="text-white/30 text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">
                   Tributes Received
                 </span>
               </div>
 
-              <div className="space-y-0.1">
+              <div className="space-y-0.1 flex-1 text-center">
                 <div className="text-white text-center text-2xl font-bold">
-                  {totalAmountPerTokenInUSD > 0 ? (
-                    <>
-                      {formatValue(totalAmountPerTokenInUSD).whole}
-                      <span className="text-base align-bottom">
-                        .{formatValue(totalAmountPerTokenInUSD).frac}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-white/30">0</span>
-                  )}
+                  <div className="flex flex-col gap-0.5">
+                    <span>{formatAmount(claimableFeesFormated)} POL</span>
+                  </div>
                 </div>
                 <span className="text-white/30 text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">
                   Tributes available to claim
@@ -573,97 +764,154 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
             </div>
           </div>
 
-          <div className="py-5 px-20 bg-white/[5%] rounded-3xl">
+          {/* MARKET DATA */}
+          <div className="py-5 px-4 md:px-16 bg-white/[5%] rounded-3xl">
+            {/* Mobile Layout */}
+            <div className="block md:hidden">
+              <h3 className="text-[22px] font-anton text-center text-white/30 mb-4">
+                Market Data
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-0.1">
+                  <div className="text-white text-center text-xl font-bold">
+                    {tokenDetails?.issuance_supply ? formatNumber(Number(tokenDetails.issuance_supply)) : "0"}
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    Total Supply
+                  </div>
+                </div>
+                <div className="space-y-0.1">
+                  <div className="text-white text-center text-xl font-bold">
+                    {formatNumber(tokenHoldersCount)}
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    Holders
+                  </div>
+                </div>
+                <div className="space-y-0.1">
+                  <div className="text-white text-center text-xl font-bold">
+                    ${formatNumber(tokenPriceUSD)}
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    Price (USD)
+                  </div>
+                </div>
+                <div className="space-y-0.1">
+                  <div className="text-white text-center text-xl font-bold">
+                    {formatNumber(tokenPricePOL)} POL
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    Price (POL)
+                  </div>
+                </div>
+                <div className="space-y-0.1">
+                  <div className="text-white text-center text-xl font-bold">
+                    {marketCapLoading ? (
+                      <Spinner size={16} />
+                    ) : (
+                      `$${formatAmount(marketCap)}`
+                    )}
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    Market Cap
+                  </div>
+                </div>
+
+                <div className="space-y-0.1">
+                  <div className="text-white/30 text-center text-xl font-bold">
+                    N/A
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    7d Volume
+                  </div>
+                </div>
+
+                <div className="space-y-0.1 col-span-2">
+                  <div className="text-white text-center text-xl font-bold">
+                    {marketCapLoading ? (
+                      <Spinner size={16} />
+                    ) : isTokenListed ? (
+                      <span
+                        className={
+                          formatPercentageChange(marketCapChange24h).color
+                        }
+                      >
+                        {formatPercentageChange(marketCapChange24h).formatted}
+                      </span>
+                    ) : (
+                      <span className="text-white/30">N/A</span>
+                    )}
+                  </div>
+                  <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
+                    24h Change
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop Layout */}
             <div className="hidden md:flex flex-nowrap flex-row justify-between items-center flex-1 gap-8 lg:gap-10">
-              <h3 className="text-[22px] font-anton text-right text-white/30 flex items-end gap-2 leading-none">
+              <h3 className="text-[22px] font-anton text-right text-white/30 flex items-end gap-2 leading-none w-fit">
+                <span className="">
                 Market
                 <br />
                 Data
+                </span>
               </h3>
-              <div className="space-y-0.1">
+              <div className="space-y-0.1 flex-1 text-center">
                 <div className="text-white text-2xl text-center font-bold">
-                  {inWallet > 0 ? (
-                    <>
-                      {formatValue(inWallet).whole}
-                      <span className="text-base align-bottom">
-                        .{formatValue(inWallet).frac}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-white/30">0</span>
-                  )}
+                  {tokenDetails?.issuance_supply ? formatNumber(Number(tokenDetails.issuance_supply)) : "0"}
                 </div>
                 <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
                   Total Supply
                 </div>
               </div>
 
-              {/* Total Raised */}
-              <div className="space-y-0.1">
+              <div className="space-y-0.1 flex-1 text-center">
                 <div className="text-white text-center text-2xl font-bold">
-                  {locked > 0 ? (
-                    <>
-                      {formatValue(locked).whole}
-                      <span className="text-base align-bottom">
-                        .{formatValue(locked).frac}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-white/30">0</span>
-                  )}
+                  {formatNumber(tokenHoldersCount)}
                 </div>
                 <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
                   Holders
                 </div>
               </div>
 
-              <div className="space-y-0.1">
+              <div className="space-y-0.1 flex-1 text-center">
                 <div className="text-white text-center text-2xl font-bold">
-                  {claimable > 0 ? (
-                    <>
-                      {formatValue(claimable).whole}
-                      <span className="text-base align-bottom">
-                        .{formatValue(claimable).frac}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-white/30">0</span>
-                  )}
+                  ${formatNumber(tokenPriceUSD)}
                 </div>
                 <span className="text-white/30 text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">
-                  Price = 0
+                  Price: {formatNumber(tokenPricePOL)} POL
                 </span>
               </div>
 
-              <div className="space-y-0.1">
-                <div className="text-white text-center text-2xl font-bold">
-                  {totalAmountPerToken > 0 ? (
-                    <>
-                      {formatValue(totalAmountPerToken).whole}
-                      <span className="text-base align-bottom">
-                        .{formatValue(totalAmountPerToken).frac}
+              <div className="space-y-0.1 flex-1 text-center">
+                <div className="text-white text-center text-xl md:text-2xl font-bold">
+                  {marketCapLoading ? (
+                    <Spinner size={16} />
+                  ) : isTokenListed ? (
+                    <span
+                      className={
+                        formatPercentageChange(marketCapChange24h).color
+                      }
+                    >
+                      {formatPercentageChange(marketCapChange24h).formatted}
                       </span>
-                    </>
                   ) : (
-                    <span className="text-white/30">0</span>
+                    <span className="text-white/30 text-center">N/A</span>
                   )}
                 </div>
                 <span className="text-white/30 text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">
-                  24h change
+                  24h Change
                 </span>
               </div>
 
-              <div className="space-y-0.1">
+              <div className="space-y-0.1 flex-1 text-center">
                 <div className="text-white text-center text-2xl font-bold">
-                  {totalAmountPerTokenInUSD > 0 ? (
-                    <>
-                      {formatValue(totalAmountPerTokenInUSD).whole}
-                      <span className="text-base align-bottom">
-                        .{formatValue(totalAmountPerTokenInUSD).frac}
-                      </span>
-                    </>
+                  {marketCapLoading ? (
+                    <Spinner size={16} />
                   ) : (
-                    <span className="text-white/30">0</span>
+                    `$${formatAmount(marketCap)}`
                   )}
                 </div>
                 <span className="text-white/30 text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">
@@ -671,10 +919,10 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
                 </span>
               </div>
 
-              <div className="space-y-0.1">
+              <div className="space-y-0.1 flex-1 text-center">
                 <div className="text-white text-center text-2xl font-bold">
                   {" "}
-                  <span className="text-white/30">0</span>
+                  <span className="text-white/30">N/A</span>
                 </div>
                 <span className="text-white/30 text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">
                   7d Volume

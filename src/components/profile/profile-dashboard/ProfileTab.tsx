@@ -77,8 +77,6 @@ export default function ProfileTab({ userAddress }: ProfileTabProps) {
 
         <TabsContent value="tokens" className="">
           <Portfolio />
-          {/* <DonorSupports isOwnProfile={true} /> */}
-          {/* {isLoading ? <ProjectsTokensSkeleton /> : <Portfolio />} */}
         </TabsContent>
       </Tabs>
     </div>

@@ -133,14 +133,8 @@ export default function ProjectSupportedCard({
 
   let unlockDate = allVestingData.find(
     (period) =>
-      period.type === "supporters" && period.season === project.seasonNumber
+      period.type === "supporters" && period.season === (project.seasonNumber || 2)
   )?.cliff;
-
-  if (!unlockDate) {
-    unlockDate = allVestingData.find(
-      (period) => period.type === "supporters" && period.season === 2
-    )?.cliff;
-  }
 
   const [days, hours, minutes, seconds] = useCountdown(unlockDate || "");
 
