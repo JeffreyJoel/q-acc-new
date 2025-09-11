@@ -146,11 +146,15 @@ export default function ProjectDetails() {
           <div className="max-w-7xl mx-auto mt-4 ">
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="lg:w-[70%] flex flex-col gap-4">
-                <VestingSchedule
-                  seasonNumber={project.seasonNumber}
-                  projectTicker={project.abc?.tokenTicker}
-                  projectIcon={handleImageUrl(project.abc?.icon || "")}
-                />
+                {
+                  project.seasonNumber && (
+                    <VestingSchedule
+                      seasonNumber={project.seasonNumber}
+                      projectTicker={project.abc?.tokenTicker}
+                      projectIcon={handleImageUrl(project.abc?.icon || "")}
+                    />
+                  )
+                }
 
                 <div className="bg-black/50 px-6 lg:px-16 py-8 lg:py-12 rounded-3xl">
                   <TailwindStyledContent content={project.description || ""} />

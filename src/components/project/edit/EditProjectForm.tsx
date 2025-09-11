@@ -696,7 +696,7 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
                 <button
                   type="button"
                   onClick={addTeamMember}
-                  className="bg-qacc-gray-light px-3 py-3 md:py-1 rounded-xl text-sm md:text-base text-black font-medium"
+                  className="bg-peach-400 px-3 py-3 md:py-1 rounded-xl text-sm md:text-base text-black font-medium"
                 >
                   Add a new team member
                 </button>

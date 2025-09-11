@@ -1,6 +1,6 @@
 "use client"
 import { Suspense } from "react";
-import EditProjectForm from "@/components/project/edit/EditProjectFormNew";
+import EditProjectForm from "@/components/project/edit/EditProjectForm";
 
 const LoadingFallback = () => (
   <div className="container mx-auto bg-neutral-800 w-full h-[500px] flex items-center justify-center text-[25px] font-bold text-neutral-300 rounded-2xl mt-28">

@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useCallback, useEffect, useState, type JSX } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Autoplay from "embla-carousel-autoplay";
 import {
   AnimatePresence,
-  MotionProps,
   Variants,
   motion,
   useAnimation,
@@ -20,7 +19,6 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
-import { Button } from "@/components/ui/button";
 import { capitalizeFirstLetter } from "@/helpers";
 
 interface Tip {
@@ -243,7 +241,7 @@ export function ProjectsCarousel({
                                 maximumFractionDigits: 0,
                               })}
                             </span>
-                            <span className="text-white/30 text-[13px] text-center font-medium tracking-wide">
+                            <span className="text-neutral-500 text-[13px] text-center font-medium tracking-wide">
                               Total received
                             </span>
                           </div>
@@ -251,15 +249,19 @@ export function ProjectsCarousel({
                             <span className="text-white text-2xl md:text-3xl font-bold leading-tight">
                               {tip.supporters?.toLocaleString()}
                             </span>
-                            <span className="text-white/30 text-[13px] text-center font-medium tracking-wide">
+                            <span className="text-neutral-500 text-[13px] text-center font-medium tracking-wide">
                               Supporters
                             </span>
                           </div>
                           <div className="flex flex-col items-start">
                             <span className="text-white text-2xl md:text-3xl font-bold leading-tight">
-                              {"$815,963"}
+                              {tip.marketCap?.toLocaleString(undefined, {
+                                style: "currency",
+                                currency: "USD",
+                                maximumFractionDigits: 0,
+                              })}
                             </span>
-                            <span className="text-white/30 text-[13px] text-center font-medium tracking-wide">
+                            <span className="text-neutral-500 text-[13px] text-center font-medium tracking-wide">
                               Market Cap
                             </span>
                           </div>

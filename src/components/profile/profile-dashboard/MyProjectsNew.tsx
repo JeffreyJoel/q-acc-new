@@ -40,6 +40,7 @@ import { handleImageUrl } from "@/helpers/image";
 import { useRouter } from "next/navigation";
 import { formatNumber } from "@/helpers/donations";
 import { formatPercentageChange } from "@/helpers";
+import Link from "next/link";
 
 const MyProjects = ({ projectData }: { projectData: IProject }) => {
   const projectId = projectData?.id;
@@ -432,25 +433,23 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
                 </div>
               )}
 
-              <button
+              <Link
                 className="bg-peach-400 text-black uppercase inline-flex items-center gap-2 px-3 py-2 rounded-xl text-base font-medium"
-                onClick={() => {
-                  router.push(`/project/${projectData?.slug}`);
-                }}
+                href={`/project/${projectData?.slug}`}
+                prefetch
               >
                 <Eye className="w-5 h-5" />
                 View Project
-              </button>
+              </Link>
 
-              <button
+              <Link
                 className="bg-black border border-peach-400 text-peach-400 uppercase inline-flex items-center gap-2 px-3 py-2 rounded-xl text-base font-medium"
-                onClick={() => {
-                  router.push(`/project/edit/${projectId}`);
-                }}
+                href={`/project/edit/${projectId}`}
+                prefetch
               >
                 <Pencil className="w-5 h-5" />
                 Edit Project
-              </button>
+              </Link>
             </div>
             {/* <div className="bg-black/50 w-full flex gap-2 justify-center items-center border-2 border-white/10 rounded-xl px-4 py-2 mb-2">
               <span className="text-white font-ibm-mono shrink-0 text-center font-medium text-base leading-normal">
