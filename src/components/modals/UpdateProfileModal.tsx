@@ -226,9 +226,9 @@ export const UpdateProfileModal = ({
         if (!open) resetAndClose();
       }}
     >
-      <DialogContent className="sm:max-w-md p-0 bg-neutral-900 rounded-[24px] w-full max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-lg p-0 bg-neutral-900 rounded-[24px] w-full max-h-[90vh] flex flex-col">
         <FormProvider {...methods}>
-          <div className="p-6 flex-1 overflow-y-auto">
+          <div className="p-6 flex-1 overflow-y-auto scrollbar-hide">
             <DialogHeader>
             <DialogTitle>
               {step === "details" ? "Update Your Profile" : "Verify Your Email"}

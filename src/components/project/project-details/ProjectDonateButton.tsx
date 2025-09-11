@@ -21,15 +21,23 @@ import { useFetchAllRoundDetails } from "@/hooks/useRounds";
 import { getAdjustedEndDate } from "@/helpers/date";
 import { getPoolAddressByPair } from "@/helpers/getTokensListedData";
 import config from "@/config/configuration";
-import {
-  EOrderBy,
-  EDirection,
-} from "@/components/profile/profile-dashboard/DonorSupportTable";
 import { fetchProjectDonationsById } from "@/services/donation.service";
 import { Spinner } from "@/components/loaders/Spinner";
-import { Button } from "@/components/ui/button";
 
 const ProjectDonateButton = () => {
+
+  enum EOrderBy {
+    CreationDate = 'CreationDate',
+    Round = 'Round',
+    Amount = 'Amount',
+    Reward = 'RewardToken',
+  }
+
+  enum EDirection {
+    DESC = 'DESC',
+    ASC = 'ASC',
+  }
+
   const { projectData, totalAmount: totalPOLDonated } = useProjectContext();
   const { data: POLPrice } = useTokenPrice();
 
@@ -72,11 +80,11 @@ const ProjectDonateButton = () => {
           // setPageDonations(donations);
           setMarketCapLoading(true);
           const capResult1 = (await calculateMarketCapChange(
-              donations,
-              projectData?.abc?.fundingManagerAddress,
-              24,
-              activeRoundDetails?.startDate
-            )) as { marketCap: number; pctChange: number };
+            donations,
+            projectData?.abc?.fundingManagerAddress,
+            24,
+            activeRoundDetails?.startDate
+          )) as { marketCap: number; pctChange: number };
           const { marketCap: newCap, pctChange } = capResult1;
 
           // console.log(project.title, change24h);
@@ -97,10 +105,10 @@ const ProjectDonateButton = () => {
           } else {
             const { donations, totalCount } = data;
             const capResult2 = (await calculateMarketCapChange(
-                donations,
-                projectData?.abc?.fundingManagerAddress,
-                24
-              )) as { marketCap: number; pctChange: number };
+              donations,
+              projectData?.abc?.fundingManagerAddress,
+              24
+            )) as { marketCap: number; pctChange: number };
             const { marketCap: newCap, pctChange } = capResult2;
             setMarketCap(newCap * Number(POLPrice));
             setMarketCapChangePercentage(pctChange);
@@ -244,7 +252,7 @@ const ProjectDonateButton = () => {
               className="w-6 h-6 rounded-full"
               src={handleImageUrl(
                 projectData?.abc?.icon! ||
-                  "Qmeb6CzCBkyEkAhjrw5G9GShpKiVjUDaU8F3Xnf5bPHtm4"
+                "Qmeb6CzCBkyEkAhjrw5G9GShpKiVjUDaU8F3Xnf5bPHtm4"
               )}
             />
             <span className="text-gray-400 font-semibold text-sm ">
@@ -343,7 +351,7 @@ const ProjectDonateButton = () => {
           className="w-6 h-6 rounded-full"
           src={handleImageUrl(
             projectData?.abc?.icon! ||
-              "Qmeb6CzCBkyEkAhjrw5G9GShpKiVjUDaU8F3Xnf5bPHtm4"
+            "Qmeb6CzCBkyEkAhjrw5G9GShpKiVjUDaU8F3Xnf5bPHtm4"
           )}
         />
         <div className="flex gap-2 items-center">
@@ -356,8 +364,8 @@ const ProjectDonateButton = () => {
       </div>
       <div className="flex items-center text-sm gap-2 text-neutral-300 flex-wrap justify-between">
         {isTokenListed &&
-        tokenPriceRangeStatus.isSuccess &&
-        tokenPriceRangeStatus.data?.isPriceUpToDate ? (
+          tokenPriceRangeStatus.isSuccess &&
+          tokenPriceRangeStatus.data?.isPriceUpToDate ? (
           <>
             <h1 className=" flex-1 p-2 bg-neutral-700 rounded-lg pr-10 ">
               <span className="text-white font-medium">
@@ -400,13 +408,13 @@ const ProjectDonateButton = () => {
             remainingTime === "Time is up!" ||
             remainingTime === "--:--:--"
           }
-          //   loading={loadingNFTCheck}
+        //   loading={loadingNFTCheck}
         >
           {remainingTime === "Time is up!" || remainingTime === "--:--:--"
             ? "Buy Token"
             : progress >= 100
-            ? "Project Maxed Out"
-            : "Buy Token"}
+              ? "Project Maxed Out"
+              : "Buy Token"}
         </button>
       )}
 
