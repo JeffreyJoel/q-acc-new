@@ -147,6 +147,8 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
           console.warn(`Failed to remove ${key} from localStorage:`, error);
         }
       });
+      sessionStorage.removeItem("leaderboardData");
+      router.push("/");
     } catch (error) {
       console.error("Error during logout:", error);
 
@@ -244,7 +246,7 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
               {/* Menu Items */}
               <div className="py-2">
                 <Link
-                  href={`/profile/${walletAddress}`}
+                  href={`/profile`}
                   onClick={handleMyAccountClick}
                   prefetch
                 >
