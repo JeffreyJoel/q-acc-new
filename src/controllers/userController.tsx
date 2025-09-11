@@ -23,7 +23,7 @@ export const UserController = () => {
   const { user: privyUser, ready, authenticated } = usePrivy();
   const { mutateAsync: updateUser } = useUpdateUser();
   const { isConnected, address } = useAccount();
-  const { setShowSignModal, openUpdateProfileModal, openSignModal, setOnSign } =
+  const { setShowSignModal, openUpdateProfileModal, openSignModal, setOnSign, setCurrentUser, setShowIncompleteBanner } =
     useModal();
 
   const { data: useWhitelist } = useAddressWhitelist();
@@ -81,8 +81,16 @@ export const UserController = () => {
       }
     }
 
-    if (!currentUserState?.email) {
-      openUpdateProfileModal(currentUserState, true);
+    // Set current user in context for banner to access
+    if (currentUserState) {
+      setCurrentUser(currentUserState);
+    }
+
+    // Show banner if profile is incomplete (instead of showing modal immediately)
+    if (!currentUserState?.email || !currentUserState?.username || !currentUserState?.fullName) {
+      setShowIncompleteBanner(true);
+    } else {
+      setShowIncompleteBanner(false);
     }
 
     // if (!isProductReleased) {
@@ -109,7 +117,20 @@ export const UserController = () => {
       const localStorageToken = getLocalStorageToken(userAddress);
 
       if (localStorageToken) {
-        await refetch();
+        const fetchedData = await refetch();
+        const fetchedUser = fetchedData.data;
+
+        // Set current user in context and check if banner should be shown
+        if (fetchedUser) {
+          setCurrentUser(fetchedUser);
+          
+          // Show banner if profile is incomplete
+          if (!fetchedUser.email || !fetchedUser.username || !fetchedUser.fullName) {
+            setShowIncompleteBanner(true);
+          } else {
+            setShowIncompleteBanner(false);
+          }
+        }
 
         // Check if user has accepted ToS after refetching user data
         // if (user && !user.acceptedToS && pathname !== '/tos') {
