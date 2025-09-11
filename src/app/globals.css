@@ -161,3 +161,11 @@ input[type="number"] {
   background: transparent !important;
   /* margin: auto !important; */
 }
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

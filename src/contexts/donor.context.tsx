@@ -18,6 +18,8 @@ import React, {
   } from '@/helpers/donations';
 import { Address } from 'viem';
 import { IUser } from '@/types/user.type';
+import { usePrivy } from '@privy-io/react-auth';
+
   
   interface ProjectDonorData {
     uniqueDonors: number;
@@ -44,9 +46,8 @@ import { IUser } from '@/types/user.type';
   
   const DonorContext = createContext<DonorContextType | undefined>(undefined);
   
-  export const DonorProvider: React.FC<{ children: React.ReactNode; address: Address }> = ({
-    children,
-    address,
+  export const DonorProvider: React.FC<{ children: React.ReactNode }> = ({
+    children
   }) => {
     const [donations, setDonations] = useState<any[]>([]);
     const [projectDonorData, setProjectDonorData] = useState<
@@ -59,8 +60,12 @@ import { IUser } from '@/types/user.type';
     const [totalCount, setTotalCount] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const { user: privyUser } = usePrivy();
+
+    const userAddress = privyUser?.wallet?.address as Address;
   
-    const { data: user } = useFetchUser(!!address, address);
+    const { data: user } = useFetchUser(!!userAddress, userAddress);
+
     const userId = user?.id;
   
     useEffect(() => {

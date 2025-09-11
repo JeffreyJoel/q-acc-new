@@ -13,44 +13,6 @@ function Projects() {
   const [activeTile, setActiveTile] = useState<string | null>(null);
   const { data: allProjects, isLoading, error } = useFetchAllProjects();
 
-  const carouselItems = (allProjects?.projects || [])
-    .filter((project: any) => project.rank === 1)
-    .slice(0, 4)
-    .map((project) => ({
-      text: project.title || "Untitled Project",
-      image: project.image || "/images/banners/banner-lg.jpg",
-      url: `/project/${project.slug}`,
-      description: project.descriptionSummary || "",
-      donations: project.totalDonations || 0,
-      supporters: project.countUniqueDonors || 0,
-      marketCap:
-        project.abc && project.abc.tokenPrice && project.abc.totalSupply
-          ? project.abc.tokenPrice * project.abc.totalSupply
-          : 0,
-      season: project.seasonNumber || "",
-    }));
-
-  const tiles = (allProjects?.projects || [])
-    .filter((project: any) => project.rank === 2 || project.rank === 3)
-    .slice(0, 8)
-    .map((project) => ({
-      text: project.title || "Untitled Project",
-      image: project.image || "/images/banners/banner-lg.jpg",
-      url: `/project/${project.slug}`,
-      description: project.descriptionSummary || "",
-      donations: project.totalDonations || 0,
-      supporters: project.countUniqueDonors || 0,
-      marketCap:
-        project.abc && project.abc.tokenPrice && project.abc.totalSupply
-          ? project.abc.tokenPrice * project.abc.totalSupply
-          : 0,
-      season: project.seasonNumber || "",
-      slug: project.slug || "",
-      reelId: extractVideoId(project.socialMedia?.find((media: any) => media.type === "REEL_VIDEO")?.link || ""),
-
-    }));
-    console.log(tiles);
-
   const { data: enrichedProjects, isLoading: isEnrichedLoading } =
     useEnrichedProjects(allProjects?.projects);
 
@@ -76,6 +38,41 @@ function Projects() {
     );
   }
 
+  const enrichedMap = new Map((enrichedProjects ?? []).map(p => [p.id, p]));
+
+  const carouselItems = (allProjects?.projects || [])
+    .filter((project: any) => project.rank === 1)
+    .slice(0, 4)
+    .map((project) => {
+      const enriched = enrichedMap.get(project.id.toString());
+      return {
+        text: project.title || "Untitled Project",
+        image: project.image || "/images/banners/banner-lg.jpg",
+        url: `/project/${project.slug}`,
+        description: project.descriptionSummary || "",
+        donations: project.totalDonations || 0,
+        supporters: project.countUniqueDonors || 0,
+        marketCap: enriched?.marketCapUSD ?? 0,
+        season: project.seasonNumber || "",
+      };
+    });
+
+  const tiles = (allProjects?.projects || [])
+    .filter((project: any) => project.rank === 2 || project.rank === 3)
+    .slice(0, 8)
+    .map((project) => {
+      return {
+        text: project.title || "Untitled Project",
+        image: project.image || "/images/banners/banner-lg.jpg",
+        url: `/project/${project.slug}`,
+        description: project.descriptionSummary || "",
+        season: project.seasonNumber || "",
+        slug: project.slug || "",
+        reelId: extractVideoId(project.socialMedia?.find((media: any) => media.type === "REEL_VIDEO")?.link || ""),
+      };
+    });
+  console.log(tiles);
+
   return (
     <div className="mx-auto px-6 py-10 md:py-20 lg:px-12 flex flex-col justify-center">
       <h2 className="font-anton text-white text-[46px] md:text-5xl lg:text-[64px] mb-4 md:mb-6 uppercase tracking-wide">
@@ -86,7 +83,7 @@ function Projects() {
           <ProjectsCarousel tips={carouselItems} />
         </div>
 
-        <div className="flex flex-row gap-4 lg:mt-10 overflow-x-auto">
+        <div className="flex flex-row gap-4 lg:mt-10 overflow-x-auto scrollbar-hide">
           {tiles.map((tile) => (
             <ProjectTile
               key={tile.text}

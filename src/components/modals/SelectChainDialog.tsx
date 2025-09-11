@@ -118,7 +118,7 @@ const SelectChainDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className=" bg-qacc-black max-h-[90vh] overflow-y-auto md:max-w-[650px] rounded-3xl border">
+      <DialogContent className=" bg-qacc-black max-h-[90vh] overflow-y-auto scrollbar-hide md:max-w-[650px] rounded-3xl border">
         <DialogHeader>
           <div className="flex gap-4 items-center justify-between pb-4">
             <div className="flex gap-4 items-center">
@@ -147,7 +147,7 @@ const SelectChainDialog = ({
 
         <div className="flex flex-col md:flex-row gap-4">
           {/* Chains List */}
-          <div className="w-full md:w-1/2 overflow-y-auto max-h-[400px]">
+          <div className="w-full md:w-1/2 overflow-y-auto scrollbar-hide max-h-[400px]">
             <h3 className="text-sm font-semibold mb-2">Popular chains</h3>
             <div className="grid grid-cols-1 gap-2">
               {displayedNetworks

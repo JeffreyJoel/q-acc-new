@@ -11,6 +11,7 @@ import {
     calculateTotalDonations,
     calculateUniqueDonors,
   } from '@/helpers/donations';
+  import { IProject } from '@/types/project.type';
   
   const ProjectContext = createContext<any>({
     projectData: undefined,
@@ -21,9 +22,11 @@ import {
   export const ProjectProvider = ({
     children,
     slug,
+    initialData,
   }: {
     children: ReactNode;
     slug: string;
+    initialData?: IProject | null;
   }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [projectData, setProjectData] = useState<any | null>(null);
@@ -34,7 +37,13 @@ import {
     const [totalAmount, setTotalAmount] = useState<number>(0);
   
     useEffect(() => {
-      if (slug) {
+      if (initialData) {
+        // Use provided initial data
+        setProjectData(initialData);
+        setTeamMembers(initialData?.teamMembers || []);
+        setIsLoading(false);
+      } else if (slug) {
+        // Fallback to fetching if no initial data
         const fetchProject = async () => {
           try {
             const data = await fetchProjectBySlug(slug);
@@ -46,34 +55,34 @@ import {
         };
         fetchProject();
       }
-    }, [slug]);
+    }, [slug, initialData]); // Add initialData to dependencies
   
     useEffect(() => {
       if (projectData?.id) {
-        const fetchProjectDonations = async () => {
-          const data = await fetchProjectDonationsById(
-            parseInt(projectData?.id),
-            1000,
-            0,
-          );
-  
-          if (data) {
-            const { donations, totalCount } = data;
-            setDonations(donations);
-            setTotalDonationsCount(totalCount);
-            setUniqueDonars(calculateUniqueDonors(donations));
-            setTotalAmount(calculateTotalDonations(donations));
-          }
+        const fetchDonations = async () => {
+          const data = await fetchProjectDonationsById(projectData.id, 1000, 0);
+          setDonations(data?.donations || []);
+          setTotalDonationsCount(data?.totalCount || 0);
         };
-        fetchProjectDonations();
+        fetchDonations();
       }
-    }, [slug, projectData]);
+    }, [projectData?.id]);
+  
+    useEffect(() => {
+      if (donations.length > 0) {
+        setUniqueDonars(calculateUniqueDonors(donations));
+        setTotalAmount(calculateTotalDonations(donations));
+      }
+    }, [donations]);
   
     return (
       <ProjectContext.Provider
         value={{
+          isLoading,
           projectData,
           totalDonationsCount,
+          teamMembers,
+          donations,
           uniqueDonars,
           totalAmount,
         }}
@@ -83,13 +92,5 @@ import {
     );
   };
   
-  export function useProjectContext() {
-    const context = useContext(ProjectContext);
-  
-    if (!context) {
-      throw new Error('Project context not found!');
-    }
-  
-    return context;
-  }
+  export const useProjectContext = () => useContext(ProjectContext);
   

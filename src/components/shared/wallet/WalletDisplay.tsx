@@ -20,6 +20,8 @@ import { Address } from "viem";
 import { useFetchUser } from "@/hooks/useFetchUser";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { handleImageUrl } from "@/helpers/image";
+import { shortenAddress } from "@/helpers/address";
+import Image from "next/image";
 
 interface WalletDisplayProps {
   walletAddress?: string;
@@ -145,6 +147,8 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
           console.warn(`Failed to remove ${key} from localStorage:`, error);
         }
       });
+      sessionStorage.removeItem("leaderboardData");
+      router.push("/");
     } catch (error) {
       console.error("Error during logout:", error);
 
@@ -203,15 +207,16 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
                 width={24}
                 className="rounded-full m-0 p-0"
               />
-              <AvatarFallback>{user?.fullName?.charAt(0)}</AvatarFallback>
+              <AvatarFallback>
+                <Image src="/images/user.png" alt="user" width={24} height={24} />
+              </AvatarFallback>
             </Avatar>
-            <span className="text-sm font-medium text-white max-w-[6rem] truncate md:max-w-none">
-              {user?.fullName}
+            <span className="text-sm font-medium font-ibm-mono text-white max-w-[6rem] truncate md:max-w-none">
+              {user?.fullName || shortenAddress(walletAddress)}
             </span>
             <ChevronDown
-              className={`h-4 w-4 hidden sm:block transition-transform duration-200 text-white/30 ${
-                isMenuOpen ? "rotate-180" : ""
-              }`}
+              className={`h-4 w-4 hidden sm:block transition-transform duration-200 text-white/30 ${isMenuOpen ? "rotate-180" : ""
+                }`}
             />
           </button>
 
@@ -241,8 +246,9 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
               {/* Menu Items */}
               <div className="py-2">
                 <Link
-                  href={`/profile/${walletAddress}`}
+                  href={`/profile`}
                   onClick={handleMyAccountClick}
+                  prefetch
                 >
                   <div className="flex items-center gap-3 px-4 py-3 hover:bg-peach-400/10 transition-colors duration-150 text-gray-200">
                     <UserCircle2 className="h-5 w-5" />

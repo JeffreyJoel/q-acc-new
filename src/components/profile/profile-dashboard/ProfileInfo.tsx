@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { CopyButton } from "../../shared/CopyButton";
 import Image from "next/image";
-import { Address } from "viem";
 import { roundPoints } from "@/helpers/points";
 // import { GitcoinVerificationBadge } from "../../verification-badges/GitcoinVerificationBadge";
 import { useAccount } from "wagmi";
@@ -18,7 +17,7 @@ import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 // import { SelfVerificationBadge } from "@/components/verification-badges/SelfVerification";
 
-export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
+export default function ProfileInfo() {
   const { user, loading: donorContextLoading } = useDonorContext();
   const { address: wagmiAddress } = useAccount();
   const { authenticated, user: privyUser } = usePrivy();
@@ -31,9 +30,9 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
     return (
       authenticated &&
       ConnectedUserAddress &&
-      userAddress.toLowerCase() === ConnectedUserAddress.toLowerCase()
+      ConnectedUserAddress.toLowerCase() === ConnectedUserAddress.toLowerCase()
     );
-  }, [ConnectedUserAddress, userAddress]);
+  }, [ConnectedUserAddress, ConnectedUserAddress]);
 
   let avatar;
   if (user?.avatar && !user.avatar.includes("https://gateway.pinata.cloud")) {
@@ -100,7 +99,7 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
                 alt="User avatar"
                 width={120}
                 height={120}
-                className=" w-[80px] h-[80px] md:w-[120px] md:h-[120px] rounded-full object-cover mr-4"
+                className=" w-[80px] h-[80px] md:w-[120px] md:h-[120px] rounded-full border-[1px] border-peach-100/30 bg-black overflow-hidden object-cover mr-4"
               />
             {/* </div> */}
 
@@ -125,19 +124,19 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
               <div className="flex  items-center">
                 <span className="font-ibm-mono text-white/50 text-sm md:text-lg font-medium">
                   {" "}
-                  {userAddress.slice(0, 8)}...
-                  {userAddress.slice(
-                    userAddress.length - 8,
-                    userAddress.length
+                  {ConnectedUserAddress?.slice(0, 8)}...
+                  {ConnectedUserAddress?.slice(
+                    ConnectedUserAddress?.length - 8,
+                    ConnectedUserAddress?.length
                   )}
                 </span>
                 <CopyButton
-                  text={userAddress}
+                  text={ConnectedUserAddress || ""}
                   iconColor="fill-white/50"
                   iconClassName="w-4 h-4 ml-2"
                 />
                 <Link
-                  href={`https://polygonscan.com/address/${userAddress}`}
+                  href={`https://polygonscan.com/address/${ConnectedUserAddress}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-white/50 text-sm md:text-lg font-medium"
@@ -147,7 +146,7 @@ export default function ProfileInfo({ userAddress }: { userAddress: Address }) {
               </div>
 
               <p
-                className="text-peach-400 text-xs uppercase font-medium mt-2"
+                className="text-peach-400 text-xs uppercase font-medium mt-2 cursor-pointer"
                 onClick={() => user && openUpdateProfileModal(user, false)}
               >
                 Edit Profile

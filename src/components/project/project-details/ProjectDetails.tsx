@@ -1,6 +1,6 @@
 "use client";
 
-import { useFetchProjectBySlug } from "@/hooks/useProjects";
+import { useProjectContext } from "@/contexts/project.context";
 import { GeckoTerminalChart } from "./GeckoTerminal";
 
 import Image from "next/image";
@@ -15,22 +15,22 @@ import TeamSection from "./TeamSection";
 import TokenHolders from "./TokenHolders";
 import ProjectStats from "./ProjectStats";
 import Link from "next/link";
-import SquidSwapWidget from "../swap/SquidSwapWidget";
+import SwapWidget from "../swap/SwapWidget";
 import { getPoolAddressByPair } from "@/helpers/getTokensListedData";
 import config from "@/config/configuration";
 import { useEffect, useState } from "react";
 import VestingSchedule from "@/components/vesting-schedule/VestingSchedule";
 import { handleImageUrl } from "@/helpers/image";
 
-export default function ProjectDetails({ params }: { params: { id: string } }) {
+export default function ProjectDetails() {
   const [projectPoolAddress, setProjectPoolAddress] = useState<string | null>(
     null
   );
   const [isTokenListed, setIsTokenListed] = useState<boolean>(false);
 
-  const { data: project, isLoading, error } = useFetchProjectBySlug(params.id);
+  const { projectData: project, isLoading, error } = useProjectContext();
 
-  console.log(project);
+  // console.log(project);
 
   useEffect(() => {
     const fetchPoolAddress = async () => {
@@ -119,7 +119,7 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
 
             {isTokenListed ? (
               <div className="w-full lg:w-[30%] h-full">
-                <SquidSwapWidget
+                <SwapWidget
                  contractAddress={project.abc?.fundingManagerAddress || ''}
                   receiveTokenAddress={project.abc?.issuanceTokenAddress || ""}
                   receiveTokenSymbol={project.abc?.tokenTicker || ""}
@@ -146,11 +146,15 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
           <div className="max-w-7xl mx-auto mt-4 ">
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="lg:w-[70%] flex flex-col gap-4">
-                <VestingSchedule
-                  seasonNumber={project.seasonNumber}
-                  projectTicker={project.abc?.tokenTicker}
-                  projectIcon={handleImageUrl(project.abc?.icon || "")}
-                />
+                {
+                  project.seasonNumber && (
+                    <VestingSchedule
+                      seasonNumber={project.seasonNumber}
+                      projectTicker={project.abc?.tokenTicker}
+                      projectIcon={handleImageUrl(project.abc?.icon || "")}
+                    />
+                  )
+                }
 
                 <div className="bg-black/50 px-6 lg:px-16 py-8 lg:py-12 rounded-3xl">
                   <TailwindStyledContent content={project.description || ""} />

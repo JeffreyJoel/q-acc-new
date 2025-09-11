@@ -2,7 +2,6 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import { useState, useMemo } from "react";
-import { Address } from "viem";
 import { useAccount } from "wagmi";
 import { useAddressWhitelist } from "@/hooks/useAddressWhitelist";
 import MyProjects from "./MyProjectsNew";
@@ -11,13 +10,10 @@ import { useDonorContext } from "@/contexts/donor.context";
 import { ProjectsTokensSkeleton } from "@/components/loaders/ProfilePageLoaders";
 import { useFetchProjectByUserId } from "@/hooks/useProjects";
 import Portfolio from "./Portfolio";
-import DonorSupports from "./DonorSupports";
+import { Address } from "viem";
 
-interface ProfileTabProps {
-  userAddress: Address;
-}
 
-export default function ProfileTab({ userAddress }: ProfileTabProps) {
+export default function ProfileTab() {
   const [activeTab, setActiveTab] = useState("tokens");
 
   const { data: addrWhitelist, isLoading: whitelistLoading } =
@@ -29,15 +25,15 @@ export default function ProfileTab({ userAddress }: ProfileTabProps) {
   );
   const { user: privyUser, authenticated } = usePrivy();
 
-  const ConnectedUserAddress = privyUser?.wallet?.address || wagmiAddress;
+  const ConnectedUserAddress = privyUser?.wallet?.address as Address || wagmiAddress;
 
   const isOwnProfile = useMemo(() => {
     return (
       ConnectedUserAddress &&
       authenticated &&
-      userAddress.toLowerCase() === ConnectedUserAddress.toLowerCase()
+      ConnectedUserAddress.toLowerCase() === ConnectedUserAddress.toLowerCase()
     );
-  }, [ConnectedUserAddress, userAddress]);
+  }, [ConnectedUserAddress]);
 
   const isLoading = donorContextLoading || whitelistLoading;
 

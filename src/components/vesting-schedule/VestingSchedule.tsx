@@ -388,7 +388,7 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
         {/* Today Line */}
         {todayPosition >= 0 && (
           <div
-            className="absolute -top-2 w-[1px] bg-[#D6644F] pointer-events-none h-[160px] transition-all duration-100 ease-in-out"
+            className={`absolute -top-2 w-[1px] bg-[#D6644F] pointer-events-none transition-all duration-100 ease-in-out ${seasonNumber == 1 ? "h-[190px]" : "h-[160px]"}`}
             style={{ left: `${todayPosition}%` }}
           >
             {/* Top circle */}

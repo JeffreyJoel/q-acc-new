@@ -80,6 +80,7 @@ export function NavBar() {
                   key={`nav-link-${idx}`}
                   href={item.link}
                   target={item.blank ? "_blank" : "_self"}
+                  prefetch={!item.blank}
                   className={` hover:text-peach-400 text-sm font-medium transition-colors ${
                     item.colored ? "text-peach-400" : "text-white"
                   }`}
