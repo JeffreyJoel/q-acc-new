@@ -28,12 +28,11 @@ import {
 } from "@/hooks/useTribute";
 import { useFetchActiveRoundDetails } from "@/hooks/useRounds";
 import { calculateCapAmount } from "@/helpers/round";
-import { EProjectSocialMediaType } from "@/types/project.type";
 import { useTokenSupplyDetails } from "@/hooks/useTokens";
 import { useTokenHolders } from "@/hooks/useTokenHolders";
 import { useVestingSchedules } from "@/hooks/useVestingSchedules";
 import { useCountdown } from "@/hooks/useCountdown";
-import { Eye, Pencil, Loader2 } from "lucide-react";
+import { Eye, Loader2, Pencil } from "lucide-react";
 import { IProject } from "@/types/project.type";
 import { toast } from "sonner";
 import { Spinner } from "@/components/loaders/Spinner";
@@ -161,7 +160,7 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
   // Check if Round 1 has started
   const round1Started = round1
     ? new Date().toISOString().split("T")[0] >=
-      new Date(round1.startDate).toISOString().split("T")[0]
+    new Date(round1.startDate).toISOString().split("T")[0]
     : false;
 
   useEffect(() => {
@@ -426,10 +425,12 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
             </p>
 
             <div className="flex gap-2 mt-4">
-              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-base font-medium uppercase bg-[#6DC28F4D] text-[#6DC28F]">
-                <span className="h-2 w-2 rounded-full bg-green-400" />
-                active
-              </div>
+              {filteredRoundData.activeRound.endDate > new Date().toISOString() && (
+                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-base font-medium uppercase bg-[#6DC28F4D] text-[#6DC28F]">
+                  <span className="h-2 w-2 rounded-full bg-green-400" />
+                  active
+                </div>
+              )}
 
               <button
                 className="bg-peach-400 text-black uppercase inline-flex items-center gap-2 px-3 py-2 rounded-xl text-base font-medium"
@@ -475,9 +476,28 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
         <div className="col-span-12 md:col-span-6 bg-black/50 rounded-2xl p-6 md:p-10">
           <div className="flex gap-4 justify-between border-b border-white/10 pb-4">
             <p className="text-white font-medium">Tributes available</p>
-            <span className="font-medium text-white font-ibm-mono">
-              {formatAmount(claimableFeesFormated)} WPOL
-            </span>
+
+            <div className="flex gap-2 items-center">
+              <span className="font-medium text-white font-ibm-mono">
+                {formatAmount(claimableFeesFormated)} WPOL
+              </span>
+              {
+                enableClaimButton && (
+                  <button className={`bg-peach-400 text-black uppercase inline-flex items-center gap-2 px-3 py-2 rounded-xl text-base font-medium ${claim.isPending ? 'bg-peach-400/50' : ''}`}
+                    disabled={!enableClaimButton || claim.isPending}
+                    onClick={() => claim.mutateAsync()}
+                  >
+                    {claim.isPending ? (
+                      <>
+                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                        Claiming...
+                      </>
+                    ) : "Claim"}
+                  </button>
+                )
+              }
+
+            </div>
           </div>
 
           <div className="flex gap-4 justify-between py-4">
@@ -490,7 +510,7 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
           <div className="flex gap-4 justify-between pb-4">
             <p className="text-white font-medium">Unlock Remaining</p>
             <span className="font-medium text-white/30 font-ibm-mono">
-            {days}d {hours}h {minutes}m {seconds}s
+              {days}d {hours}h {minutes}m {seconds}s
             </span>
           </div>
         </div>
@@ -531,7 +551,7 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
                   </div>
                 </div>
                 <div className="space-y-0.1">
-                  <div className="text-white text-center text-xl font-bold">
+                  <div className="text-peach-400 text-center text-xl font-bold">
                     {formatAmount(claimableFeesFormated)}
                   </div>
                   <div className="text-white/30 text-center font-medium text-[13px] leading-normal">
@@ -604,7 +624,7 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
               </div>
 
               <div className="space-y-0.1 flex-1 text-center">
-                <div className="text-white text-center text-2xl font-bold">
+                <div className="text-peach-400 text-center text-2xl font-bold">
                   {formatAmount(claimableFeesFormated)}
                 </div>
                 <span className="text-white/30 text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">
@@ -753,8 +773,20 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
 
               <div className="space-y-0.1 flex-1 text-center">
                 <div className="text-white text-center text-2xl font-bold">
-                  <div className="flex flex-col gap-0.5">
+                  <div className="flex flex-row justify-center gap-2">
                     <span>{formatAmount(claimableFeesFormated)} POL</span>
+                    {enableClaimButton && (
+                    <button className={` text-black uppercase px-2 py-0.5 rounded-xl text-xs font-medium ${claim.isPending ? 'bg-peach-400/30' : 'bg-peach-400'}`}
+                      disabled={claim.isPending}
+                      onClick={() => claim.mutateAsync()}
+                    >
+                      {claim.isPending ? (
+                        <>
+                          Claiming...
+                        </>
+                        ) : "Claim"}
+                      </button>
+                    )}
                   </div>
                 </div>
                 <span className="text-white/30 text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">
@@ -853,9 +885,9 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
             <div className="hidden md:flex flex-nowrap flex-row justify-between items-center flex-1 gap-8 lg:gap-10">
               <h3 className="text-[22px] font-anton text-right text-white/30 flex items-end gap-2 leading-none w-fit">
                 <span className="">
-                Market
-                <br />
-                Data
+                  Market
+                  <br />
+                  Data
                 </span>
               </h3>
               <div className="space-y-0.1 flex-1 text-center">
@@ -896,7 +928,7 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
                       }
                     >
                       {formatPercentageChange(marketCapChange24h).formatted}
-                      </span>
+                    </span>
                   ) : (
                     <span className="text-white/30 text-center">N/A</span>
                   )}

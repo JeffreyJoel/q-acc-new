@@ -15,7 +15,7 @@ import TeamSection from "./TeamSection";
 import TokenHolders from "./TokenHolders";
 import ProjectStats from "./ProjectStats";
 import Link from "next/link";
-import SquidSwapWidget from "../swap/SquidSwapWidget";
+import SwapWidget from "../swap/SwapWidget";
 import { getPoolAddressByPair } from "@/helpers/getTokensListedData";
 import config from "@/config/configuration";
 import { useEffect, useState } from "react";
@@ -119,7 +119,7 @@ export default function ProjectDetails() {
 
             {isTokenListed ? (
               <div className="w-full lg:w-[30%] h-full">
-                <SquidSwapWidget
+                <SwapWidget
                  contractAddress={project.abc?.fundingManagerAddress || ''}
                   receiveTokenAddress={project.abc?.issuanceTokenAddress || ""}
                   receiveTokenSymbol={project.abc?.tokenTicker || ""}

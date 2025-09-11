@@ -4,7 +4,7 @@ import { useState } from "react";
 import BondingCurveSwap from "./BondingCurveSwap";
 import SquidSwapTab from "./SquidSwapTab";
 
-export default function SquidSwapWidget({
+export default function SwapWidget({
   contractAddress,
   receiveTokenAddress,
   receiveTokenSymbol,
