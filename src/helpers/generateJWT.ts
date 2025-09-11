@@ -4,8 +4,6 @@ import { wagmiConfig } from '@/providers/PrivyProvider';
 import { Address } from 'viem';
 import { ethers } from 'ethers';
 
-// Removed custom wallet readiness check - Privy handles this internally
-
 // Generate Nonce
 export const fetchNonce = async (): Promise<string> => {
   const nonceResponse: any = await fetch(
@@ -80,7 +78,6 @@ export const signChallengeWithPrivyEmbed = async (
     if (error instanceof Error && error.message.includes("Wallet proxy not initialized")) {
       throw new Error("Embedded wallet is still initializing. Please wait a moment and try again.");
     }
-    // Re-throw other errors
     throw error;
   }
 
