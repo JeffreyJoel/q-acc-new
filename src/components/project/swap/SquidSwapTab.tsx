@@ -84,7 +84,7 @@ const PayReceiveRow = memo(
         {isInput ? (
           <>
             <div className="text-xs text-white/40 mt-1">
-              Balance: {Number(balance)?.toFixed(2) || "0.00"}
+              Balance: {Number(balance) || "0.00"}
             </div>
             {control && (
               <Controller
@@ -158,6 +158,7 @@ export default function SquidSwapTab({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [balanceError, setBalanceError] = useState<string | null>(null);
   const [selectedFrom, setSelectedFrom] = useState(DEFAULT_FROM_CHAIN_DETAILS);
+  const [isChainChanging, setIsChainChanging] = useState(false);
 
   const { control, watch, reset } = useForm({
     defaultValues: { swapAmount: "" },
@@ -168,7 +169,6 @@ export default function SquidSwapTab({
   const { user: privyUser, authenticated } = usePrivy();
   const userAddress = privyUser?.wallet?.address;
 
-  // Dynamic from token balance using custom hook (supports multiple chains)
   const {
     data: fromBalanceData,
     isLoading: isFromBalanceLoading,
@@ -180,7 +180,7 @@ export default function SquidSwapTab({
   );
 
   const fromBalanceRaw = fromBalanceData?.formattedBalance ?? "0";
-  const formattedFromBalance = formatBalance(parseFloat(fromBalanceRaw));
+  const formattedFromBalance = isChainChanging ? "0" : formatBalance(parseFloat(fromBalanceRaw));
 
   // Validate balance
   useEffect(() => {
@@ -213,6 +213,7 @@ export default function SquidSwapTab({
         ...prev,
         tokenDecimals: fromBalanceData.decimals,
       }));
+      setIsChainChanging(false);
     }
   }, [fromBalanceData]);
 
@@ -385,6 +386,7 @@ export default function SquidSwapTab({
 
   const handleChainSwitch = () => {
     if (selectedFrom.chainId !== DEFAULT_FROM_CHAIN_DETAILS.chainId) {
+      setIsChainChanging(true);
       setSelectedFrom(DEFAULT_FROM_CHAIN_DETAILS);
 
       switchChain(Number(DEFAULT_FROM_CHAIN_DETAILS.chainId));
@@ -483,6 +485,7 @@ export default function SquidSwapTab({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSelection={(chain: any, token: any) => {
+          setIsChainChanging(true);
           setSelectedFrom({
             chainId: chain.id,
             chainIcon: chain.imageUrl,

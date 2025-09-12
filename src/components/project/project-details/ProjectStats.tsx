@@ -267,7 +267,7 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
           {/* 24h Change */}
           {isTokenListed && (
             <div className="space-y-0.1 flex-1 text-center">
-              <div className="text-white text-center flex flex-row gap-0.5 text-xl md:text-2xl font-bold">
+              <div className="text-white text-center text-xl md:text-2xl font-bold">
                 <span>
                   {marketCapLoading ? (
                     <Spinner size={16} />

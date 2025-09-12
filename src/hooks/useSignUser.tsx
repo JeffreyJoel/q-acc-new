@@ -22,7 +22,6 @@ export const useSignUser = (onSigned?: (user: IUser) => void) => {
   // Standardize address format to checksum
   const rawUserAddress = privyUser?.wallet?.address || address;
   const userAddress = rawUserAddress ? ethers.getAddress(rawUserAddress) : undefined;
-  console.log("userAddress", userAddress);
 
   const { refetch } = useFetchUser(true, userAddress as Address);
 
@@ -53,20 +52,6 @@ export const useSignUser = (onSigned?: (user: IUser) => void) => {
       // Token generation logic
       const currentChainId = chain?.id || chainId;
       if (!currentChainId) return null;
-
-  
-      
-
-      // if (!activeWallet) {
-      //   console.error("Active wallet not found in Privy's wallet list.");
-      //   return null;
-      // }
-
-      // Check if the wallet is ready for signing
-      // if (!isWalletReady(privyUser?.wallet)) {
-      //   console.error("Embedded wallet not fully initialized");
-      //   return null;
-      // }
 
       // For Privy embedded wallets, add a small delay to ensure wallet proxy is ready
       if (privyUser?.wallet?.walletClientType === "privy") {

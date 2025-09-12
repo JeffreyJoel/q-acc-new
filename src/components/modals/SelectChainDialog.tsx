@@ -172,7 +172,6 @@ const SelectChainDialog = ({
                         imageUrl: chain.chainIconURI,
                         blockExplorerUrl: chain.blockExplorerUrls[0],
                       });
-                      console.log("selectedChain", selectedChain);
                     }}
                   >
                     <img

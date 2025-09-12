@@ -32,13 +32,7 @@ export function NavBar() {
       name: "About",
       link: "/about",
       blank: false,
-    },
-    {
-      name: "Apply for S3",
-      link: "/about",
-      blank: true,
-      colored: true,
-    },
+    }
   ];
 
   const [scrolled, setScrolled] = useState(false);
@@ -82,9 +76,7 @@ export function NavBar() {
                   href={item.link}
                   target={item.blank ? "_blank" : "_self"}
                   prefetch={!item.blank}
-                  className={` hover:text-peach-400 text-sm font-medium transition-colors ${
-                    item.colored ? "text-peach-400" : "text-white"
-                  }`}
+                  className={`text-white hover:text-peach-400 text-sm font-medium transition-colors`}
                 >
                   {item.name}
                 </Link>
@@ -124,9 +116,7 @@ export function NavBar() {
                       <Link
                         href={item.link}
                         target={item.blank ? "_blank" : "_self"}
-                        className={`block px-2 py-3 text-sm font-medium ${
-                          item.colored ? "text-peach-400" : "text-white"
-                        }`}
+                        className={`block px-2 py-3 text-sm font-medium`}
                       >
                         {item.name}
                       </Link>
