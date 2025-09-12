@@ -23,8 +23,6 @@ export default function TokenHolders({
 
   const { data: taggedHolders } = useTokenHolderTags(projectName);
 
-  console.log("taggedHolders", taggedHolders);
-
   const tagMap = useMemo(() => {
     const map = new Map<string, string>();
     taggedHolders?.forEach((h: ITokenHolding) => {

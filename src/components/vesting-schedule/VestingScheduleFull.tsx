@@ -540,31 +540,6 @@ const VestingScheduleFull: React.FC<VestingScheduleFullProps> = ({ projects = []
           </div>
         )}
       </div>
-      {/* Season 3 */}
-      <div className="mt-8 mb-16 relative">
-        <div className="flex items-center mb-6 relative">
-          <div
-            className="absolute flex items-center"
-            style={{ left: `${getDatePosition(new Date("2025-10-01"))}%` }}
-          >
-            <h3 className="text-xl font-anton text-peach-400 uppercase tracking-wider">
-              SEASON 3
-            </h3>
-          </div>
-        </div>
-
-        <div
-          className="absolute px-3 py-2 w-1/2 md:w-1/3 bg-gradient-to-r from-qacc-gray-light/10 to-qacc-gray-light/5 rounded-lg flex items-center"
-          style={{ left: `${getDatePosition(new Date("2025-10-01"))}%` }}
-        >
-          <span className="text-qacc-gray-light/60 text-xs font-bold">
-            Reviewing projects...
-            <span className="text-peach-400 text-xs ml-2 cursor-pointer hover:text-peach-300 font-medium ">
-              APPLY →
-            </span>
-          </span>
-        </div>
-      </div>
     </div>
   );
 };

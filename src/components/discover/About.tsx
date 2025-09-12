@@ -110,13 +110,6 @@ const About = () => {
             </div>
           </div>
         </div>
-
-        {/* Apply Button */}
-        <div className="">
-          <Button className="bg-black text-qacc-gray-light text-xs font-medium hover:bg-gray-800 transition-colors px-5 py-3 rounded-lg">
-            APPLY SEASON 3 →
-          </Button>
-        </div>
       </div>
     </div>
   );

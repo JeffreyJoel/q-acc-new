@@ -11,6 +11,7 @@ import { extractVideoId } from "@/helpers";
 
 function Projects() {
   const [activeTile, setActiveTile] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
   const { data: allProjects, isLoading, error } = useFetchAllProjects();
 
   const { data: enrichedProjects, isLoading: isEnrichedLoading } =
@@ -57,20 +58,23 @@ function Projects() {
       };
     });
 
-  const tiles = (allProjects?.projects || [])
-    .filter((project: any) => project.rank === 2 || project.rank === 3)
-    .slice(0, 8)
-    .map((project) => {
-      return {
-        text: project.title || "Untitled Project",
-        image: project.image || "/images/banners/banner-lg.jpg",
-        url: `/project/${project.slug}`,
-        description: project.descriptionSummary || "",
-        season: project.seasonNumber || "",
-        slug: project.slug || "",
-        reelId: extractVideoId(project.socialMedia?.find((media: any) => media.type === "REEL_VIDEO")?.link || ""),
-      };
+  const sortedProjects = (allProjects?.projects || [])
+    .filter((project: any) => [1, 2, 3].includes(project.rank))
+    .sort((a: any, b: any) => {
+      const order: Record<number, number> = { 2: 0, 3: 1, 1: 2 };
+      return order[a.rank] - order[b.rank];
     });
+
+  const tiles = sortedProjects.map((project) => {
+    return {
+      text: project.title || "Untitled Project",
+      image: project.image || "/images/banners/banner-lg.jpg",
+      description: project.descriptionSummary || "",
+      season: project.seasonNumber || "",
+      slug: project.slug || "",
+      reelId: extractVideoId(project.socialMedia?.find((media: any) => media.type === "REEL_VIDEO")?.link || ""),
+    };
+  });
   console.log(tiles);
 
   return (
@@ -79,12 +83,14 @@ function Projects() {
         Projects
       </h2>
       <div>
-        <div className="hidden lg:block">
-          <ProjectsCarousel tips={carouselItems} />
-        </div>
+        {!showAll && (
+          <div className="hidden lg:block">
+            <ProjectsCarousel tips={carouselItems} />
+          </div>
+        )}
 
-        <div className="flex flex-row gap-4 lg:mt-10 overflow-x-auto scrollbar-hide">
-          {tiles.map((tile) => (
+        <div className={`flex gap-4 lg:mt-10 ${showAll ? "flex-wrap" : "flex-row overflow-x-auto scrollbar-hide"}`}>
+          {(showAll ? tiles : tiles.slice(0, 6)).map((tile) => (
             <ProjectTile
               key={tile.text}
               title={tile.text}
@@ -99,11 +105,15 @@ function Projects() {
           ))}
         </div>
 
-        <div className="flex flex-row justify-center mt-6 md:mt-10">
-          <button className="w-full mx-10 sm:mx-0 sm:w-1/2 md:w-1/3 lg:w-1/4 rounded-xl px-6 py-2 uppercase border border-peach-400 text-peach-400 hover:bg-peach-400 hover:text-black transition-all duration-300 text-xs font-medium tracking-wide">
-            Show All Projects
-          </button>
-        </div>
+        {!showAll && (
+          <div className="flex flex-row justify-center mt-6 md:mt-10">
+            <button
+              onClick={() => setShowAll(true)}
+              className="w-full mx-10 sm:mx-0 sm:w-1/2 md:w-1/3 lg:w-1/4 rounded-xl px-6 py-2 uppercase border border-peach-400 text-peach-400 hover:bg-peach-400 hover:text-black transition-all duration-300 text-xs font-medium tracking-wide">
+              Show All Projects
+            </button>
+          </div>
+        )}
 
         <ProjectsTable projects={enrichedProjects || []} />
 
