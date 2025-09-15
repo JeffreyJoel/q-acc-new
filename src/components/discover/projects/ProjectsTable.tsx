@@ -236,9 +236,6 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
                 24H CHG
               </div>
               <div className="text-qacc-gray-light/60 font-bold text-[10px] uppercase text-center">
-                7D CHG
-              </div>
-              <div className="text-qacc-gray-light/60 font-bold text-[10px] uppercase text-center">
                 MARKET CAP
               </div>
             </div>
@@ -269,15 +266,6 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
                   }`}
                 >
                   {formatPercent(project.priceChange24h)}
-                </div>
-                <div
-                  className={`text-center font-bold text-xs ${
-                    project.priceChange7d < 0
-                      ? "text-red-400"
-                      : "text-green-400"
-                  }`}
-                >
-                  {formatPercent(project.priceChange7d)}
                 </div>
                 <div className="text-center text-white font-bold text-xs">
                   {formatCurrency(project.marketCap)}

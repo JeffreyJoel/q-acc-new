@@ -23,6 +23,8 @@ import { useWalletClient, usePublicClient } from "wagmi";
 import { getContract } from "viem";
 import { useQueryClient } from "@tanstack/react-query";
 import { claimTokensABI } from "@/lib/abi/inverter";
+import { IEarlyAccessRound, IQfRound } from "@/types/round.type";
+import { useFetchAllRoundDetails } from "@/hooks/useRounds";
 
 export interface PortfolioTableRowProps {
   project: IProject;
@@ -93,12 +95,12 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
   );
   const { data: POLPrice } = useTokenPrice();
 
-  const tokenPriceUsd = (currentTokenPrice || 0) * Number(POLPrice || 0);
+  const tokenPriceUsd = (currentTokenPrice ?? 0) * Number(POLPrice ?? 0);
 
   const averagePurchasePrice = totalTokensReceived > 0 ? totalCostUsd / totalTokensReceived : 0;
 
-  const returnUsd = (tokenPriceUsd - averagePurchasePrice) * inWallet;
-  const returnPercent = averagePurchasePrice > 0 ? (returnUsd / (averagePurchasePrice * inWallet)) * 100 : 0;
+  const returnUsd = inWallet > 0 ? (tokenPriceUsd - averagePurchasePrice) * inWallet : 0;
+  const returnPercent = inWallet > 0 && averagePurchasePrice > 0 ? (returnUsd / (averagePurchasePrice * inWallet)) * 100 : 0;
 
   const isTokenClaimable =
     releasable.data !== undefined && availableToClaim > 0;
@@ -115,6 +117,8 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
   });
 
   const { data: schedules } = useVestingSchedules();
+  const { data: allRoundData } = useFetchAllRoundDetails();
+
 
   const allVestingData =
     schedules?.map((schedule, index) => {
@@ -136,16 +140,55 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
       };
     }) || [];
 
-  let unlockDate = allVestingData.find(
-    (period) =>
-      period.type === "supporters" && period.season === project.seasonNumber
-  )?.cliff;
 
-  if (!unlockDate) {
-    unlockDate = allVestingData.find(
-      (period) => period.type === "supporters" && period.season === 2
-    )?.cliff;
-  }
+  const determineProjectRound = (project: IProject, roundData: (IEarlyAccessRound | IQfRound)[] | undefined) => {
+    if (!project || !roundData) return 1;
+
+    if (project.qfRounds && project.qfRounds.length > 0) {
+      const activeQfRound = project.qfRounds.find(round => round.isActive);
+      if (activeQfRound) {
+        const roundNumber = parseInt(activeQfRound.id) || parseInt(activeQfRound.name.match(/\d+/)?.[0] || "1");
+        return roundNumber;
+      }
+    }
+
+    if (project.hasEARound) {
+      return 1;
+    }
+  };
+
+    const unlockDate = useMemo(() => {
+      if (!allVestingData.length) return undefined;
+  
+      if (project?.seasonNumber === 1) {
+        const projectRound = determineProjectRound(project, allRoundData);
+  
+        let dateFromRound = allVestingData.find(
+          (period) => {
+            const nameLower = period.name.toLowerCase();
+            return period.type === "supporters" &&
+              period.season === 1 &&
+              (projectRound === 1 ?
+                nameLower.includes("round-1") || nameLower.includes("round 1") :
+                nameLower.includes(`round-${projectRound}`) || nameLower.includes(`round ${projectRound}`));
+          }
+        )?.cliff;
+  
+        if (!dateFromRound) {
+          dateFromRound = allVestingData.find(
+            (period) => period.type === "supporters" && period.season === 1
+          )?.cliff;
+        }
+  
+        return dateFromRound;
+      } else {
+        return allVestingData.find(
+          (period) => period.type === "supporters" && period.season === (project?.seasonNumber)
+        )?.cliff;
+      }
+    }, [allVestingData, project, allRoundData]);
+
+  console.log(unlockDate);
 
   useEffect(() => {
     setLockedTokens(totalTokensReceived - tokensAlreadyClaimed);
@@ -206,10 +249,16 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
       </td>
       {/* Available to Claim */}
       <td className="py-4 px-4 text-xs md:text-sm text-white/30 font-ibm-mono font-bold text-end">
-        {isActive.data && availableToClaim > 0 ? (
-          <Button size="sm" onClick={() => claim.mutateAsync()}>
-            Claim
-          </Button>
+        {isActive.data && isTokenClaimable ? (
+          <>
+          <span className="mr-2">
+            {availableToClaim.toFixed(2)}
+          </span>
+          <button  className="px-2 py-1 rounded-lg text-[10px] uppercase font-bold border border-peach-400 text-peach-400 hover:bg-peach-400 hover:text-black" onClick={() => claim.mutateAsync()}>
+            {claim.isPending ? "Claiming..." : "Claim"}
+          </button>
+        </>
+
         ) : unlockDate ? (
           `${formatDateMonthDayYear(unlockDate.toISOString())}`
         ) : (
@@ -304,7 +353,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
 
   return (
     <div className="bg-white/[7%]  rounded-3xl p-8 mt-8">
-      <div className="overflow-x-auto w-full">
+      <div className="overflow-x-auto scrollbar-hide w-full">
         <table className="w-full table-auto min-w-lg  whitespace-nowrap">
           <thead>
             <tr className="items-center pb-8 mb-8">

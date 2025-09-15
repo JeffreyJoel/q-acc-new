@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import { formatUnits } from "viem";
 import { formatDateMonthDayYear, isMiddleOfThePeriod } from "@/helpers/date";
@@ -12,7 +12,7 @@ import {
 } from "@/helpers/donations";
 import { useFetchAllRoundDetails } from "@/hooks/useRounds";
 import { IEarlyAccessRound, IQfRound } from "@/types/round.type";
-import { useTokenPrice, useFetchPOLPriceSquid } from "@/hooks/useTokens";
+import { useFetchPOLPriceSquid } from "@/hooks/useTokens";
 import { useGetCurrentTokenPrice } from "@/hooks/useGetCurrentTokenPrice";
 import {
   useTokenPriceRange,
@@ -37,23 +37,19 @@ import { IProject } from "@/types/project.type";
 import { toast } from "sonner";
 import { Spinner } from "@/components/loaders/Spinner";
 import { handleImageUrl } from "@/helpers/image";
-import { useRouter } from "next/navigation";
 import { formatNumber } from "@/helpers/donations";
 import { formatPercentageChange } from "@/helpers";
 import Link from "next/link";
 
 const MyProjects = ({ projectData }: { projectData: IProject }) => {
   const projectId = projectData?.id;
-  const router = useRouter();
 
   const [donations, setDonations] = useState<any[]>([]);
   const [totalDonationsCount, setTotalDonationsCount] = useState(0);
   const [uniqueDonars, setUniqueDonars] = useState<number>(0);
   const [totalAmount, setTotalAmount] = useState<number>(0);
-  const { data: POLPrice } = useTokenPrice();
   const { data: POLPriceSquid } = useFetchPOLPriceSquid();
 
-  // Real data calculations
   const { isTokenListed, currentTokenPrice } = useGetCurrentTokenPrice(
     projectData?.abc?.issuanceTokenAddress
   );
@@ -66,7 +62,6 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
 
   const [marketCap, setMarketCap] = useState(0);
   const [marketCapChange24h, setMarketCapChange24h] = useState(0);
-  const [marketCapChange7d, setMarketCapChange7d] = useState(0);
   const [marketCapLoading, setMarketCapLoading] = useState(false);
   const [tokenPricePOL, setTokenPricePOL] = useState(0);
   const [tokenPriceUSD, setTokenPriceUSD] = useState(0);
@@ -95,20 +90,7 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
       };
     }) || [];
 
-  let unlockDate = allVestingData.find(
-    (period) => period.type === "team" && period.season === (projectData?.seasonNumber || 2)
-  )?.cliff;
 
-  const [days, hours, minutes, seconds] = useCountdown(unlockDate || "");
-
-  function formatValue(value: number) {
-    const valueStr = value.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-    const [whole, frac] = valueStr.split(".");
-    return { whole, frac };
-  }
   const [filteredRoundData, setFilteredRoundData] = useState<{
     activeRound: IEarlyAccessRound | IQfRound;
     pastRounds: (IEarlyAccessRound | IQfRound)[];
@@ -127,6 +109,56 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
   const { data: allRoundData } = useFetchAllRoundDetails();
   const { data: activeRoundDetails } = useFetchActiveRoundDetails();
 
+  const determineProjectRound = (project: IProject, roundData: (IEarlyAccessRound | IQfRound)[] | undefined) => {
+    if (!project || !roundData) return 1;
+    
+    if (project.qfRounds && project.qfRounds.length > 0) {
+      const activeQfRound = project.qfRounds.find(round => round.isActive);
+      if (activeQfRound) {
+        const roundNumber = parseInt(activeQfRound.id) || parseInt(activeQfRound.name.match(/\d+/)?.[0] || "1");
+        return roundNumber;
+      }
+    }
+    
+    if (project.hasEARound) {
+      return 1;
+    }
+  };
+
+
+  const unlockDate = useMemo(() => {
+    if (!allVestingData.length) return undefined;
+    
+    if (projectData?.seasonNumber === 1) {
+      const projectRound = determineProjectRound(projectData, allRoundData);
+      
+      let dateFromRound = allVestingData.find(
+        (period) => {
+          const nameLower = period.name.toLowerCase();
+          return period.type === "team" && 
+                 period.season === 1 && 
+                 (projectRound === 1 ? 
+                   nameLower.includes("round-1") || nameLower.includes("round 1") : 
+                   nameLower.includes(`round-${projectRound}`) || nameLower.includes(`round ${projectRound}`));
+        }
+      )?.cliff;
+      
+      if (!dateFromRound) {
+        dateFromRound = allVestingData.find(
+          (period) => period.type === "team" && period.season === 1
+        )?.cliff;
+      }
+      
+      return dateFromRound;
+    } else {
+      return allVestingData.find(
+        (period) => period.type === "team" && period.season === (projectData?.seasonNumber || 2)
+      )?.cliff;
+    }
+  }, [allVestingData, projectData, allRoundData]);
+
+  const [days, hours, minutes, seconds] = useCountdown(unlockDate || "");
+
   const [maxPOLCap, setMaxPOLCap] = useState(0);
   const [totalAmountDonated, setTotalAmountDonated] = useState(0);
 
@@ -139,7 +171,6 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
     projectData?.abc?.fundingManagerAddress!
   );
 
-  // Calculate token prices when dependencies change
   useEffect(() => {
     const calculatedTokenPricePOL = isTokenListed
       ? currentTokenPrice || 0
@@ -157,12 +188,6 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
     setTokenPricePOL(calculatedTokenPricePOL);
     setTokenPriceUSD(calculatedTokenPriceUSD);
   }, [isTokenListed, currentTokenPrice, tokenDetails, polPriceNumber]);
-
-  // Check if Round 1 has started
-  const round1Started = round1
-    ? new Date().toISOString().split("T")[0] >=
-    new Date(round1.startDate).toISOString().split("T")[0]
-    : false;
 
   useEffect(() => {
     const updatePOLCap = async () => {
@@ -294,7 +319,6 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
 
           setMarketCap(res24.marketCap * polPriceNumber);
           setMarketCapChange24h(res24.pctChange);
-          setMarketCapChange7d(res7d.pctChange);
         } else if (isTokenListed && projectData.abc?.issuanceTokenAddress) {
           const issuanceTokenAddress = projectData.abc.issuanceTokenAddress;
           const [marketCapData, gecko] = await Promise.all([
@@ -308,7 +332,6 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
 
           setMarketCap(marketCapData);
           setMarketCapChange24h(gecko?.pctChange24h ?? 0);
-          setMarketCapChange7d(gecko?.pctChange7d ?? 0);
         } else if (!isTokenListed && projectData.abc?.issuanceTokenAddress) {
           // For tokens not listed, derive market cap from bonding curve parameters
           const issuanceTokenAddress = projectData.abc.issuanceTokenAddress;
@@ -321,7 +344,6 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
 
           setMarketCap(marketCapData * polPriceNumber);
           setMarketCapChange24h(0);
-          setMarketCapChange7d(0);
         }
       } catch (error) {
         console.error("Error fetching market cap data:", error);

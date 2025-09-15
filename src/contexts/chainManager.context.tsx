@@ -1,6 +1,8 @@
 import { createContext, useContext, useMemo } from "react";
 import { useWallets } from "@privy-io/react-auth";
+import { useAccount, useChainId } from "wagmi";
 import type { Chain } from "viem";
+import { polygon } from "viem/chains";
 import config from "@/config/configuration";
 
 interface ChainContextValue {
@@ -23,12 +25,24 @@ export const useChainManager = (): ChainContextValue => {
 export const ChainProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { wallets, ready } = useWallets();
   const activeWallet = wallets?.[0];
+  const { isConnected } = useAccount();
+  const wagmiChainId = useChainId();
 
   const allChains: Chain[] = config.SUPPORTED_CHAINS;
 
   const value = useMemo<ChainContextValue>(() => {
-    const chainId = activeWallet ? Number(activeWallet.chainId) : undefined;
-    const chain = allChains.find((c) => c.id === chainId);
+    // Priority: 1. Active wallet chain, 2. Wagmi chain (from cookies/state), 3. Default to Polygon
+    let chainId: number;
+    
+    if (activeWallet && isConnected) {
+      chainId = Number(activeWallet.chainId);
+    } else if (wagmiChainId) {
+      chainId = wagmiChainId;
+    } else {
+      chainId = polygon.id;
+    }
+
+    const chain = allChains.find((c) => c.id === chainId) || polygon;
 
     const switchChain = async (id: number) => {
       if (!activeWallet) throw new Error("No active wallet to switch chain");
@@ -41,7 +55,7 @@ export const ChainProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       switchChain,
       ready,
     };
-  }, [activeWallet, ready, allChains]);
+  }, [activeWallet, ready, allChains, isConnected, wagmiChainId]);
 
   return <ChainContext.Provider value={value}>{children}</ChainContext.Provider>;
 };
