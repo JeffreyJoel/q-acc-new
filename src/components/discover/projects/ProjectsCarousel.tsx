@@ -20,6 +20,7 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { capitalizeFirstLetter } from "@/helpers";
+import Link from "next/link";
 
 interface Tip {
   text: string;
@@ -268,9 +269,11 @@ export function ProjectsCarousel({
                         </div>
 
                         <div>
+                          <Link href={tip?.url || ""}>
                           <button className="rounded-xl px-6 py-3 bg-peach-400 text-black text-lg font-medium tracking-wide">
                             SWAP TOKENS
                           </button>
+                          </Link>
                         </div>
                       </div>
                     </div>

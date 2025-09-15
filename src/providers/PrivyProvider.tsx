@@ -6,6 +6,7 @@ import {
   cookieStorage,
   createStorage,
   http,
+  cookieToInitialState,
 } from "wagmi";
 
 import { PrivyClientConfig, PrivyProvider } from "@privy-io/react-auth";
@@ -47,6 +48,11 @@ export const wagmiConfig = createConfig({
   }),
   ssr: true,
   transports,
+  // Set Polygon as the initial chain
+  initialState: {
+    chainId: polygon.id,
+    chains: config.SUPPORTED_CHAINS,
+  },
 });
 
 export default function Providers(props: {
@@ -54,13 +60,16 @@ export default function Providers(props: {
 }) {
   const [queryClient] = useState(() => new QueryClient());
 
+  // Get initial state from cookies with Polygon as default fallback
+  const initialState = cookieToInitialState(wagmiConfig, undefined);
+
   return (
     <PrivyProvider
       appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
       config={privyConfig}
     >
       <QueryClientProvider client={queryClient}>
-        <WagmiProvider config={wagmiConfig}>
+        <WagmiProvider config={wagmiConfig} initialState={initialState}>
           <ChainProvider>
             {props.children}
           </ChainProvider>
