@@ -30,11 +30,13 @@ import { useFetchAllRoundDetails } from "@/hooks/useRounds";
 interface ProjectSupportedCardProps {
   project: IProject;
   inWallet: number;
+  key: string;
 }
 
 export default function ProjectSupportedCard({
   project,
-  inWallet
+  inWallet,
+  key
 }: ProjectSupportedCardProps) {
   const { user: privyUser } = usePrivy();
   const { donationsGroupedByProject } = useDonorContext();
@@ -388,10 +390,10 @@ export default function ProjectSupportedCard({
             <div className="text-white text-center text-2xl font-bold">
               {returnPercent !== 0 ? (
                 <span className={returnPercent >= 0 ? "text-[#6DC28F]" : "text-red-400"}>
-                  {returnPercent >= 0 ? "+" : "-"}{returnPercent.toFixed(2)}%
+                  {returnPercent >= 0 ? "+" : "-"}{returnPercent.toFixed(2)}
                 </span>
               ) : (
-                <span className="text-white/30">0%</span>
+                <span className="text-white/30">0</span>
               )}
             </div>
             <span className="text-white/30 text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">

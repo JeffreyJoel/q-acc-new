@@ -23,6 +23,8 @@ import { useWalletClient, usePublicClient } from "wagmi";
 import { getContract } from "viem";
 import { useQueryClient } from "@tanstack/react-query";
 import { claimTokensABI } from "@/lib/abi/inverter";
+import { IEarlyAccessRound, IQfRound } from "@/types/round.type";
+import { useFetchAllRoundDetails } from "@/hooks/useRounds";
 
 export interface PortfolioTableRowProps {
   project: IProject;
@@ -33,7 +35,7 @@ export interface PortfolioTableRowProps {
 
 function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableChange }: PortfolioTableRowProps) {
   const { user } = usePrivy();
-  const address = "0x27460E6B55C7A4c42cBC52babea9fF1f5C1e8Cb4" as Address;
+  const address = user?.wallet?.address as Address;
   const { donationsGroupedByProject } = useDonorContext();
 
   const [lockedTokens, setLockedTokens] = useState(0);
@@ -115,6 +117,8 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
   });
 
   const { data: schedules } = useVestingSchedules();
+  const { data: allRoundData } = useFetchAllRoundDetails();
+
 
   const allVestingData =
     schedules?.map((schedule, index) => {
@@ -136,16 +140,55 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
       };
     }) || [];
 
-  let unlockDate = allVestingData.find(
-    (period) =>
-      period.type === "supporters" && period.season === project.seasonNumber
-  )?.cliff;
 
-  if (!unlockDate) {
-    unlockDate = allVestingData.find(
-      (period) => period.type === "supporters" && period.season === 2
-    )?.cliff;
-  }
+  const determineProjectRound = (project: IProject, roundData: (IEarlyAccessRound | IQfRound)[] | undefined) => {
+    if (!project || !roundData) return 1;
+
+    if (project.qfRounds && project.qfRounds.length > 0) {
+      const activeQfRound = project.qfRounds.find(round => round.isActive);
+      if (activeQfRound) {
+        const roundNumber = parseInt(activeQfRound.id) || parseInt(activeQfRound.name.match(/\d+/)?.[0] || "1");
+        return roundNumber;
+      }
+    }
+
+    if (project.hasEARound) {
+      return 1;
+    }
+  };
+
+    const unlockDate = useMemo(() => {
+      if (!allVestingData.length) return undefined;
+  
+      if (project?.seasonNumber === 1) {
+        const projectRound = determineProjectRound(project, allRoundData);
+  
+        let dateFromRound = allVestingData.find(
+          (period) => {
+            const nameLower = period.name.toLowerCase();
+            return period.type === "supporters" &&
+              period.season === 1 &&
+              (projectRound === 1 ?
+                nameLower.includes("round-1") || nameLower.includes("round 1") :
+                nameLower.includes(`round-${projectRound}`) || nameLower.includes(`round ${projectRound}`));
+          }
+        )?.cliff;
+  
+        if (!dateFromRound) {
+          dateFromRound = allVestingData.find(
+            (period) => period.type === "supporters" && period.season === 1
+          )?.cliff;
+        }
+  
+        return dateFromRound;
+      } else {
+        return allVestingData.find(
+          (period) => period.type === "supporters" && period.season === (project?.seasonNumber)
+        )?.cliff;
+      }
+    }, [allVestingData, project, allRoundData]);
+
+  console.log(unlockDate);
 
   useEffect(() => {
     setLockedTokens(totalTokensReceived - tokensAlreadyClaimed);

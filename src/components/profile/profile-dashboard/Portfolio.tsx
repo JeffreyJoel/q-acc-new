@@ -54,6 +54,7 @@ export default function Portfolio() {
       <div className="">
         {portfolioData.map((card) => (
           <ProjectSupportedCard
+            key={card.project.id}
             project={card.project}
             inWallet={card.inWallet}
           />
