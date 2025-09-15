@@ -48,11 +48,6 @@ export const wagmiConfig = createConfig({
   }),
   ssr: true,
   transports,
-  // Set Polygon as the initial chain
-  initialState: {
-    chainId: polygon.id,
-    chains: config.SUPPORTED_CHAINS,
-  },
 });
 
 export default function Providers(props: {

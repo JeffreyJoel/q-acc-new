@@ -19,6 +19,7 @@ import ConnectWalletButton from "@/components/shared/wallet/SwapConnectWalletBut
 import { toast } from "sonner";
 import SelectChainDialog from "@/components/modals/SelectChainDialog";
 import { useForm, Controller } from "react-hook-form";
+import { polygon } from "viem/chains";
 
 interface PayReceiveRowProps {
   label: string;
@@ -409,6 +410,15 @@ export default function SquidSwapTab({
     !isQuoteValid ||
     Boolean(swapError && swapError.includes("not supported")) ||
     !!balanceError;
+
+  // Cleanup: when component unmounts, switch back to Polygon if needed
+  useEffect(() => {
+    return () => {
+      if (selectedFrom.chainId !== DEFAULT_FROM_CHAIN_DETAILS.chainId) {
+        switchChain(Number(DEFAULT_FROM_CHAIN_DETAILS.chainId)).catch(() => {});
+      }
+    };
+  }, [selectedFrom.chainId, switchChain]);
 
   return (
     <>
