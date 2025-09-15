@@ -30,7 +30,7 @@ export default function ProjectDetails() {
 
   const { projectData: project, isLoading, error } = useProjectContext();
 
-  // console.log(project);
+  console.log(project);
 
   useEffect(() => {
     const fetchPoolAddress = async () => {

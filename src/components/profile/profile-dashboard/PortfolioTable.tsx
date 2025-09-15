@@ -33,7 +33,7 @@ export interface PortfolioTableRowProps {
 
 function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableChange }: PortfolioTableRowProps) {
   const { user } = usePrivy();
-  const address = user?.wallet?.address as Address;
+  const address = "0x27460E6B55C7A4c42cBC52babea9fF1f5C1e8Cb4" as Address;
   const { donationsGroupedByProject } = useDonorContext();
 
   const [lockedTokens, setLockedTokens] = useState(0);
@@ -93,12 +93,12 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
   );
   const { data: POLPrice } = useTokenPrice();
 
-  const tokenPriceUsd = (currentTokenPrice || 0) * Number(POLPrice || 0);
+  const tokenPriceUsd = (currentTokenPrice ?? 0) * Number(POLPrice ?? 0);
 
   const averagePurchasePrice = totalTokensReceived > 0 ? totalCostUsd / totalTokensReceived : 0;
 
-  const returnUsd = (tokenPriceUsd - averagePurchasePrice) * inWallet;
-  const returnPercent = averagePurchasePrice > 0 ? (returnUsd / (averagePurchasePrice * inWallet)) * 100 : 0;
+  const returnUsd = inWallet > 0 ? (tokenPriceUsd - averagePurchasePrice) * inWallet : 0;
+  const returnPercent = inWallet > 0 && averagePurchasePrice > 0 ? (returnUsd / (averagePurchasePrice * inWallet)) * 100 : 0;
 
   const isTokenClaimable =
     releasable.data !== undefined && availableToClaim > 0;
@@ -206,10 +206,16 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
       </td>
       {/* Available to Claim */}
       <td className="py-4 px-4 text-xs md:text-sm text-white/30 font-ibm-mono font-bold text-end">
-        {isActive.data && availableToClaim > 0 ? (
-          <Button size="sm" onClick={() => claim.mutateAsync()}>
-            Claim
-          </Button>
+        {isActive.data && isTokenClaimable ? (
+          <>
+          <span className="mr-2">
+            {availableToClaim.toFixed(2)}
+          </span>
+          <button  className="px-2 py-1 rounded-lg text-[10px] uppercase font-bold border border-peach-400 text-peach-400 hover:bg-peach-400 hover:text-black" onClick={() => claim.mutateAsync()}>
+            {claim.isPending ? "Claiming..." : "Claim"}
+          </button>
+        </>
+
         ) : unlockDate ? (
           `${formatDateMonthDayYear(unlockDate.toISOString())}`
         ) : (
@@ -304,7 +310,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
 
   return (
     <div className="bg-white/[7%]  rounded-3xl p-8 mt-8">
-      <div className="overflow-x-auto w-full">
+      <div className="overflow-x-auto scrollbar-hide w-full">
         <table className="w-full table-auto min-w-lg  whitespace-nowrap">
           <thead>
             <tr className="items-center pb-8 mb-8">

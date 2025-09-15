@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAccount, useChainId } from "wagmi";
 import { ethers } from "ethers";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { usePrivy } from "@privy-io/react-auth";
 
 import {
   getLocalStorageToken,

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CopyButton } from "@/components/shared/CopyButton";
@@ -13,7 +13,6 @@ import {
   useReleasableForStream,
 } from "@/hooks/useClaimRewards";
 import { toast } from "sonner";
-import { getPaymentAddresses } from "@/helpers/getPaymentAddresses";
 import { usePrivy } from "@privy-io/react-auth";
 import { Address } from "viem";
 import { shortenAddressLarger } from "@/helpers/address";
@@ -25,6 +24,8 @@ import { ethers } from "ethers";
 import { useGetCurrentTokenPrice } from "@/hooks/useGetCurrentTokenPrice";
 import { useTokenPrice } from "@/hooks/useTokens";
 import { formatDateMonthDayYear } from "@/helpers/date";
+import { IEarlyAccessRound, IQfRound } from "@/types/round.type";
+import { useFetchAllRoundDetails } from "@/hooks/useRounds";
 
 interface ProjectSupportedCardProps {
   project: IProject;
@@ -35,50 +36,18 @@ export default function ProjectSupportedCard({
   project,
   inWallet
 }: ProjectSupportedCardProps) {
-  const [isTokenClaimable, setIsTokenClaimable] = useState(false);
   const { user: privyUser } = usePrivy();
+  const { donationsGroupedByProject } = useDonorContext();
+
 
   const address = privyUser?.wallet?.address as Address;
 
-  const [paymentAddresses, setPaymentAddresses] = useState<{
-    paymentRouterAddress: string | null;
-    paymentProcessorAddress: string | null;
-  }>({
-    paymentRouterAddress: null,
-    paymentProcessorAddress: null,
-  });
-
-  useEffect(() => {
-    const fetchPaymentAddresses = async () => {
-      if (project?.abc?.orchestratorAddress) {
-        try {
-          const addresses = await getPaymentAddresses(
-            project.abc.orchestratorAddress
-          );
-          if (
-            addresses.paymentRouterAddress &&
-            addresses.paymentProcessorAddress
-          ) {
-            setPaymentAddresses(addresses);
-            return;
-          }
-        } catch (error) {
-          console.error(
-            "Failed to get payment addresses from orchestrator:",
-            error
-          );
-        }
-      }
-    };
-
-    if (project) {
-      fetchPaymentAddresses();
-    }
-  }, [project.id, project]);
+ const proccessorAddress = project.abc?.paymentProcessorAddress || "";
+  const router = project.abc?.paymentRouterAddress || "";
 
   const releasable = useReleasableForStream({
-    paymentProcessorAddress: paymentAddresses.paymentProcessorAddress || "",
-    client: paymentAddresses.paymentRouterAddress || "",
+    paymentProcessorAddress: proccessorAddress || "",
+    client: router || "",
     receiver: address,
     streamIds: [
       BigInt(1),
@@ -89,18 +58,18 @@ export default function ProjectSupportedCard({
       BigInt(6),
     ],
   });
+  
 
   const isActivePaymentReceiver = useIsActivePaymentReceiver({
-    paymentProcessorAddress: paymentAddresses.paymentProcessorAddress || "",
-    client: paymentAddresses.paymentRouterAddress || "",
+    paymentProcessorAddress: proccessorAddress || "",
+    client: router || "",
     receiver: address,
   });
 
   const { claim } = useClaimRewards({
-    paymentProcessorAddress: paymentAddresses.paymentProcessorAddress || "",
-    paymentRouterAddress: paymentAddresses.paymentRouterAddress || "",
+    paymentProcessorAddress: proccessorAddress || "",
+    paymentRouterAddress: router || "",
     onSuccess: () => {
-      setIsTokenClaimable(false);
       releasable.refetch();
       toast.success("Successfully Claimed Tokens");
     },
@@ -110,6 +79,7 @@ export default function ProjectSupportedCard({
   });
 
   const { data: vestingSchedules } = useVestingSchedules();
+  const { data: allRoundData } = useFetchAllRoundDetails();
 
   const allVestingData =
     vestingSchedules?.map((schedule, index) => {
@@ -131,17 +101,54 @@ export default function ProjectSupportedCard({
       };
     }) || [];
 
-  let unlockDate = allVestingData.find(
-    (period) =>
-      period.type === "supporters" && period.season === (project.seasonNumber || 2)
-  )?.cliff;
+  const determineProjectRound = (project: IProject, roundData: (IEarlyAccessRound | IQfRound)[] | undefined) => {
+    if (!project || !roundData) return 1;
+
+    if (project.qfRounds && project.qfRounds.length > 0) {
+      const activeQfRound = project.qfRounds.find(round => round.isActive);
+      if (activeQfRound) {
+        const roundNumber = parseInt(activeQfRound.id) || parseInt(activeQfRound.name.match(/\d+/)?.[0] || "1");
+        return roundNumber;
+      }
+    }
+
+    if (project.hasEARound) {
+      return 1;
+    }
+  };
+
+  const unlockDate = useMemo(() => {
+    if (!allVestingData.length) return undefined;
+
+    if (project?.seasonNumber === 1) {
+      const projectRound = determineProjectRound(project, allRoundData);
+
+      let dateFromRound = allVestingData.find(
+        (period) => {
+          const nameLower = period.name.toLowerCase();
+          return period.type === "supporters" &&
+            period.season === 1 &&
+            (projectRound === 1 ?
+              nameLower.includes("round-1") || nameLower.includes("round 1") :
+              nameLower.includes(`round-${projectRound}`) || nameLower.includes(`round ${projectRound}`));
+        }
+      )?.cliff;
+
+      if (!dateFromRound) {
+        dateFromRound = allVestingData.find(
+          (period) => period.type === "supporters" && period.season === 1
+        )?.cliff;
+      }
+
+      return dateFromRound;
+    } else {
+      return allVestingData.find(
+        (period) => period.type === "supporters" && period.season === (project?.seasonNumber || 2)
+      )?.cliff;
+    }
+  }, [allVestingData, project, allRoundData]);
 
   const [days, hours, minutes, seconds] = useCountdown(unlockDate || "");
-
-  const inWalletStr = inWallet.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
 
   function formatValue(value: number) {
     const valueStr = value.toLocaleString(undefined, {
@@ -153,11 +160,10 @@ export default function ProjectSupportedCard({
     return { whole, frac };
   }
 
-  const { donationsGroupedByProject } = useDonorContext();
 
   const released = useReleasedForStream({
-    paymentProcessorAddress: paymentAddresses.paymentProcessorAddress || "",
-    client: paymentAddresses.paymentRouterAddress || "",
+    paymentProcessorAddress: proccessorAddress || "",
+    client: router || "",
     receiver: address,
     streamIds: [
       BigInt(1),
@@ -178,10 +184,19 @@ export default function ProjectSupportedCard({
     (sum: number, donation: any) => sum + (donation.rewardTokenAmount || 0),
     0,
   );
+  
+  const totalCostUsd = projectDonations.reduce(
+    (sum: number, donation: any) => sum + (donation.valueUsd || 0),
+    0,
+  );
 
   const availableToClaim = releasable.data
     ? Number(ethers.formatUnits(releasable.data, 18))
     : 0;
+
+    const isTokenClaimable =
+    releasable.data !== undefined && availableToClaim > 0;
+
 
   const tokensAlreadyClaimed = released.data
     ? Number(ethers.formatUnits(released.data, 18))
@@ -196,22 +211,16 @@ export default function ProjectSupportedCard({
     project.abc?.issuanceTokenAddress,
   );
   const { data: POLPrice } = useTokenPrice();
-  const tokenPriceUsd = (currentTokenPrice || 0) * Number(POLPrice || 0);
+  const tokenPriceUsd = (currentTokenPrice ?? 0) * Number(POLPrice ?? 0);
 
   const totalAmountPerToken = inWallet + lockedTokens + availableToClaim;
   const totalAmountPerTokenInUSD = totalAmountPerToken * tokenPriceUsd;
+  
+  // Return calculations (same as PortfolioTable)
+  const averagePurchasePrice = totalTokensReceived > 0 ? totalCostUsd / totalTokensReceived : 0;
+  const returnUsd = inWallet > 0 ? (tokenPriceUsd - averagePurchasePrice) * inWallet : 0;
+  const returnPercent = inWallet > 0 && averagePurchasePrice > 0 ? (returnUsd / (averagePurchasePrice * inWallet)) * 100 : 0;
 
-  // Update claimable state based on availability
-  useEffect(() => {
-    setIsTokenClaimable(
-      !!availableToClaim && availableToClaim > 0 &&
-      !!isActivePaymentReceiver.data,
-    );
-  }, [availableToClaim, isActivePaymentReceiver.data]);
-
-  // Aliases for UI compatibility
-  const locked = lockedTokens;
-  const claimable = availableToClaim;
 
   return (
     <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-6 items-start mb-8">
@@ -263,15 +272,15 @@ export default function ProjectSupportedCard({
 
           {isTokenClaimable ? (
             <button
-              className="flex justify-center rounded-xl bg-peach-400 text-neutral-800 px-4 py-2"
+              className="flex justify-center rounded-xl bg-peach-400 font-semibold text-black px-4 py-2"
               disabled={!isTokenClaimable || claim.isPending}
               onClick={() => claim.mutateAsync()}
             >
               {isActivePaymentReceiver.isPending
                 ? "Checking for tokens..."
                 : claim.isPending
-                ? "Claiming..."
-                : "Claim Tokens"}
+                  ? "Claiming..."
+                  : `CLAIM ${availableToClaim.toFixed(2)} ${project.abc?.tokenTicker}` }
             </button>
           ) : (
             <div className="rounded-xl bg-qacc-gray-light text-neutral-800 px-2 py-2 text-center font-medium text-base">
@@ -309,11 +318,11 @@ export default function ProjectSupportedCard({
           {/* Total Raised */}
           <div className="space-y-0.1">
             <div className="text-white text-center text-2xl font-bold">
-              {locked > 0 ? (
+              {lockedTokens > 0 ? (
                 <>
-                  {formatValue(locked).whole}
+                  {formatValue(lockedTokens).whole}
                   <span className="text-base align-bottom">
-                    .{formatValue(locked).frac}
+                    .{formatValue(lockedTokens).frac}
                   </span>
                 </>
               ) : (
@@ -327,11 +336,11 @@ export default function ProjectSupportedCard({
 
           <div className="space-y-0.1">
             <div className="text-white text-center text-2xl font-bold">
-              {claimable > 0 ? (
+              {isTokenClaimable ? (
                 <>
-                  {formatValue(claimable).whole}
+                  {formatValue(availableToClaim).whole}
                   <span className="text-base align-bottom">
-                    .{formatValue(claimable).frac}
+                    .{formatValue(availableToClaim).frac}
                   </span>
                 </>
               ) : (
@@ -377,8 +386,13 @@ export default function ProjectSupportedCard({
 
           <div className="space-y-0.1">
             <div className="text-white text-center text-2xl font-bold">
-              {" "}
-              <span className="text-white/30">0</span>
+              {returnPercent !== 0 ? (
+                <span className={returnPercent >= 0 ? "text-[#6DC28F]" : "text-red-400"}>
+                  {returnPercent >= 0 ? "+" : "-"}{returnPercent.toFixed(2)}%
+                </span>
+              ) : (
+                <span className="text-white/30">0%</span>
+              )}
             </div>
             <span className="text-white/30 text-center font-medium text-[13px] leading-normal flex items-center justify-center gap-0.5">
               ROI
@@ -428,8 +442,13 @@ export default function ProjectSupportedCard({
 
             <div className="space-y-0.1">
               <div className="text-white text-center text-2xl font-bold">
-                {" "}
-                <span className="text-white/30">0</span>
+                {returnPercent !== 0 ? (
+                  <span className={returnPercent >= 0 ? "text-[#6DC28F]" : "text-red-400"}>
+                    {returnPercent >= 0 ? "+" : ""}{returnPercent.toFixed(2)}%
+                  </span>
+                ) : (
+                  <span className="text-white/30">0%</span>
+                )}
               </div>
               <span className="text-white/30 text-center font-medium text-[11px] md:text-[13px] leading-normal flex items-center justify-center gap-0.5">
                 ROI
@@ -455,11 +474,11 @@ export default function ProjectSupportedCard({
             </div>
             <div className="space-y-0.1">
               <div className="text-white text-center text-2xl font-bold">
-                {locked > 0 ? (
+                {lockedTokens > 0 ? (
                   <>
-                    {formatValue(locked).whole}
+                    {formatValue(lockedTokens).whole}
                     <span className="text-base align-bottom">
-                      .{formatValue(locked).frac}
+                      .{formatValue(lockedTokens).frac}
                     </span>
                   </>
                 ) : (
@@ -473,11 +492,11 @@ export default function ProjectSupportedCard({
 
             <div className="space-y-0.1">
               <div className="text-white text-center text-2xl font-bold">
-                {claimable > 0 ? (
+                {availableToClaim > 0 ? (
                   <>
-                    {formatValue(claimable).whole}
+                    {formatValue(availableToClaim).whole}
                     <span className="text-base align-bottom">
-                      .{formatValue(claimable).frac}
+                      .{formatValue(availableToClaim).frac}
                     </span>
                   </>
                 ) : (
