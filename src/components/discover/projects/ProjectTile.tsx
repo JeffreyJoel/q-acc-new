@@ -35,7 +35,7 @@ export function ProjectTile({
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [player, setPlayer] = useState<any>(null);
-  const [showControls, setShowControls] = useState(true);
+  const [showControls, setShowControls] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const playerRef = useRef<HTMLDivElement>(null);
@@ -272,7 +272,7 @@ export function ProjectTile({
   };
 
   const handleMouseMove = () => {
-    if (showPlayer) {
+    if (showPlayer || !hasVideo) {
       setShowControls(true);
     }
   };
@@ -287,6 +287,8 @@ export function ProjectTile({
     }
   };
 
+  const hasVideo = Boolean(reelId);
+
   return (
     <Link
       href={`/project/${slug}`}
@@ -298,7 +300,7 @@ export function ProjectTile({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      {showPlayer ? (
+      {hasVideo && showPlayer ? (
         <>
           {/* YouTube Player */}
           <div ref={playerRef} className="w-full h-full" />
@@ -355,6 +357,7 @@ export function ProjectTile({
           }}
           className="w-full h-full"
         >
+          {/* Project cover image */}
           <Image
             src={image}
             alt={title}
@@ -362,6 +365,13 @@ export function ProjectTile({
             className="object-center object-cover"
             priority
           />
+
+          {/* Show placeholder text when no video is available and hovered */}
+          {!hasVideo && showControls && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-20">
+              <span className="text-white text-sm font-semibold">Video coming soon</span>
+            </div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black/85 z-10" />
 
           <div className="absolute bottom-2 left-0 right-0 z-20 p-3 flex flex-col gap-2">
