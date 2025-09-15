@@ -331,11 +331,19 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
       };
 
       await updateProject(projectPayload);
-      toast.success("Project saved successfully");
-      // update context as well
+      setTimeout(
+        () =>
+          toast.success("Project saved successfully"),
+        2000
+      );
+    
       setFormData({ ...data });
     } catch (err: any) {
-      toast.error(err.message || "Failed to save project");
+      setTimeout(
+        () =>
+          toast.error(err.message || "Failed to save project"),
+        2000
+      );
     }
   };
 

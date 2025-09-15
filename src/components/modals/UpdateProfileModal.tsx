@@ -170,16 +170,24 @@ export const UpdateProfileModal = ({
             });
           }
           setIsUpdatingUser(false);
-          toast.success("Profile updated successfully!");
+          setTimeout(
+            () =>
+              toast.success("Profile updated successfully!"),
+            2000
+          );
           resetAndClose();
         } else {
           await sendCode({ email: email.trim() });
         }
       } catch (error: any) {
         console.error("Failed to send verification code:", error);
-        toast.error(
+        setTimeout(
+          () =>
+            toast.error(
           error.message ||
             "Failed to send verification code. Check email and try again."
+            ),
+          2000
         );
       }
     } else {
