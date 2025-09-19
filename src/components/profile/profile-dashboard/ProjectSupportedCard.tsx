@@ -26,6 +26,7 @@ import { useTokenPrice } from "@/hooks/useTokens";
 import { formatDateMonthDayYear } from "@/helpers/date";
 import { IEarlyAccessRound, IQfRound } from "@/types/round.type";
 import { useFetchAllRoundDetails } from "@/hooks/useRounds";
+import { formatPercentageChange } from "@/helpers";
 
 interface ProjectSupportedCardProps {
   project: IProject;
@@ -72,8 +73,15 @@ export default function ProjectSupportedCard({
     paymentProcessorAddress: proccessorAddress || "",
     paymentRouterAddress: router || "",
     onSuccess: () => {
-      releasable.refetch();
+      // Immediately show unlock date
+      setRecentlyClaimed(true);
       toast.success("Successfully Claimed Tokens");
+      
+      // Refetch actual data after 60 seconds
+      setTimeout(() => {
+        releasable.refetch();
+        setRecentlyClaimed(false);
+      }, 60000);
     },
     onError: (error) => {
       toast.error(error.message);
@@ -152,6 +160,12 @@ export default function ProjectSupportedCard({
 
   const [days, hours, minutes, seconds] = useCountdown(unlockDate || "");
 
+  // Check if unlock date has passed
+  const hasUnlockDatePassed = useMemo(() => {
+    if (!unlockDate) return false;
+    return new Date() >= new Date(unlockDate);
+  }, [unlockDate]);
+
   function formatValue(value: number) {
     const valueStr = value.toLocaleString(undefined, {
       minimumFractionDigits: 2,
@@ -178,19 +192,24 @@ export default function ProjectSupportedCard({
   });
 
   const [lockedTokens, setLockedTokens] = useState(0);
+  const [recentlyClaimed, setRecentlyClaimed] = useState(false);
 
   const projectDonations =
     donationsGroupedByProject[Number(project.id)] || [];
+
+  const { data: polPrice } = useTokenPrice();
 
   const totalTokensReceived = projectDonations.reduce(
     (sum: number, donation: any) => sum + (donation.rewardTokenAmount || 0),
     0,
   );
   
-  const totalCostUsd = projectDonations.reduce(
-    (sum: number, donation: any) => sum + (donation.valueUsd || 0),
+  // Calculate total POL donated and convert to USD using current POL price
+  const totalPolDonated = projectDonations.reduce(
+    (sum: number, donation: any) => sum + (donation.amount || 0),
     0,
   );
+  const totalCostUsd = totalPolDonated * Number(polPrice ?? 0);
 
   const availableToClaim = releasable.data
     ? Number(ethers.formatUnits(releasable.data, 18))
@@ -212,16 +231,17 @@ export default function ProjectSupportedCard({
   const { currentTokenPrice } = useGetCurrentTokenPrice(
     project.abc?.issuanceTokenAddress,
   );
-  const { data: POLPrice } = useTokenPrice();
-  const tokenPriceUsd = (currentTokenPrice ?? 0) * Number(POLPrice ?? 0);
+  const tokenPriceUsd = (currentTokenPrice ?? 0) * Number(polPrice ?? 0);
 
   const totalAmountPerToken = inWallet + lockedTokens + availableToClaim;
   const totalAmountPerTokenInUSD = totalAmountPerToken * tokenPriceUsd;
   
-  // Return calculations (same as PortfolioTable)
+  // Return calculations - include locked tokens in ROI calculation
   const averagePurchasePrice = totalTokensReceived > 0 ? totalCostUsd / totalTokensReceived : 0;
-  const returnUsd = inWallet > 0 ? (tokenPriceUsd - averagePurchasePrice) * inWallet : 0;
-  const returnPercent = inWallet > 0 && averagePurchasePrice > 0 ? (returnUsd / (averagePurchasePrice * inWallet)) * 100 : 0;
+  // Include locked tokens in ROI calculation (total position = wallet + locked tokens)
+  const totalTokenPosition = inWallet + lockedTokens;
+  const returnUsd = totalTokenPosition > 0 ? (tokenPriceUsd - averagePurchasePrice) * totalTokenPosition : 0;
+  const returnPercent = totalTokenPosition > 0 && averagePurchasePrice > 0 ? (returnUsd / (averagePurchasePrice * totalTokenPosition)) * 100 : 0;
 
 
   return (
@@ -272,10 +292,10 @@ export default function ProjectSupportedCard({
             </Link>
           </div>
 
-          {isTokenClaimable ? (
+          {(isTokenClaimable || hasUnlockDatePassed) && !recentlyClaimed ? (
             <button
-              className="flex justify-center rounded-xl bg-peach-400 font-semibold text-black px-4 py-2"
-              disabled={!isTokenClaimable || claim.isPending}
+              className="flex justify-center rounded-xl bg-peach-400 font-semibold text-black px-4 py-2 disabled:opacity-80 disabled:cursor-not-allowed"
+              disabled={!isTokenClaimable || hasUnlockDatePassed || claim.isPending}
               onClick={() => claim.mutateAsync()}
             >
               {isActivePaymentReceiver.isPending
@@ -389,8 +409,8 @@ export default function ProjectSupportedCard({
           <div className="space-y-0.1">
             <div className="text-white text-center text-2xl font-bold">
               {returnPercent !== 0 ? (
-                <span className={returnPercent >= 0 ? "text-[#6DC28F]" : "text-red-400"}>
-                  {returnPercent >= 0 ? "+" : "-"}{returnPercent.toFixed(2)}
+                <span className={formatPercentageChange(returnPercent).color}>
+                  {formatPercentageChange(returnPercent).formatted}
                 </span>
               ) : (
                 <span className="text-white/30">0</span>
@@ -445,8 +465,8 @@ export default function ProjectSupportedCard({
             <div className="space-y-0.1">
               <div className="text-white text-center text-2xl font-bold">
                 {returnPercent !== 0 ? (
-                  <span className={returnPercent >= 0 ? "text-[#6DC28F]" : "text-red-400"}>
-                    {returnPercent >= 0 ? "+" : ""}{returnPercent.toFixed(2)}%
+                  <span className={formatPercentageChange(returnPercent).color}>
+                    {formatPercentageChange(returnPercent).formatted}
                   </span>
                 ) : (
                   <span className="text-white/30">0%</span>
@@ -535,7 +555,7 @@ export default function ProjectSupportedCard({
                     {formatDateMonthDayYear(donation.createdAt)}
                   </td>
                   <td className="w-[120px] px-4 py-2 text-right">
-                    {donation.valueUsd ? `$${donation.valueUsd.toFixed(2)}` : "$0.00"}
+                    {donation.amount ? `$${((donation.amount || 0) * Number(polPrice ?? 0)).toFixed(2)}` : "$0.00"}
                   </td>
                   <td className="w-[120px] px-4 py-2 text-right">
                     {donation.amount?.toFixed(2)} POL

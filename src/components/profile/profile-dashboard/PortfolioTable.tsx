@@ -15,7 +15,6 @@ import {
 import { useDonorContext } from "@/contexts/donor.context";
 import { useVestingSchedules } from "@/hooks/useVestingSchedules";
 import { formatDateMonthDayYear } from "@/helpers/date";
-import { Button } from "@/components/ui/button";
 import { ethers } from "ethers";
 import { useGetCurrentTokenPrice } from "@/hooks/useGetCurrentTokenPrice";
 import { useTokenPrice } from "@/hooks/useTokens";
@@ -25,6 +24,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { claimTokensABI } from "@/lib/abi/inverter";
 import { IEarlyAccessRound, IQfRound } from "@/types/round.type";
 import { useFetchAllRoundDetails } from "@/hooks/useRounds";
+import { formatPercentageChange } from "@/helpers";
 
 export interface PortfolioTableRowProps {
   project: IProject;
@@ -39,20 +39,26 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
   const { donationsGroupedByProject } = useDonorContext();
 
   const [lockedTokens, setLockedTokens] = useState(0);
+  const [recentlyClaimed, setRecentlyClaimed] = useState(false);
 
   const proccessorAddress = project.abc?.paymentProcessorAddress || "";
   const router = project.abc?.paymentRouterAddress || "";
 
   const projectDonations = donationsGroupedByProject[Number(project.id)] || [];
 
+  const { data: polPrice } = useTokenPrice();
+
   const totalTokensReceived = projectDonations.reduce(
     (sum: any, donation: any) => sum + (donation.rewardTokenAmount || 0),
     0,
   );
-  const totalCostUsd = projectDonations.reduce(
-    (sum: number, donation: any) => sum + (donation.valueUsd || 0),
+  
+  // Calculate total POL donated and convert to USD using current POL price
+  const totalPolDonated = projectDonations.reduce(
+    (sum: number, donation: any) => sum + (donation.amount || 0),
     0,
   );
+  const totalCostUsd = totalPolDonated * Number(polPrice ?? 0);
 
   const releasable = useReleasableForStream({
     paymentProcessorAddress: proccessorAddress,
@@ -93,14 +99,15 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
   const { currentTokenPrice } = useGetCurrentTokenPrice(
     project.abc?.issuanceTokenAddress
   );
-  const { data: POLPrice } = useTokenPrice();
 
-  const tokenPriceUsd = (currentTokenPrice ?? 0) * Number(POLPrice ?? 0);
+  const tokenPriceUsd = (currentTokenPrice ?? 0) * Number(polPrice ?? 0);
 
   const averagePurchasePrice = totalTokensReceived > 0 ? totalCostUsd / totalTokensReceived : 0;
 
-  const returnUsd = inWallet > 0 ? (tokenPriceUsd - averagePurchasePrice) * inWallet : 0;
-  const returnPercent = inWallet > 0 && averagePurchasePrice > 0 ? (returnUsd / (averagePurchasePrice * inWallet)) * 100 : 0;
+  // Include locked tokens in ROI calculation (total position = wallet + locked tokens)
+  const totalTokenPosition = inWallet + lockedTokens;
+  const returnUsd = totalTokenPosition > 0 ? (tokenPriceUsd - averagePurchasePrice) * totalTokenPosition : 0;
+  const returnPercent = totalTokenPosition > 0 && averagePurchasePrice > 0 ? (returnUsd / (averagePurchasePrice * totalTokenPosition)) * 100 : 0;
 
   const isTokenClaimable =
     releasable.data !== undefined && availableToClaim > 0;
@@ -113,7 +120,16 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
   const { claim } = useClaimRewards({
     paymentProcessorAddress: proccessorAddress,
     paymentRouterAddress: router,
-    onSuccess: () => releasable.refetch(),
+    onSuccess: () => {
+      // Immediately show unlock
+      setRecentlyClaimed(true);
+      
+      // Refetch actual data after 60 seconds
+      setTimeout(() => {
+        releasable.refetch();
+        setRecentlyClaimed(false);
+      }, 60000);
+    },
   });
 
   const { data: schedules } = useVestingSchedules();
@@ -157,38 +173,42 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
     }
   };
 
-    const unlockDate = useMemo(() => {
-      if (!allVestingData.length) return undefined;
-  
-      if (project?.seasonNumber === 1) {
-        const projectRound = determineProjectRound(project, allRoundData);
-  
-        let dateFromRound = allVestingData.find(
-          (period) => {
-            const nameLower = period.name.toLowerCase();
-            return period.type === "supporters" &&
-              period.season === 1 &&
-              (projectRound === 1 ?
-                nameLower.includes("round-1") || nameLower.includes("round 1") :
-                nameLower.includes(`round-${projectRound}`) || nameLower.includes(`round ${projectRound}`));
-          }
-        )?.cliff;
-  
-        if (!dateFromRound) {
-          dateFromRound = allVestingData.find(
-            (period) => period.type === "supporters" && period.season === 1
-          )?.cliff;
+  const unlockDate = useMemo(() => {
+    if (!allVestingData.length) return undefined;
+
+    if (project?.seasonNumber === 1) {
+      const projectRound = determineProjectRound(project, allRoundData);
+
+      let dateFromRound = allVestingData.find(
+        (period) => {
+          const nameLower = period.name.toLowerCase();
+          return period.type === "supporters" &&
+            period.season === 1 &&
+            (projectRound === 1 ?
+              nameLower.includes("round-1") || nameLower.includes("round 1") :
+              nameLower.includes(`round-${projectRound}`) || nameLower.includes(`round ${projectRound}`));
         }
-  
-        return dateFromRound;
-      } else {
-        return allVestingData.find(
-          (period) => period.type === "supporters" && period.season === (project?.seasonNumber)
+      )?.cliff;
+
+      if (!dateFromRound) {
+        dateFromRound = allVestingData.find(
+          (period) => period.type === "supporters" && period.season === 1
         )?.cliff;
       }
-    }, [allVestingData, project, allRoundData]);
 
-  console.log(unlockDate);
+      return dateFromRound;
+    } else {
+      return allVestingData.find(
+        (period) => period.type === "supporters" && period.season === (project?.seasonNumber || 2)
+      )?.cliff;
+    }
+  }, [allVestingData, project, allRoundData]);
+
+  // Check if unlock date has passed
+  const hasUnlockDatePassed = useMemo(() => {
+    if (!unlockDate) return false;
+    return new Date() >= new Date(unlockDate);
+  }, [unlockDate]);
 
   useEffect(() => {
     setLockedTokens(totalTokensReceived - tokensAlreadyClaimed);
@@ -236,8 +256,8 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
         </div>
       </td>
       {/* Your Return */}
-      <td className="py-4 px-4 text-xs md:text-sm text-[#6DC28F] font-ibm-mono font-bold text-end">
-        {returnPercent >= 0 ? "+" : ""}{returnPercent.toFixed(2)}%
+      <td className={`py-4 px-4 text-xs md:text-sm font-ibm-mono font-bold text-end ${formatPercentageChange(returnPercent).color}`}>
+        {formatPercentageChange(returnPercent).formatted}
       </td>
       {/* In Wallet */}
       <td className="py-4 px-4 text-xs md:text-sm text-white font-ibm-mono font-bold text-end">
@@ -249,7 +269,7 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
       </td>
       {/* Available to Claim */}
       <td className="py-4 px-4 text-xs md:text-sm text-white/30 font-ibm-mono font-bold text-end">
-        {isActive.data && isTokenClaimable ? (
+        {isActive.data && isTokenClaimable && !recentlyClaimed ? (
           <>
           <span className="mr-2">
             {availableToClaim.toFixed(2)}
@@ -259,10 +279,8 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
           </button>
         </>
 
-        ) : unlockDate ? (
+        ) : unlockDate && (
           `${formatDateMonthDayYear(unlockDate.toISOString())}`
-        ) : (
-          "---"
         )}
       </td>
       {/* Total Tokens */}

@@ -7,6 +7,7 @@ import { EnrichedProjectData } from "@/services/projectData.service";
 import { useTokenHolders } from "@/hooks/useTokenHolders";
 import { SearchIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { formatPercentageChange } from "@/helpers";
 
 // Lazy cell component that fetches token-holders count on-demand
 function HoldersCount({ tokenAddress, fallback }: { tokenAddress?: string; fallback: number }) {
@@ -20,7 +21,7 @@ function HoldersCount({ tokenAddress, fallback }: { tokenAddress?: string; fallb
 }
 
 const formatPercent = (value: number) =>
-  `${value > 0 ? "+" : ""}${value.toFixed(2)}%`;
+  `${value > 0 ? "↑" : "↓"}${value.toFixed(2)}%`;
 
 const formatCurrency = (value: number) =>
   value.toLocaleString("en-US", {
@@ -66,17 +67,17 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
     let passesTabFilter = true;
     if (activeTab === "season1") passesTabFilter = project.seasonNumber === 1;
     if (activeTab === "season2") passesTabFilter = project.seasonNumber === 2;
-    
+
     //search filter
     let passesSearchFilter = true;
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase().trim();
-      passesSearchFilter = 
+      passesSearchFilter =
         project.name.toLowerCase().includes(searchLower) ||
         (project.ticker && project.ticker.toLowerCase().includes(searchLower)) ||
         project.season.toLowerCase().includes(searchLower);
     }
-    
+
     return passesTabFilter && passesSearchFilter;
   });
 
@@ -84,60 +85,57 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
     <div className="w-full max-w-7xl mx-auto lg:px-8 py-12 mt-20">
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
         <h1 className="font-anton text-white text-[42px] lg:text-6xl uppercase leading-none mb-2">
-          Projects 
+          Projects
           <br className="hidden lg:block" />
           <span className="ml-2 lg:ml-0">Data</span>
         </h1>
 
-       <div className="flex flex-row gap-4 items-center justify-between w-full">
+        <div className="flex flex-row gap-4 items-center justify-between w-full">
 
-       <div className="flex gap-2 md:gap-1 lg:mt-4">
-          <button
-            onClick={() => setActiveTab("all")}
-            className={`w-fit px-2 md:px-3 py-2 rounded-lg text-[10px] sm:text-xs uppercase transition-colors font-medium ${
-              activeTab === "all"
+          <div className="flex gap-1 lg:mt-4">
+            <button
+              onClick={() => setActiveTab("all")}
+              className={`w-fit px-1.5 sm:px-2 md:px-3 py-2 rounded-lg text-[10px] sm:text-xs uppercase transition-colors font-medium ${activeTab === "all"
                 ? "bg-peach-400 text-black"
                 : "bg-peach-400/10 text-peach-400/50 hover:bg-peach-400/20"
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setActiveTab("season2")}
-            className={`w-fit px-2 md:px-3 py-2 rounded-lg text-[10px] sm:text-xs uppercase transition-colors font-medium ${
-              activeTab === "season2"
+                }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setActiveTab("season2")}
+              className={`w-fit px-1.5 sm:px-2 md:px-3 py-2 rounded-lg text-[10px] sm:text-xs uppercase transition-colors font-medium ${activeTab === "season2"
                 ? "bg-peach-400 text-black"
                 : "bg-peach-400/10 text-peach-400/50 hover:bg-peach-400/20"
-            }`}
-          >
-            Season 2
-          </button>
-          <button
-            onClick={() => setActiveTab("season1")}
-            className={`w-fit px-2 md:px-3 py-2 rounded-lg text-[10px] sm:text-xs uppercase transition-colors font-medium ${
-              activeTab === "season1"
+                }`}
+            >
+              Season 2
+            </button>
+            <button
+              onClick={() => setActiveTab("season1")}
+              className={`w-fit px-1.5 sm:px-2 md:px-3 py-2 rounded-lg text-[10px] sm:text-xs uppercase transition-colors font-medium ${activeTab === "season1"
                 ? "bg-peach-400 text-black"
                 : "bg-peach-400/10 text-peach-400/50 hover:bg-peach-400/20"
-            }`}
-          >
-            Season 1
-          </button>
-        </div>
-        <div className="flex items-center gap-2 w-1/2 md:w-72">
-          <div className="relative w-full">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <SearchIcon className="h-4 w-4 text-qacc-gray-light/60" />
+                }`}
+            >
+              Season 1
+            </button>
+          </div>
+          <div className="flex items-center gap-2 w-1/2 md:w-72">
+            <div className="relative w-full">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <SearchIcon className="h-4 w-4 text-qacc-gray-light/60" />
+              </div>
+              <input
+                type="text"
+                placeholder="SEARCH PROJECTS..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full rounded-[10px] bg-qacc-gray-light/10 text-white/80 pl-10 pr-4 py-2 placeholder:text-white/30 placeholder:text-xs border border-[#232323] focus:outline-none focus:ring-1 focus:ring-peach-400"
+              />
             </div>
-            <input
-              type="text"
-              placeholder="SEARCH PROJECTS..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-[10px] bg-qacc-gray-light/10 text-white/80 pl-10 pr-4 py-2 placeholder:text-white/30 placeholder:text-xs border border-[#232323] focus:outline-none focus:ring-1 focus:ring-peach-400"
-            />
           </div>
         </div>
-       </div>
       </div>
 
       <div className="overflow-x-auto scrollbar-hide">
@@ -153,11 +151,10 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
             {tableProjects.map((project, idx) => (
               <Link href={`/project/${project.slug}`}
                 key={idx}
-                className={`${
-                  idx == tableProjects.length - 1
-                    ? ""
-                    : "border-b border-white/5"
-                } flex items-center gap-3  px-6 hover:bg-[#232323] transition-colors h-[80px] cursor-pointer`}
+                className={`${idx == tableProjects.length - 1
+                  ? ""
+                  : "border-b border-white/5"
+                  } flex items-center gap-3  px-6 hover:bg-[#232323] transition-colors h-[80px] cursor-pointer`}
                 prefetch
               >
                 <Image
@@ -202,11 +199,10 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
             {tableProjects.map((project, idx) => (
               <div
                 key={idx}
-                className={`${
-                  idx == tableProjects.length - 1
-                    ? ""
-                    : "border-b border-white/5"
-                } grid grid-cols-2  px-6  hover:bg-[#232323] transition-colors h-[80px] items-center`}
+                className={`${idx == tableProjects.length - 1
+                  ? ""
+                  : "border-b border-white/5"
+                  } grid grid-cols-2  px-6  hover:bg-[#232323] transition-colors h-[80px] items-center font-ibm-mono`}
               >
                 <div className="text-center text-white font-bold text-xs">
                   {project.supporters.toLocaleString()}
@@ -219,13 +215,13 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
           </div>
 
           {/* MARKET DATA Section */}
-          <div className="flex-1 min-w-[500px] border border-white/5 rounded-xl py-0">
+          <div className="flex-1 min-w-[450px] border border-white/5 rounded-xl py-0">
             <div className="h-[80px] flex justify-center items-center px-6 py-0">
               <h3 className="font-anton  text-peach-400 text-xl uppercase text-center py-0 m-0">
                 MARKET DATA
               </h3>
             </div>
-            <div className="grid grid-cols-5 py-1 px-6">
+            <div className="grid grid-cols-4 py-1 px-6">
               <div className="text-qacc-gray-light/60 font-bold text-[10px] uppercase text-center">
                 PRICE
               </div>
@@ -242,16 +238,15 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
             {tableProjects.map((project, idx) => (
               <div
                 key={idx}
-                className={`${
-                  idx == tableProjects.length - 1
-                    ? ""
-                    : "border-b border-white/5"
-                } grid grid-cols-5 px-6  hover:bg-[#232323] transition-colors h-[80px] items-center`}
+                className={`${idx == tableProjects.length - 1
+                  ? ""
+                  : "border-b border-white/5"
+                  } grid grid-cols-4 px-6 hover:bg-[#232323] transition-colors h-[80px] items-center font-ibm-mono`}
               >
                 <div className="text-center text-white font-bold text-xs flex items-center justify-center gap-2">
-                  <span className="text-qacc-gray-light/60">{project.pricePOL.toFixed(2)} POL</span>
+                  <span className="text-qacc-gray-light/60">{project.pricePOL.toFixed(2)} <span className="ml-1">POL</span></span>
                   <span className="text-white">
-                    ${project.priceUSD.toFixed(2)}
+                    ~${project.priceUSD.toFixed(2)}
                   </span>
                 </div>
                 <div className="text-center text-white font-bold text-xs">
@@ -259,13 +254,10 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
                   <HoldersCount tokenAddress={project.tokenAddress} fallback={project.supporters} />
                 </div>
                 <div
-                  className={`text-center font-bold text-xs ${
-                    project.priceChange24h < 0
-                      ? "text-red-400"
-                      : "text-green-400"
-                  }`}
+                  className={`text-center font-bold text-xs ${formatPercentageChange(project.priceChange24h).color
+                    }`}
                 >
-                  {formatPercent(project.priceChange24h)}
+                  {formatPercentageChange(project.priceChange24h).formatted}
                 </div>
                 <div className="text-center text-white font-bold text-xs">
                   {formatCurrency(project.marketCap)}

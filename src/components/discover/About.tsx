@@ -4,16 +4,16 @@ import Image from "next/image";
 
 const About = () => {
   return (
-    <div className="flex flex-col lg:flex-row gap-12  p-8 pb-20 md:pb-28 max-w-7xl mx-auto">
+    <div className="flex flex-col lg:flex-row gap-12 p-4 sm:p-8 pb-20 md:pb-28 max-w-7xl mx-auto">
       {/* Left Dark Card */}
-      <div className="flex-1 bg-black rounded-3xl p-8 md:p-[60px] text-white relative overflow-hidden">
+      <div className="flex-1 bg-black rounded-3xl p-6 sm:p-8 md:p-[60px] text-white relative overflow-hidden">
         <div className="mb-8 flex items-center gap-6 justify-between">
           <Image
             src="/images/landing/about-vector.svg"
             alt=""
             width={120}
             height={120}
-            // className="w-[100px] h-[100px] md:w-[120px] md:h-[120px]"
+            className="w-[85px] sm:w-[100px] md:w-[120px]"
           />
           <div className="flex flex-col space-y-5">
             <p className="text-qacc-gray-light text-sm md:text-base font-medium">
@@ -46,9 +46,9 @@ const About = () => {
             <span className="font-anton text-peach-400">
               SAFEST WAY
             </span>
-            <br />
+            <br className="hidden md:block"/>
             TO LAUNCH <span className="font-anton text-qacc-gray-light">YOUR</span>
-            <br />
+            <br className="hidden md:block"/>
             <span className="font-anton text-qacc-gray-light">TOKEN ECONOMY</span>
           </h1>
         </div>
