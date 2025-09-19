@@ -78,18 +78,16 @@ function Projects() {
   console.log(tiles);
 
   return (
-    <div className="mx-auto px-6 py-10 md:py-20 lg:px-12 flex flex-col justify-center">
+    <div className="mx-auto px-4 sm:px-6 py-10 md:py-20 lg:px-12 flex flex-col justify-center">
       <h2 className="font-anton text-white text-[46px] md:text-5xl lg:text-[64px] mb-4 md:mb-6 uppercase tracking-wide">
         Projects
       </h2>
       <div>
-        {!showAll && (
-          <div className="hidden lg:block">
-            <ProjectsCarousel tips={carouselItems} />
-          </div>
-        )}
+        <div className="hidden lg:block">
+          <ProjectsCarousel tips={carouselItems} />
+        </div>
 
-        <div className={`flex gap-4 lg:mt-10 ${showAll ? "flex-wrap" : "flex-row overflow-x-auto scrollbar-hide"}`}>
+        <div className={`lg:mt-10 ${showAll ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 justify-items-center" : "flex flex-row gap-4 overflow-x-auto scrollbar-hide"}`}>
           {(showAll ? tiles : tiles.slice(0, 6)).map((tile) => (
             <ProjectTile
               key={tile.text}

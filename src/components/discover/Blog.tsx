@@ -28,7 +28,7 @@ export const Blog = () => {
 
   return (
     <div className="w-full bg-gradient-to-b from-[#000] to-qacc-gray-dark">
-      <div className="w-full max-w-7xl mx-auto px-8 md:px-4 py-12 md:py-24">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-4 py-12 md:py-24">
         {/* Header */}
         <div className="flex items-center justify-between mb-12">
           <h1 className="text-[42px] md:text-[64px] tracking-wide text-white font-anton uppercase">

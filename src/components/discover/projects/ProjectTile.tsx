@@ -293,7 +293,7 @@ export function ProjectTile({
     <Link
       href={`/project/${slug}`}
       className={cn(
-        "relative rounded-[20px] overflow-hidden shadow-lg bg-muted flex flex-col justify-end min-h-[354px] w-[220px] flex-shrink-0 cursor-pointer",
+        "relative rounded-[20px] overflow-hidden shadow-lg bg-muted flex flex-col justify-end w-full max-w-[280px] flex-shrink-0 cursor-pointer",
         className
       )}
       style={{ aspectRatio: "3/4" }}

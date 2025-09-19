@@ -26,9 +26,10 @@ export const capitalizeFirstLetter = (str: string) => {
   };
 
   export const formatPercentageChange = (change: number) => {
-    const isPositive = change >= 0;
-    const color = isPositive ? "text-green-400" : "text-red-400";
-    const sign = isPositive ? "↑" : "↓";
+    const isPositive = change > 0;
+    const isZero = change == 0;
+    const color = isPositive && !isZero ? "text-green-400" : isZero ? "text-qacc-gray-light/60" : "text-red-400";
+    const sign = isPositive ? "↑" : isZero ? "" : "↓";
 
     return {
         color,
