@@ -33,4 +33,6 @@ export type EnvConfig = {
   SQUID_INTEGRATOR_ID: string;
   PROXY_CONTRACT_ADDRESS: string;
   BONDING_CURVE_COLLATERAL_TOKEN: string;
+  ZERODEV_BUNDLER_URL: string;
+  ZERODEV_PAYMASTER_URL: string;
 };

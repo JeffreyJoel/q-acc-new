@@ -7,6 +7,8 @@ import { fetchEVMTokenBalances } from "@/helpers/token";
 import { PortfolioTable } from "./PortfolioTable";
 import ProjectSupportedCard from "./ProjectSupportedCard";
 import type { IProject } from "@/types/project.type";
+import { USDCTransfer } from "@/components/shared/USDCTransfer";
+import { SmartUSDCTransfer } from "@/components/shared";
 
 export default function Portfolio() {
   const { donationsGroupedByProject } = useDonorContext();
@@ -37,8 +39,8 @@ export default function Portfolio() {
   const portfolioData = Object.entries(donationsGroupedByProject).map(
     ([projectId, donations]) => {
       const project = donations[0].project as IProject;
-          const inWallet =
-            balances[project.abc!.issuanceTokenAddress as string] || 0;
+      const inWallet =
+        balances[project.abc!.issuanceTokenAddress as string] || 0;
       return {
         project: project,
         inWallet: inWallet,
@@ -48,8 +50,9 @@ export default function Portfolio() {
 
   return (
     <div className="space-y-12">
- 
-      <PortfolioTable rows={portfolioData}  />
+      <SmartUSDCTransfer />
+
+      <PortfolioTable rows={portfolioData} />
 
       <div className="">
         {portfolioData.map((card) => (
