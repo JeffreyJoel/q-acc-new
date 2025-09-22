@@ -7,8 +7,7 @@ import { fetchEVMTokenBalances } from "@/helpers/token";
 import { PortfolioTable } from "./PortfolioTable";
 import ProjectSupportedCard from "./ProjectSupportedCard";
 import type { IProject } from "@/types/project.type";
-import { USDCTransfer } from "@/components/shared/USDCTransfer";
-import { SmartUSDCTransfer } from "@/components/shared";
+import { SmartUSDCTransfer } from "@/components/shared/SmartUSDCTransfer";
 
 export default function Portfolio() {
   const { donationsGroupedByProject } = useDonorContext();

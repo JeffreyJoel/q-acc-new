@@ -2,6 +2,44 @@ import { usePublicClient, useWalletClient } from "wagmi";
 import { Address, getContract } from "viem";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { claimTokensABI } from "@/lib/abi/inverter";
+import { useZeroDev } from "@/contexts/ZeroDevContext";
+
+// export const useClaimRewards = ({
+//   paymentProcessorAddress,
+//   paymentRouterAddress,
+//   onSuccess = () => {},
+//   onError = () => {},
+// }: {
+//   paymentProcessorAddress: string;
+//   paymentRouterAddress: string;
+//   onSuccess?: () => void;
+//   onError?: (error: Error) => void;
+// }) => {
+//   const { data: walletClient } = useWalletClient();
+//   const publicClient = usePublicClient();
+
+//   const claim = useMutation({
+//     mutationFn: async () => {
+//       if (!walletClient) throw new Error("Wallet not connected");
+
+//       const contract = getContract({
+//         address: paymentProcessorAddress as Address,
+//         abi: claimTokensABI,
+//         client: walletClient,
+//       });
+
+//       const tx = await contract.write.claimAll([paymentRouterAddress]);
+
+//       await publicClient!.waitForTransactionReceipt({
+//         hash: tx,
+//       });
+//     },
+//     onSuccess,
+//     onError,
+//   });
+
+//   return { claim };
+// };
 
 export const useClaimRewards = ({
   paymentProcessorAddress,
@@ -14,30 +52,43 @@ export const useClaimRewards = ({
   onSuccess?: () => void;
   onError?: (error: Error) => void;
 }) => {
-  const { data: walletClient } = useWalletClient();
+  const { kernelClient, isInitializing } = useZeroDev();
   const publicClient = usePublicClient();
 
   const claim = useMutation({
     mutationFn: async () => {
-      if (!walletClient) throw new Error("Wallet not connected");
+      if (!kernelClient) {
+        throw new Error("Smart account not initialized");
+      }
+      
+      if (isInitializing) {
+        throw new Error("Smart account is still initializing");
+      }
 
+      // Use the kernel client directly for gasless transactions
       const contract = getContract({
         address: paymentProcessorAddress as Address,
         abi: claimTokensABI,
-        client: walletClient,
+        client: kernelClient, // This is the key change - using kernelClient instead of walletClient
       });
 
       const tx = await contract.write.claimAll([paymentRouterAddress]);
 
+      // Wait for transaction confirmation
       await publicClient!.waitForTransactionReceipt({
         hash: tx,
       });
+
+      return tx;
     },
     onSuccess,
     onError,
   });
 
-  return { claim };
+  return { 
+    claim, 
+    isSmartAccountReady: !!kernelClient && !isInitializing 
+  };
 };
 
 export const useReleasableForStream = ({

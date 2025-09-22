@@ -89,13 +89,6 @@ const config: EnvConfig = {
   BONDING_CURVE_COLLATERAL_TOKEN:
     process.env.BONDING_CURVE_COLLATERAL_TOKEN ||
     '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270', // WPOL
-  // ZeroDev Account Abstraction Configuration
-  ZERODEV_BUNDLER_URL:
-    process.env.NEXT_PUBLIC_ZERODEV_BUNDLER_URL ||
-    'https://rpc.zerodev.app/api/v2/bundler/80002',
-  ZERODEV_PAYMASTER_URL:
-    process.env.NEXT_PUBLIC_ZERODEV_PAYMASTER_URL ||
-    'https://rpc.zerodev.app/api/v2/paymaster/80002',
 };
 
 export default config;

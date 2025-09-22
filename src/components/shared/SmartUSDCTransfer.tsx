@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { ArrowUpRight, Loader2, AlertCircle, Zap } from "lucide-react";
 import { handleErc20Transfer } from "@/helpers/token";
 import { fetchBalanceWithDecimals } from "@/helpers/token";
-import { Address, encodeFunctionData, parseEther } from "viem";
+import { Address, encodeFunctionData, parseEther, parseUnits } from "viem";
 import { useZeroDev } from "@/contexts/ZeroDevContext";
 import { erc20Abi } from "viem";
 
@@ -84,7 +84,7 @@ export function SmartUSDCTransfer({
       const transferData = encodeFunctionData({
         abi: erc20Abi,
         functionName: "transfer",
-        args: [recipientAddress as Address, parseEther(amount)],
+        args: [recipientAddress as Address, parseUnits(amount, 6)],
       });
 
       // Send the transaction using the smart account
@@ -106,7 +106,7 @@ export function SmartUSDCTransfer({
       if (smartAccountAddress) {
         const result = await fetchBalanceWithDecimals(
           usdcAddress,
-          smartAccountAddress as Address,
+          userAddress as Address,
           POLYGON_AMOY_CHAIN_ID
         );
         if (result) {

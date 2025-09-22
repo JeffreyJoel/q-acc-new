@@ -78,14 +78,7 @@ const config: EnvConfig = {
     '0x84Ed70229D6Fc49d3624a81C8334cC0748ff0f5B',
   BONDING_CURVE_COLLATERAL_TOKEN:
     process.env.BONDING_CURVE_COLLATERAL_TOKEN ||
-    '0x806B448d6C5b507727AD715425B744f038E475bc', // test WMATIC
-  // ZeroDev Account Abstraction Configuration
-  ZERODEV_BUNDLER_URL:
-    process.env.NEXT_PUBLIC_ZERODEV_BUNDLER_URL ||
-    'https://rpc.zerodev.app/api/v2/bundler/80002',
-  ZERODEV_PAYMASTER_URL:
-    process.env.NEXT_PUBLIC_ZERODEV_PAYMASTER_URL ||
-    'https://rpc.zerodev.app/api/v2/paymaster/80002',
+    '0x806B448d6C5b507727AD715425B744f038E475bc'
 };
 
 export default config;

@@ -7,19 +7,18 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
-import { useWallets } from "@privy-io/react-auth";
-import {
-  createPublicClient,
-  http,
-} from "viem";
-import type { WalletClient } from "viem";
-// Correct ZeroDev imports as per latest documentation
-import { providerToSmartAccountSigner } from "permissionless";
-import { createZeroDevPaymasterClient, createKernelAccount, createKernelAccountClient } from "@zerodev/sdk";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { createPublicClient, createWalletClient, custom, http } from "viem";
+import { polygonAmoy } from "viem/chains";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
-import { ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import type { KernelAccountClient } from "@zerodev/sdk";
-import config from "@/config/configuration";
+import {
+  createKernelAccount,
+  createKernelAccountClient,
+  createZeroDevPaymasterClient,
+  KernelAccountClient,
+} from "@zerodev/sdk";
+import { KERNEL_V3_1 } from "@zerodev/sdk/constants";
+import { entryPoint07Address } from "viem/account-abstraction";
 
 interface ZeroDevContextType {
   kernelClient: KernelAccountClient | null;
@@ -45,14 +44,18 @@ interface ZeroDevProviderProps {
 export const ZeroDevProvider: React.FC<ZeroDevProviderProps> = ({
   children,
 }) => {
+  const { user } = usePrivy();
   const { wallets, ready } = useWallets();
-  const [kernelClient, setKernelClient] = useState<KernelAccountClient | null>(null);
-  const [smartAccountAddress, setSmartAccountAddress] = useState<string | null>(null);
+  const [kernelClient, setKernelClient] = useState<KernelAccountClient | null>(
+    null
+  );
+  const [smartAccountAddress, setSmartAccountAddress] = useState<string | null>(
+    null
+  );
   const [isInitializing, setIsInitializing] = useState(false);
 
-  const bundlerUrl = config.ZERODEV_BUNDLER_URL;
-  const paymasterUrl = config.ZERODEV_PAYMASTER_URL;
-  const chain = config.SUPPORTED_CHAINS[0]; // e.g. polygonAmoy or whatever chain config
+  const ZERODEV_RPC = process.env.NEXT_PUBLIC_ZERODEV_RPC;
+  const chain = polygonAmoy;
 
   const initializeSmartAccount = async () => {
     if (!ready || wallets.length === 0) {
@@ -60,16 +63,21 @@ export const ZeroDevProvider: React.FC<ZeroDevProviderProps> = ({
     }
     setIsInitializing(true);
     try {
-      // Find the embedded wallet and get its EIP1193 provider
-      const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
-      if (!embeddedWallet) {
-        throw new Error("Privy embedded wallet not found");
+      const userAddress = user?.wallet?.address;
+      const userWallet = wallets.find(
+        (wallet) => wallet.address === userAddress
+      );
+      if (!userWallet) {
+        throw new Error("User wallet not found");
       }
 
-      const provider = await embeddedWallet.getEthereumProvider();
-
-      // Use the EIP1193 provider from Privy to create a SmartAccountSigner
-      const smartAccountSigner = await providerToSmartAccountSigner(provider);
+      const provider = await userWallet.getEthereumProvider();
+      // Build a viem WalletClient from Privy's provider
+      const walletClient = createWalletClient({
+        account: userWallet.address as `0x${string}`,
+        chain,
+        transport: custom(provider),
+      });
 
       // Initialize a viem public client on your app's desired network
       const publicClient = createPublicClient({
@@ -77,44 +85,45 @@ export const ZeroDevProvider: React.FC<ZeroDevProviderProps> = ({
         transport: http(chain.rpcUrls.default.http[0]),
       });
 
-      // Create a ZeroDev ECDSA validator from the smartAccountSigner from above and your publicClient
+      // Create a ZeroDev ECDSA validator (EP 0.7, Kernel v3.1)
       const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
-        signer: smartAccountSigner,
-        entryPoint: ENTRYPOINT_ADDRESS_V07,
+        signer: walletClient,
+        entryPoint: {
+          address: entryPoint07Address,
+          version: "0.7",
+        },
+        kernelVersion: KERNEL_V3_1,
       });
 
       // Create a Kernel account from the ECDSA validator
       const account = await createKernelAccount(publicClient, {
-        plugins: {
-          sudo: ecdsaValidator,
+        plugins: { sudo: ecdsaValidator },
+        entryPoint: {
+          address: entryPoint07Address,
+          version: "0.7",
         },
-        entryPoint: ENTRYPOINT_ADDRESS_V07,
+        kernelVersion: KERNEL_V3_1,
       });
 
-      // Create a Kernel client to send user operations from the smart account
+      const zerodevPaymaster = createZeroDevPaymasterClient({
+        chain,
+        transport: http(ZERODEV_RPC),
+      });
+
       const kernelClient = createKernelAccountClient({
         account,
-        chain: chain,
-        entryPoint: ENTRYPOINT_ADDRESS_V07,
-        bundlerTransport: http(bundlerUrl),
-        middleware: {
-          sponsorUserOperation: async ({ userOperation }) => {
-            const zerodevPaymaster = createZeroDevPaymasterClient({
-              chain: chain,
-              entryPoint: ENTRYPOINT_ADDRESS_V07,
-              transport: http(paymasterUrl),
-            });
-            return zerodevPaymaster.sponsorUserOperation({
-              userOperation,
-              entryPoint: ENTRYPOINT_ADDRESS_V07,
-            });
+        chain,
+        bundlerTransport: http(ZERODEV_RPC),
+        client: publicClient,
+        paymaster: {
+          getPaymasterData(userOperation) {
+            return zerodevPaymaster.sponsorUserOperation({ userOperation });
           },
         },
       });
 
       setKernelClient(kernelClient);
       setSmartAccountAddress(account.address);
-
     } catch (err) {
       console.error("Failed to initialize smart account:", err);
       throw err;
@@ -137,8 +146,6 @@ export const ZeroDevProvider: React.FC<ZeroDevProviderProps> = ({
   };
 
   return (
-    <ZeroDevContext.Provider value={value}>
-      {children}
-    </ZeroDevContext.Provider>
+    <ZeroDevContext.Provider value={value}>{children}</ZeroDevContext.Provider>
   );
 };
