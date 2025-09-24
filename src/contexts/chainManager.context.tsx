@@ -33,10 +33,11 @@ export const ChainProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const value = useMemo<ChainContextValue>(() => {
     // Priority: 1. Active wallet chain, 2. Wagmi chain (from cookies/state), 3. Default to Polygon
     let chainId: number;
-    
-    if (activeWallet && isConnected) {
-      chainId = Number(activeWallet.chainId);
-    } else if (wagmiChainId) {
+
+    if (activeWallet && isConnected && activeWallet.chainId) {
+      const walletChainId = Number(activeWallet.chainId);
+      chainId = !isNaN(walletChainId) ? walletChainId : polygon.id;
+    } else if (wagmiChainId && !isNaN(wagmiChainId)) {
       chainId = wagmiChainId;
     } else {
       chainId = polygon.id;

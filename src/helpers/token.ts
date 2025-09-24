@@ -106,13 +106,20 @@ export const handleErc20Transfer = async ({
   inputAmount,
   tokenAddress,
   projectAddress,
-}: any) => {
+  chainId,
+}: {
+  inputAmount: string;
+  tokenAddress: Address;
+  projectAddress: Address;
+  chainId?: number;
+}) => {
   const value = parseUnits(inputAmount, 18);
   const hash = await writeContract(wagmiConfig, {
     address: tokenAddress,
     abi: erc20Abi,
     functionName: "transfer",
     args: [projectAddress, value],
+    chainId: chainId,
     // @ts-ignore -- needed for safe txs
     value: 0n,
   });

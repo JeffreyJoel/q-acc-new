@@ -20,6 +20,7 @@ import {
   gnosis,
   zksync,
   bsc,
+  polygonAmoy
 } from '@reown/appkit/networks';
 import { polygon as viemPolygon } from 'wagmi/chains';
 // import { polygon, polygonZkEvm } from 'wagmi/chains';
@@ -50,6 +51,7 @@ const config: EnvConfig = {
     gnosis,
     zksync,
     bsc,
+    polygonAmoy,
   ] as const,
   SCAN_URL: 'https://polygonscan.com/',
   ERC_TOKEN_ADDRESS: '0x0000000000000000000000000000000000001010',
