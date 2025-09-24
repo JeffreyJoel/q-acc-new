@@ -69,7 +69,7 @@ export default function ProjectSupportedCard({
     receiver: address,
   });
 
-  const { claim } = useClaimRewards({
+  const { claim, isSmartAccountReady } = useClaimRewards({
     paymentProcessorAddress: proccessorAddress || "",
     paymentRouterAddress: router || "",
     onSuccess: () => {
@@ -295,7 +295,7 @@ export default function ProjectSupportedCard({
           {(isTokenClaimable || hasUnlockDatePassed) && !recentlyClaimed ? (
             <button
               className="flex justify-center rounded-xl bg-peach-400 font-semibold text-black px-4 py-2 disabled:opacity-80 disabled:cursor-not-allowed"
-              disabled={!isTokenClaimable || hasUnlockDatePassed || claim.isPending}
+              disabled={!isTokenClaimable || hasUnlockDatePassed || claim.isPending || !isSmartAccountReady}
               onClick={() => claim.mutateAsync()}
             >
               {isActivePaymentReceiver.isPending

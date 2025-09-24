@@ -386,7 +386,7 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
       mintedTokenAmounts: 0,
     };
 
-  const { claim } = useClaimCollectedFee({
+  const { claim, isSmartAccountReady } = useClaimCollectedFee({
     fundingManagerAddress: projectData?.abc?.fundingManagerAddress!,
     tributeModule:
       projectData?.tributeClaimModuleAddress ||
@@ -504,8 +504,8 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
               </span>
               {
                 enableClaimButton && (
-                  <button className={`bg-peach-400 text-black uppercase inline-flex items-center gap-2 px-3 py-2 rounded-xl text-base font-medium ${claim.isPending ? 'bg-peach-400/50' : ''}`}
-                    disabled={!enableClaimButton || claim.isPending}
+                  <button className={`bg-peach-400 text-black uppercase inline-flex items-center gap-2 px-3 py-2 rounded-xl text-base font-medium disabled:opacity-80 disabled:cursor-not-allowed`}
+                    disabled={!enableClaimButton || claim.isPending || !isSmartAccountReady}
                     onClick={() => claim.mutateAsync()}
                   >
                     {claim.isPending ? (

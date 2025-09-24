@@ -33,7 +33,12 @@ export interface PortfolioTableRowProps {
   onAvailableChange?: (value: number) => void;
 }
 
-function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableChange }: PortfolioTableRowProps) {
+function PortfolioTableRow({
+  project,
+  inWallet,
+  onTotalUSDChange,
+  onAvailableChange,
+}: PortfolioTableRowProps) {
   const { user } = usePrivy();
   const address = user?.wallet?.address as Address;
   const { donationsGroupedByProject } = useDonorContext();
@@ -50,13 +55,13 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
 
   const totalTokensReceived = projectDonations.reduce(
     (sum: any, donation: any) => sum + (donation.rewardTokenAmount || 0),
-    0,
+    0
   );
-  
+
   // Calculate total POL donated and convert to USD using current POL price
   const totalPolDonated = projectDonations.reduce(
     (sum: number, donation: any) => sum + (donation.amount || 0),
-    0,
+    0
   );
   const totalCostUsd = totalPolDonated * Number(polPrice ?? 0);
 
@@ -102,12 +107,19 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
 
   const tokenPriceUsd = (currentTokenPrice ?? 0) * Number(polPrice ?? 0);
 
-  const averagePurchasePrice = totalTokensReceived > 0 ? totalCostUsd / totalTokensReceived : 0;
+  const averagePurchasePrice =
+    totalTokensReceived > 0 ? totalCostUsd / totalTokensReceived : 0;
 
   // Include locked tokens in ROI calculation (total position = wallet + locked tokens)
   const totalTokenPosition = inWallet + lockedTokens;
-  const returnUsd = totalTokenPosition > 0 ? (tokenPriceUsd - averagePurchasePrice) * totalTokenPosition : 0;
-  const returnPercent = totalTokenPosition > 0 && averagePurchasePrice > 0 ? (returnUsd / (averagePurchasePrice * totalTokenPosition)) * 100 : 0;
+  const returnUsd =
+    totalTokenPosition > 0
+      ? (tokenPriceUsd - averagePurchasePrice) * totalTokenPosition
+      : 0;
+  const returnPercent =
+    totalTokenPosition > 0 && averagePurchasePrice > 0
+      ? (returnUsd / (averagePurchasePrice * totalTokenPosition)) * 100
+      : 0;
 
   const isTokenClaimable =
     releasable.data !== undefined && availableToClaim > 0;
@@ -117,13 +129,13 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
     client: router,
     receiver: address,
   });
-  const { claim } = useClaimRewards({
+  const { claim, isSmartAccountReady } = useClaimRewards({
     paymentProcessorAddress: proccessorAddress,
     paymentRouterAddress: router,
     onSuccess: () => {
       // Immediately show unlock
       setRecentlyClaimed(true);
-      
+
       // Refetch actual data after 60 seconds
       setTimeout(() => {
         releasable.refetch();
@@ -134,7 +146,6 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
 
   const { data: schedules } = useVestingSchedules();
   const { data: allRoundData } = useFetchAllRoundDetails();
-
 
   const allVestingData =
     schedules?.map((schedule, index) => {
@@ -156,14 +167,18 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
       };
     }) || [];
 
-
-  const determineProjectRound = (project: IProject, roundData: (IEarlyAccessRound | IQfRound)[] | undefined) => {
+  const determineProjectRound = (
+    project: IProject,
+    roundData: (IEarlyAccessRound | IQfRound)[] | undefined
+  ) => {
     if (!project || !roundData) return 1;
 
     if (project.qfRounds && project.qfRounds.length > 0) {
-      const activeQfRound = project.qfRounds.find(round => round.isActive);
+      const activeQfRound = project.qfRounds.find((round) => round.isActive);
       if (activeQfRound) {
-        const roundNumber = parseInt(activeQfRound.id) || parseInt(activeQfRound.name.match(/\d+/)?.[0] || "1");
+        const roundNumber =
+          parseInt(activeQfRound.id) ||
+          parseInt(activeQfRound.name.match(/\d+/)?.[0] || "1");
         return roundNumber;
       }
     }
@@ -179,16 +194,17 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
     if (project?.seasonNumber === 1) {
       const projectRound = determineProjectRound(project, allRoundData);
 
-      let dateFromRound = allVestingData.find(
-        (period) => {
-          const nameLower = period.name.toLowerCase();
-          return period.type === "supporters" &&
-            period.season === 1 &&
-            (projectRound === 1 ?
-              nameLower.includes("round-1") || nameLower.includes("round 1") :
-              nameLower.includes(`round-${projectRound}`) || nameLower.includes(`round ${projectRound}`));
-        }
-      )?.cliff;
+      let dateFromRound = allVestingData.find((period) => {
+        const nameLower = period.name.toLowerCase();
+        return (
+          period.type === "supporters" &&
+          period.season === 1 &&
+          (projectRound === 1
+            ? nameLower.includes("round-1") || nameLower.includes("round 1")
+            : nameLower.includes(`round-${projectRound}`) ||
+              nameLower.includes(`round ${projectRound}`))
+        );
+      })?.cliff;
 
       if (!dateFromRound) {
         dateFromRound = allVestingData.find(
@@ -199,7 +215,9 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
       return dateFromRound;
     } else {
       return allVestingData.find(
-        (period) => period.type === "supporters" && period.season === (project?.seasonNumber || 2)
+        (period) =>
+          period.type === "supporters" &&
+          period.season === (project?.seasonNumber || 2)
       )?.cliff;
     }
   }, [allVestingData, project, allRoundData]);
@@ -241,7 +259,7 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
         <Image
           src={handleImageUrl(
             project.abc?.icon ||
-            "Qmeb6CzCBkyEkAhjrw5G9GShpKiVjUDaU8F3Xnf5bPHtm4"
+              "Qmeb6CzCBkyEkAhjrw5G9GShpKiVjUDaU8F3Xnf5bPHtm4"
           )}
           alt={project.title || ""}
           width={36}
@@ -256,7 +274,11 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
         </div>
       </td>
       {/* Your Return */}
-      <td className={`py-4 px-4 text-xs md:text-sm font-ibm-mono font-bold text-end ${formatPercentageChange(returnPercent).color}`}>
+      <td
+        className={`py-4 px-4 text-xs md:text-sm font-ibm-mono font-bold text-end ${
+          formatPercentageChange(returnPercent).color
+        }`}
+      >
         {formatPercentageChange(returnPercent).formatted}
       </td>
       {/* In Wallet */}
@@ -271,16 +293,17 @@ function PortfolioTableRow({ project, inWallet, onTotalUSDChange, onAvailableCha
       <td className="py-4 px-4 text-xs md:text-sm text-white/30 font-ibm-mono font-bold text-end">
         {isActive.data && isTokenClaimable && !recentlyClaimed ? (
           <>
-          <span className="mr-2">
-            {availableToClaim.toFixed(2)}
-          </span>
-          <button  className="px-2 py-1 rounded-lg text-[10px] uppercase font-bold border border-peach-400 text-peach-400 hover:bg-peach-400 hover:text-black" onClick={() => claim.mutateAsync()}>
-            {claim.isPending ? "Claiming..." : "Claim"}
-          </button>
-        </>
-
-        ) : unlockDate && (
-          `${formatDateMonthDayYear(unlockDate.toISOString())}`
+            <span className="mr-2">{availableToClaim.toFixed(2)}</span>
+            <button
+              className="px-2 py-1 rounded-lg text-[10px] uppercase font-bold border border-peach-400 text-peach-400 hover:bg-peach-400 hover:text-black disabled:opacity-80 disabled:cursor-not-allowed"
+              onClick={() => claim.mutateAsync()}
+              disabled={!isSmartAccountReady || claim.isPending}
+            >
+              {claim.isPending ? "Claiming..." : "Claim"}
+            </button>
+          </>
+        ) : (
+          unlockDate && `${formatDateMonthDayYear(unlockDate.toISOString())}`
         )}
       </td>
       {/* Total Tokens */}
@@ -304,31 +327,41 @@ interface PortfolioTableProps {
 }
 export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
   const [rowTotalsUSD, setRowTotalsUSD] = useState<Record<number, number>>({});
-  const [availablePerRow, setAvailablePerRow] = useState<Record<number, number>>({});
+  const [availablePerRow, setAvailablePerRow] = useState<
+    Record<number, number>
+  >({});
   const queryClient = useQueryClient();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const [isClaiming, setIsClaiming] = useState(false);
 
-  const handleRowTotalChange = useCallback((projectId: number, value: number) => {
-    setRowTotalsUSD((prev) => ({ ...prev, [projectId]: value }));
-  }, []);
+  const handleRowTotalChange = useCallback(
+    (projectId: number, value: number) => {
+      setRowTotalsUSD((prev) => ({ ...prev, [projectId]: value }));
+    },
+    []
+  );
 
-  const handleAvailableChange = useCallback((projectId: number, value: number) => {
-    setAvailablePerRow((prev) => ({ ...prev, [projectId]: value }));
-  }, []);
+  const handleAvailableChange = useCallback(
+    (projectId: number, value: number) => {
+      setAvailablePerRow((prev) => ({ ...prev, [projectId]: value }));
+    },
+    []
+  );
 
   const rowCallbacks = useMemo(() => {
     return rows.map((row) => ({
       projectId: row.project.id,
-      callback: (value: number) => handleRowTotalChange(Number(row.project.id), value),
+      callback: (value: number) =>
+        handleRowTotalChange(Number(row.project.id), value),
     }));
   }, [rows, handleRowTotalChange]);
 
   const availableCallbacks = useMemo(() => {
     return rows.map((row) => ({
       projectId: row.project.id,
-      callback: (value: number) => handleAvailableChange(Number(row.project.id), value),
+      callback: (value: number) =>
+        handleAvailableChange(Number(row.project.id), value),
     }));
   }, [rows, handleAvailableChange]);
 
@@ -349,19 +382,23 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
       for (const row of rows) {
         const available = availablePerRow[Number(row.project.id)] || 0;
         if (available > 0) {
-          const paymentProcessorAddress = row.project.abc?.paymentProcessorAddress || "";
-          const paymentRouterAddress = row.project.abc?.paymentRouterAddress || "";
+          const paymentProcessorAddress =
+            row.project.abc?.paymentProcessorAddress || "";
+          const paymentRouterAddress =
+            row.project.abc?.paymentRouterAddress || "";
           const contract = getContract({
             address: paymentProcessorAddress as Address,
             abi: claimTokensABI,
             client: walletClient,
           });
-          const tx = await contract.write.claimAll([paymentRouterAddress as Address]);
+          const tx = await contract.write.claimAll([
+            paymentRouterAddress as Address,
+          ]);
           await publicClient.waitForTransactionReceipt({ hash: tx });
         }
       }
-      queryClient.invalidateQueries({ queryKey: ['releasableForStream'] });
-      queryClient.invalidateQueries({ queryKey: ['releasedForStream'] });
+      queryClient.invalidateQueries({ queryKey: ["releasableForStream"] });
+      queryClient.invalidateQueries({ queryKey: ["releasedForStream"] });
     } catch (error) {
       console.error("Error claiming all:", error);
     } finally {
@@ -396,7 +433,8 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
                   Total
                 </span>
                 <span className="text-white text-sm font-ibm-mono font-semibold mr-1">
-                  ~${portfolioTotalUSD.toLocaleString(undefined, {
+                  ~$
+                  {portfolioTotalUSD.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
@@ -404,8 +442,8 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
               </th>
             </tr>
             {/* Label Row */}
-            {
-              rows.length > 0 && (<tr className="text-[10px] uppercase text-qacc-gray-light/60 border-b border-white/5">
+            {rows.length > 0 && (
+              <tr className="text-[10px] uppercase text-qacc-gray-light/60 border-b border-white/5">
                 <th className="w-[340px] pb-2 text-left">Project</th>
                 <th className="w-[120px] pb-2 px-4 text-end">Your Return</th>
                 <th className="w-[120px] pb-2 px-4 text-end">In Wallet</th>
@@ -422,35 +460,36 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
                     </span>
                   </div>
                 </th>
-              </tr>)
-            }
-
+              </tr>
+            )}
           </thead>
-          {
-            rows.length > 0 ? (
-              <tbody className="divide-y  divide-white/5">
-                {rows.map((row) => {
-                  const rowCallback = rowCallbacks.find(cb => cb.projectId === String(row.project.id));
-                  const availableCallback = availableCallbacks.find(cb => cb.projectId === String(row.project.id));
-                  return (
-                    <PortfolioTableRow
-                      key={row.project.id}
-                      project={row.project}
-                      inWallet={row.inWallet}
-                      onTotalUSDChange={rowCallback?.callback}
-                      onAvailableChange={availableCallback?.callback}
-                    />
-                  );
-                })}
-              </tbody>
-            ) : (
-              <div className="py-6 w-full">
-                <p className="text-qacc-gray-light text-base font-medium">
-                  You have not invested in any projects yet.
-                </p>
-              </div>
-            )
-          }
+          {rows.length > 0 ? (
+            <tbody className="divide-y  divide-white/5">
+              {rows.map((row) => {
+                const rowCallback = rowCallbacks.find(
+                  (cb) => cb.projectId === String(row.project.id)
+                );
+                const availableCallback = availableCallbacks.find(
+                  (cb) => cb.projectId === String(row.project.id)
+                );
+                return (
+                  <PortfolioTableRow
+                    key={row.project.id}
+                    project={row.project}
+                    inWallet={row.inWallet}
+                    onTotalUSDChange={rowCallback?.callback}
+                    onAvailableChange={availableCallback?.callback}
+                  />
+                );
+              })}
+            </tbody>
+          ) : (
+            <div className="py-6 w-full">
+              <p className="text-qacc-gray-light text-base font-medium">
+                You have not invested in any projects yet.
+              </p>
+            </div>
+          )}
         </table>
       </div>
     </div>

@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
 import { ethers, BigNumberish, Contract } from 'ethers';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { usePublicClient, useWalletClient } from 'wagmi';
+import { usePublicClient } from 'wagmi';
 import { Address, encodeFunctionData, getContract } from 'viem';
 import config from '@/config/configuration';
 import { fundingManagerAbi, roleModuleAbi } from '@/lib/abi/inverter';
+import { useZeroDev } from '@/contexts/ZeroDevContext';
 import { getClaimedTributesAndMintedTokenAmounts } from '@/services/tributeCollected.service';
 
 const provider = new ethers.JsonRpcProvider(config.NETWORK_RPC_ADDRESS);
@@ -74,27 +75,35 @@ export const useClaimCollectedFee = ({
   amount: BigNumberish;
   onSuccess?: () => void;
 }) => {
-  const { data: walletClient } = useWalletClient();
+  const { kernelClient, isInitializing } = useZeroDev();
   const publicClient = usePublicClient();
 
   const claim = useMutation({
     mutationFn: async () => {
-      if (!walletClient) {
-        throw new Error('Wallet not connected');
+      if (!kernelClient) {
+        throw new Error('Smart account not initialized');
       }
+      
+      if (isInitializing) {
+        throw new Error('Smart account is still initializing');
+      }
+
       if (!publicClient) {
         throw new Error('Public client not available');
       }
+
       const rolesModuleInstance = getContract({
         address: tributeModule as Address,
         abi: roleModuleAbi,
-        client: walletClient,
+        client: kernelClient,
       });
+      
       const encoded = encodeFunctionData({
         abi: fundingManagerAbi,
         functionName: 'withdrawProjectCollateralFee',
         args: [feeRecipient, amount],
       });
+      
       const tx = await rolesModuleInstance.write.execTransactionFromModule(
         [fundingManagerAddress, 0, encoded, 0],
         { gas: 1000000 },
@@ -103,9 +112,14 @@ export const useClaimCollectedFee = ({
       await publicClient.waitForTransactionReceipt({
         hash: tx,
       });
+
+      return tx;
     },
     onSuccess,
   });
 
-  return { claim };
+  return { 
+    claim,
+    isSmartAccountReady: !!kernelClient && !isInitializing 
+  };
 };

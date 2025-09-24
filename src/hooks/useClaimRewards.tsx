@@ -69,7 +69,7 @@ export const useClaimRewards = ({
       const contract = getContract({
         address: paymentProcessorAddress as Address,
         abi: claimTokensABI,
-        client: kernelClient, // This is the key change - using kernelClient instead of walletClient
+        client: kernelClient,
       });
 
       const tx = await contract.write.claimAll([paymentRouterAddress]);
