@@ -7,8 +7,9 @@ import { useLogin, usePrivy } from '@privy-io/react-auth';
 import { Button } from '../../ui/button';
 
 import { WalletDisplay } from './WalletDisplay';
+import Link from 'next/link';
 
-function WalletConnect() {
+function WalletConnect({ onSheetClose }: { onSheetClose?: () => void }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { user, ready, authenticated } = usePrivy();
 
@@ -35,22 +36,38 @@ function WalletConnect() {
   return (
     <div>
       {isClient && authenticated && user && user.wallet?.address ? (
-        <div className='flex flex-col lg:flex-row items-center space-y-4 lg:space-y-0 lg:space-x-3'>
-          <div className='w-full px-4 py-3 flex flex-col  space-y-2  items-start text-sm font-bold border border-peach-400/30 rounded-xl lg:hidden'>
-            <span className='text-white'>Season 1 Token Claim In: 79 d</span>
-            <span className='text-peach-400'>Vesting Timeline</span>
-          </div>
-          <WalletDisplay walletAddress={user?.wallet?.address} />
-        </div>
-      ) : (
-        <>
-          <div className='flex flex-row items-center space-x-3'>
-            <div className='w-full lg:w-fit px-4 py-3 flex-row items-center space-x-4 text-sm font-bold border border-peach-400/30 rounded-xl'>
+        <div className='flex flex-col lg:flex-row items-center space-y-3 lg:space-y-0 lg:space-x-3'>
+         <div className='w-full lg:w-fit px-4 py-3 flex-row items-center space-x-4 text-sm font-bold border border-peach-400/30 rounded-xl lg:hidden'>
               <span className='text-white block lg:inline'>
                 Season 1 Token Claim In: 79 d
               </span>
-              <span className='text-peach-400 block lg:inline'>
+              <span className='block lg:inline'>
+              <Link
+                href='/#vesting-schedule'
+                className='text-peach-400 block lg:inline cursor-pointer'
+                onClick={onSheetClose}
+              >
                 Vesting Timeline
+              </Link>
+              </span>
+            </div>
+          <WalletDisplay walletAddress={user?.wallet?.address} onSheetClose={onSheetClose} />
+        </div>
+      ) : (
+        <>
+          <div className='flex flex-col lg:flex-row items-center space-y-3 lg:space-y-0 lg:space-x-3'>
+            <div className='w-full lg:w-fit px-4 py-3 flex-row items-center lg:space-x-4 text-sm font-bold border border-peach-400/30 rounded-xl'>
+              <span className='text-white block lg:inline'>
+                Season 1 Token Claim In: 79 d
+              </span>
+              <span className='block lg:inline'> 
+              <Link
+                href='/#vesting-schedule'
+                className='text-peach-400 block lg:inline cursor-pointer'
+                onClick={onSheetClose}
+              >
+                Vesting Timeline
+              </Link>
               </span>
             </div>
             {ready ? (

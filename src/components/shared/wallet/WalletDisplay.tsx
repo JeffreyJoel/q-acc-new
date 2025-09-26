@@ -23,9 +23,10 @@ import UserPoints from './UserPoints';
 
 interface WalletDisplayProps {
   walletAddress?: string;
+  onSheetClose?: () => void;
 }
 
-export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
+export const WalletDisplay = ({ walletAddress, onSheetClose }: WalletDisplayProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
 
@@ -46,7 +47,7 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
       // Clear query cache
       queryClient.clear();
 
-      // Clean up localStorage
+      // Remove token from localStorage
       if (walletAddress) {
         const localStorageToken = getLocalStorageToken(walletAddress);
         if (localStorageToken) {
@@ -166,6 +167,7 @@ export const WalletDisplay = ({ walletAddress }: WalletDisplayProps) => {
 
   const handleMyAccountClick = () => {
     closeDropdown();
+    onSheetClose?.();
   };
 
   useEffect(() => {

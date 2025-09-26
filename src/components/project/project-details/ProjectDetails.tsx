@@ -45,7 +45,7 @@ export default function ProjectDetails() {
             config.WPOL_TOKEN_ADDRESS
           );
           setProjectPoolAddress(poolAddress);
-          setIsTokenListed(true); // TODO: Revert this to isListed
+          setIsTokenListed(isListed);
         } catch (error) {
           console.error('Failed to fetch pool address:', error);
           setProjectPoolAddress(null);

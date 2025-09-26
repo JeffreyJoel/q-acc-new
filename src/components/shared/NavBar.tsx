@@ -15,6 +15,8 @@ import {
 import WalletConnect from './wallet/WalletConnect';
 
 export function NavBar() {
+  const [sheetOpen, setSheetOpen] = useState(false);
+
   const navItems = [
     {
       name: 'Projects',
@@ -90,7 +92,7 @@ export function NavBar() {
             <WalletConnect />
           </div>
 
-          <Sheet>
+          <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
               <button className='text-neutral-400 hover:text-white p-2 lg:hidden'>
                 <svg
@@ -110,7 +112,7 @@ export function NavBar() {
             </SheetTrigger>
             <SheetContent
               side='right'
-              className='bg-[#141414] border-r border-neutral-800 flex flex-col h-full w-[300px]'
+              className='bg-[#141414] border-r border-neutral-800 flex flex-col h-full w-[300px] lg:hidden'
             >
               <div className='flex flex-col justify-between h-full pb-3'>
                 <div className='space-y-6'>
@@ -127,7 +129,7 @@ export function NavBar() {
                   ))}
                 </div>
 
-                <WalletConnect />
+                <WalletConnect onSheetClose={() => setSheetOpen(false)} />
               </div>
             </SheetContent>
           </Sheet>

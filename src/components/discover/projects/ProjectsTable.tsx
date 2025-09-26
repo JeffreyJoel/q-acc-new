@@ -177,6 +177,7 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
                   width={40}
                   height={40}
                   className='rounded-full object-cover border border-[#232323]'
+                  loading='lazy'
                 />
                 <div>
                   <div className='flex items-center gap-2'>

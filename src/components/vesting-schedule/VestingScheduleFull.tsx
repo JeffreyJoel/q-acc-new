@@ -62,7 +62,7 @@ const VestingScheduleFull: React.FC<VestingScheduleFullProps> = ({
         displayName: schedule.name,
         type: nameLower.includes('projects') ? 'team' : 'supporters',
         season,
-        order: index, // Temporary order, will reassign after sorting
+        order: index,
         start: new Date(schedule.start),
         cliff: new Date(schedule.cliff),
         end: new Date(schedule.end),

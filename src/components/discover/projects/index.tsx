@@ -74,13 +74,14 @@ function Projects() {
       description: project.descriptionSummary || '',
       season: project.seasonNumber || '',
       slug: project.slug || '',
-      reelId: extractVideoId(
-        project.socialMedia?.find((media: any) => media.type === 'REEL_VIDEO')
-          ?.link || ''
-      ),
+      reelId: project.slug === 'web3-packs'
+        ? 'v9LqCr3GMJw'
+        : extractVideoId(
+            project.socialMedia?.find((media: any) => media.type === 'REEL_VIDEO')
+              ?.link || ''
+          ),
     };
   });
-  console.log(tiles);
 
   return (
     <div className='mx-auto px-4 sm:px-6 py-10 md:py-20 lg:px-12 flex flex-col justify-center'>
@@ -123,7 +124,9 @@ function Projects() {
 
         <ProjectsTable projects={enrichedProjects || []} />
 
+        <div id='vesting-schedule'>
         <VestingScheduleFull projects={allProjects?.projects || []} />
+        </div>
       </div>
     </div>
   );

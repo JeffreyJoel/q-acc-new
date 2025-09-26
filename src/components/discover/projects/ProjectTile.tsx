@@ -46,7 +46,6 @@ export function ProjectTile({
 
   // This resets all player related state and destroys the YouTube player instance
   const resetPlayer = useCallback(() => {
-    // This clears progress polling
     if (progressIntervalRef.current) {
       clearInterval(progressIntervalRef.current);
       progressIntervalRef.current = null;
@@ -187,7 +186,6 @@ export function ProjectTile({
         const current = player.getCurrentTime();
         const total = player.getDuration();
 
-        // Duration can be 0 right after onReady; keep refreshing until > 0
         if (total > 0) {
           setDuration(total);
           setCurrentTime(current);

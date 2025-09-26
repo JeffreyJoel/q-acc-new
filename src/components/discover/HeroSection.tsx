@@ -6,6 +6,7 @@ import Image from 'next/image';
 
 import { VideoModal } from '@/components/modals/VideoModal';
 import { formatNumberCompact } from '@/helpers';
+import { fetchAllProjects } from '@/services/project.service';
 
 const HeroSection = () => {
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
@@ -13,10 +14,11 @@ const HeroSection = () => {
     total_raised_pol: number | null;
     amount_in_protocol_pol: number | null;
     total_market_cap: number | null;
+    total_projects: number | null;
   } | null>(null);
 
   useEffect(() => {
-    const CACHE_KEY = 'dune_stats_hero';
+    const CACHE_KEY = 'hero_stats';
     const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
     try {
       const cached = localStorage.getItem(CACHE_KEY);
@@ -29,14 +31,18 @@ const HeroSection = () => {
         }
       }
 
-      // Fetch from API if no valid cache
-      fetch('/api/dune')
-        .then(res => res.json())
-        .then(data => {
+      // Fetch both Dune stats and projects count in parallel
+      Promise.all([
+        fetch('/api/dune'),
+        fetchAllProjects()
+      ])
+        .then(([duneRes, projectsData]) => Promise.all([duneRes.json(), projectsData]))
+        .then(([duneData, projectsResult]) => {
           const formattedData = {
-            total_raised_pol: Number(data.total_raised_pol) || null,
-            amount_in_protocol_pol: Number(data.amount_in_protocol_pol) || null,
-            total_market_cap: Number(data.total_market_cap) || null,
+            total_raised_pol: Number(duneData.total_raised_pol) || null,
+            amount_in_protocol_pol: Number(duneData.amount_in_protocol_pol) || null,
+            total_market_cap: Number(duneData.total_market_cap) || null,
+            total_projects: projectsResult?.totalCount || null,
           };
           setStats(formattedData);
           localStorage.setItem(
@@ -44,9 +50,9 @@ const HeroSection = () => {
             JSON.stringify({ timestamp: now, data: formattedData })
           );
         })
-        .catch(err => console.error('Failed to fetch Dune stats', err));
+        .catch(err => console.error('Failed to fetch hero stats', err));
     } catch (err) {
-      console.error('Error accessing localStorage for Dune stats', err);
+      console.error('Error accessing localStorage for hero stats', err);
     }
   }, []);
 
@@ -122,7 +128,7 @@ const HeroSection = () => {
 
                 <div className='space-y-0.1'>
                   <div className='text-white text-2xl xl:text-3xl font-bold'>
-                    12
+                    {stats?.total_projects || 12}
                   </div>
                   <div className='text-white/30 font-medium text-[13px] leading-normal'>
                     Projects
@@ -190,7 +196,7 @@ const HeroSection = () => {
 
               <div className='text-center space-y-1'>
                 <div className='text-white text-2xl sm:text-3xl font-bold'>
-                  12
+                  {stats?.total_projects || 12}
                 </div>
                 <div className='text-white/30 font-medium text-xs sm:text-sm leading-normal'>
                   Projects
