@@ -1,9 +1,11 @@
-import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
-import { cn } from "@/lib/utils";
-import YouTube from "react-youtube";
-import React from "react";
-import { Spinner } from "@/components/loaders/Spinner";
+import React from 'react';
+
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { X } from 'lucide-react';
+import YouTube from 'react-youtube';
+
+import { Spinner } from '@/components/loaders/Spinner';
+import { cn } from '@/lib/utils';
 
 interface VideoModalProps {
   isOpen: boolean;
@@ -13,8 +15,8 @@ interface VideoModalProps {
 export const VideoModal = ({ isOpen, onClose }: VideoModalProps) => {
   const [loading, setLoading] = React.useState(true);
   const opts = {
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
     playerVars: {
       autoplay: 1,
       controls: 1,
@@ -28,31 +30,31 @@ export const VideoModal = ({ isOpen, onClose }: VideoModalProps) => {
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
           className={cn(
-            "fixed inset-0 z-50 bg-black/95 opacity-90 backdrop-blur-xl"
+            'fixed inset-0 z-50 bg-black/95 opacity-90 backdrop-blur-xl'
           )}
         />
         <DialogPrimitive.Content
           className={cn(
-            "fixed inset-0 z-50 border-none p-0 rounded-none w-full h-full max-w-none translate-x-0 translate-y-0 top-0 left-0 flex items-center justify-center"
+            'fixed inset-0 z-50 border-none p-0 rounded-none w-full h-full max-w-none translate-x-0 translate-y-0 top-0 left-0 flex items-center justify-center'
           )}
         >
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 z-10 p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors duration-200"
+            className='absolute top-6 right-6 z-10 p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors duration-200'
           >
-            <X className="h-6 w-6 text-white" />
+            <X className='h-6 w-6 text-white' />
           </button>
-          <div className="w-full bg-black max-w-4xl mx-auto aspect-video relative flex items-center justify-center">
+          <div className='w-full bg-black max-w-4xl mx-auto aspect-video relative flex items-center justify-center'>
             {loading && (
-              <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/80 rounded-lg">
-                <Spinner size={64} color="#fff" secondaryColor="#222" />
+              <div className='absolute inset-0 flex items-center justify-center z-20 bg-black/80 rounded-lg'>
+                <Spinner size={64} color='#fff' secondaryColor='#222' />
               </div>
             )}
             <YouTube
-              videoId="m30ElzaR--4"
+              videoId='m30ElzaR--4'
               opts={opts}
-              className="w-full h-full"
-              iframeClassName="rounded-lg border border-neutral-700 w-full h-full"
+              className='w-full h-full'
+              iframeClassName='rounded-lg border border-neutral-700 w-full h-full'
               onReady={() => setLoading(false)}
               onError={() => setLoading(false)}
             />

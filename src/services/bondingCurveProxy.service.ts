@@ -1,8 +1,13 @@
 import { Address, parseEther, parseUnits } from 'viem';
 import { waitForTransactionReceipt } from 'viem/actions';
+
 import config from '@/config/configuration';
 import proxyContractABI from '@/lib/abi/proxyContract';
-import { executePOLWrappingFlow, unwrapWPOL, checkWPOLBalance } from '@/services/polWrapping.service';
+import {
+  executePOLWrappingFlow,
+  unwrapWPOL,
+  checkWPOLBalance,
+} from '@/services/polWrapping.service';
 
 // Standard ERC20 ABI for approval
 const ERC20_ABI = [
@@ -44,7 +49,7 @@ export async function checkAllowance(
   tokenAddress: string,
   spenderAddress: string,
   userAddress: string,
-  amount: string,
+  amount: string
 ): Promise<boolean> {
   try {
     const allowance = await publicClient.readContract({
@@ -70,7 +75,7 @@ export async function approveProxy(
   tokenAddress: string,
   spenderAddress: string,
   amount: string,
-  userAddress: string,
+  userAddress: string
 ): Promise<string> {
   try {
     const amountWei = parseUnits(amount, 18);
@@ -102,7 +107,7 @@ export async function buyThroughProxy(
     depositAmount: string;
     minAmountOut: string;
   },
-  userAddress: string,
+  userAddress: string
 ): Promise<string> {
   try {
     const hash = await walletClient.writeContract({
@@ -137,7 +142,7 @@ export async function sellThroughProxy(
     depositAmount: string;
     minAmountOut: string;
   },
-  userAddress: string,
+  userAddress: string
 ): Promise<string> {
   try {
     const hash = await walletClient.writeContract({
@@ -184,7 +189,9 @@ export async function executeBuyFlow(
       onStatusUpdate?.('Checking WPOL balance...');
       const wpolBalance = await checkWPOLBalance(publicClient, userAddress);
       if (parseFloat(wpolBalance) < parseFloat(depositAmount)) {
-        throw new Error(`Insufficient WPOL balance. Available: ${wpolBalance} WPOL`);
+        throw new Error(
+          `Insufficient WPOL balance. Available: ${wpolBalance} WPOL`
+        );
       }
 
       const hasAllowance = await checkAllowance(
@@ -193,7 +200,7 @@ export async function executeBuyFlow(
         collateralToken,
         proxyAddress,
         userAddress,
-        depositAmount,
+        depositAmount
       );
 
       if (!hasAllowance) {
@@ -203,7 +210,7 @@ export async function executeBuyFlow(
           collateralToken,
           proxyAddress,
           depositAmount,
-          userAddress,
+          userAddress
         );
 
         const approvalReceipt = await waitForTransactionReceipt(publicClient, {
@@ -227,7 +234,7 @@ export async function executeBuyFlow(
         walletClient,
         userAddress,
         depositAmount,
-        onStatusUpdate,
+        onStatusUpdate
       );
 
       if (wrapResult.wrapHash) {
@@ -252,7 +259,7 @@ export async function executeBuyFlow(
         collateralToken,
         proxyAddress,
         userAddress,
-        depositAmount,
+        depositAmount
       );
 
       if (!hasAllowance) {
@@ -262,7 +269,7 @@ export async function executeBuyFlow(
           collateralToken,
           proxyAddress,
           depositAmount,
-          userAddress,
+          userAddress
         );
 
         const approvalReceipt = await waitForTransactionReceipt(publicClient, {
@@ -290,7 +297,7 @@ export async function executeBuyFlow(
         depositAmount,
         minAmountOut,
       },
-      userAddress,
+      userAddress
     );
 
     onStatusUpdate?.('Waiting for buy confirmation...');
@@ -337,7 +344,7 @@ export async function executeSellFlow(
       tokenToSell,
       proxyAddress,
       userAddress,
-      depositAmount,
+      depositAmount
     );
 
     let approvalHash: string | undefined;
@@ -349,7 +356,7 @@ export async function executeSellFlow(
         tokenToSell,
         proxyAddress,
         depositAmount,
-        userAddress,
+        userAddress
       );
 
       onStatusUpdate?.('Waiting for approval confirmation...');
@@ -376,7 +383,7 @@ export async function executeSellFlow(
         depositAmount,
         minAmountOut,
       },
-      userAddress,
+      userAddress
     );
 
     onStatusUpdate?.('Waiting for sell confirmation...');
@@ -403,8 +410,10 @@ export async function executeSellFlow(
       // Find WPOL transfer to user
       const wpolTransferLogs = sellReceiptFull.logs.filter(
         (log: any) =>
-          log.address.toLowerCase() === config.BONDING_CURVE_COLLATERAL_TOKEN.toLowerCase() &&
-          log.topics[0] === '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+          log.address.toLowerCase() ===
+            config.BONDING_CURVE_COLLATERAL_TOKEN.toLowerCase() &&
+          log.topics[0] ===
+            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
       );
 
       const userTransferLog = wpolTransferLogs.find((log: any) => {

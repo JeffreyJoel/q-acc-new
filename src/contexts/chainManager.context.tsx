@@ -1,9 +1,11 @@
-import { createContext, useContext, useMemo } from "react";
-import { useWallets } from "@privy-io/react-auth";
-import { useAccount, useChainId } from "wagmi";
-import type { Chain } from "viem";
-import { polygon } from "viem/chains";
-import config from "@/config/configuration";
+import { createContext, useContext, useMemo } from 'react';
+
+import { useWallets } from '@privy-io/react-auth';
+import type { Chain } from 'viem';
+import { polygon } from 'viem/chains';
+import { useAccount, useChainId } from 'wagmi';
+
+import config from '@/config/configuration';
 
 interface ChainContextValue {
   chainId?: number;
@@ -17,12 +19,14 @@ const ChainContext = createContext<ChainContextValue | null>(null);
 export const useChainManager = (): ChainContextValue => {
   const ctx = useContext(ChainContext);
   if (!ctx) {
-    throw new Error("useChainManager must be used inside ChainProvider");
+    throw new Error('useChainManager must be used inside ChainProvider');
   }
   return ctx;
 };
 
-export const ChainProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ChainProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { wallets, ready } = useWallets();
   const activeWallet = wallets?.[0];
   const { isConnected } = useAccount();
@@ -43,10 +47,10 @@ export const ChainProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       chainId = polygon.id;
     }
 
-    const chain = allChains.find((c) => c.id === chainId) || polygon;
+    const chain = allChains.find(c => c.id === chainId) || polygon;
 
     const switchChain = async (id: number) => {
-      if (!activeWallet) throw new Error("No active wallet to switch chain");
+      if (!activeWallet) throw new Error('No active wallet to switch chain');
       await activeWallet.switchChain(id);
     };
 
@@ -58,5 +62,7 @@ export const ChainProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   }, [activeWallet, ready, allChains, isConnected, wagmiChainId]);
 
-  return <ChainContext.Provider value={value}>{children}</ChainContext.Provider>;
+  return (
+    <ChainContext.Provider value={value}>{children}</ChainContext.Provider>
+  );
 };

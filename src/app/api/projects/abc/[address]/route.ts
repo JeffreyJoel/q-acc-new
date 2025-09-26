@@ -1,7 +1,9 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { getMongoDB } from '@/lib/db';
-import { ABC_LAUNCH_COLLECTION } from '@/lib/constants/abc';
+
 import { Collection } from 'mongodb';
+
+import { ABC_LAUNCH_COLLECTION } from '@/lib/constants/abc';
+import { getMongoDB } from '@/lib/db';
 
 export interface Abc {
   tokenTicker: string;
@@ -17,7 +19,7 @@ export interface Abc {
 }
 
 async function getProjectAbcLaunchData(
-  projectAddress: string,
+  projectAddress: string
 ): Promise<Abc | null> {
   try {
     const db = await getMongoDB();
@@ -50,7 +52,7 @@ async function getProjectAbcLaunchData(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { address: string } },
+  { params }: { params: { address: string } }
 ) {
   try {
     const address = params.address;
@@ -58,16 +60,18 @@ export async function GET(
     if (!address) {
       return NextResponse.json(
         { error: 'Missing address parameter' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const result = await getProjectAbcLaunchData("0x06ee820a94d7f23d3d3468a159737287059edddf");
+    const result = await getProjectAbcLaunchData(
+      '0x06ee820a94d7f23d3d3468a159737287059edddf'
+    );
 
     if (!result) {
       return NextResponse.json(
         { error: `ABC data not found for project address: ${address}` },
-        { status: 404 },
+        { status: 404 }
       );
     }
     return NextResponse.json(result, { status: 200 });
@@ -75,10 +79,10 @@ export async function GET(
     console.error('Error in GET /api/projects/abc/[address] handler:', error);
     return NextResponse.json(
       { error: 'Internal Server Error' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic'; 
+export const dynamic = 'force-dynamic';

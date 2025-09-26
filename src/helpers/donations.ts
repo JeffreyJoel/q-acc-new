@@ -12,7 +12,7 @@ export const groupDonationsByProject = (donations: any[]) => {
       grouped[projectId].push(donation);
       return grouped;
     },
-    {} as Record<number, any[]>,
+    {} as Record<number, any[]>
   );
 };
 
@@ -42,7 +42,7 @@ export const calculateLockedRewardTokenAmount = (
   rewardTokenAmount: number,
   rewardStreamStart: Date,
   rewardStreamEnd: Date,
-  cliff: number,
+  cliff: number
 ) => {
   const now = new Date();
   const streamStart = new Date(rewardStreamStart);
@@ -70,7 +70,7 @@ export const calculateLockedRewardTokenAmount = (
 // Calculate claimable reward token amount
 export const calculateClaimableRewardTokenAmount = (
   rewardTokenAmount: number,
-  lockedRewardTokenAmount: number | null,
+  lockedRewardTokenAmount: number | null
 ) => {
   if (rewardTokenAmount === undefined || lockedRewardTokenAmount === null) {
     return 0;
@@ -93,7 +93,7 @@ export const calculateTotalDonations = (donations: any[]) => {
  */
 export const formatAmount = (
   number: number | null | undefined,
-  fractionDigits: number = 2, // Default fraction digits
+  fractionDigits: number = 2 // Default fraction digits
 ): string => {
   if (typeof number !== 'number' || isNaN(number)) {
     return '---';
@@ -122,7 +122,7 @@ export const formatNumber = (number?: number) => {
 
 export const fetchDonationStatus = async (
   userId: number,
-  transactionHash: string,
+  transactionHash: string
 ) => {
   try {
     // Assuming your API endpoint to get user donations is /api/donations/user/:userId
@@ -130,7 +130,7 @@ export const fetchDonationStatus = async (
 
     // Find the donation with the matching transactionHash
     const donation = response?.donations?.find(
-      (donation: any) => donation.transactionId === transactionHash,
+      (donation: any) => donation.transactionId === transactionHash
     );
     return donation || null; // Return the donation if found, otherwise return null
   } catch (error) {

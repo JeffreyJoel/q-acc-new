@@ -1,9 +1,9 @@
 'use server';
 
-// eslint-disable-next-line import/named
 import { v4 as uuidv4 } from 'uuid';
-import { getMongoDB } from '@/lib/db';
+
 import { PRIVADO_LINK_COLLECTION_NAME } from '@/lib/constants/privado';
+import { getMongoDB } from '@/lib/db';
 import { IPrivadoStoredData } from '@/types/privado.type';
 
 export async function generatePrivadoUuid(data: object) {
@@ -22,7 +22,7 @@ export async function generatePrivadoUuid(data: object) {
     }
 
     const collection = db.collection<IPrivadoStoredData>(
-      PRIVADO_LINK_COLLECTION_NAME,
+      PRIVADO_LINK_COLLECTION_NAME
     );
 
     // Insert the data with a 'createdAt' field

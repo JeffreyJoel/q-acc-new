@@ -1,22 +1,25 @@
-"use client";
-import { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
-// import DonateNavbar from './DonatePageNavbar';
-import DonatePageBody from "./DonatePageBody";
-import { checkUserOwnsNFT } from "@/helpers/token";
+'use client';
+import { useEffect, useState } from 'react';
 
-import { useDonateContext } from "@/contexts/donation.context";
-import { useFetchActiveRoundDetails } from "@/hooks/useRounds";
-import { InfoModal } from "../modals/InfoModal";
-import DonatePageLoader from "../loaders/DonatePageLoader";
-import { WalletNotConnected } from "../shared/wallet/WalletNotConnected";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from '@privy-io/react-auth';
+import { useAccount } from 'wagmi';
+
+// import DonateNavbar from './DonatePageNavbar';
+import { useDonateContext } from '@/contexts/donation.context';
+import { checkUserOwnsNFT } from '@/helpers/token';
+import { useFetchActiveRoundDetails } from '@/hooks/useRounds';
+
+import DonatePageLoader from '../loaders/DonatePageLoader';
+import { InfoModal } from '../modals/InfoModal';
+import { WalletNotConnected } from '../shared/wallet/WalletNotConnected';
+
+import DonatePageBody from './DonatePageBody';
 // import { ConnectModal } from '../ConnectModal';
 
 const DonateIndex = () => {
   const [ownsNFT, setOwnsNFT] = useState(false);
   const { address, isConnected } = useAccount();
-  const { authenticated } = usePrivy()
+  const { authenticated } = usePrivy();
   const { projectData } = useDonateContext();
   const { data: activeRoundDetails } = useFetchActiveRoundDetails();
   const [loading, setLoading] = useState(true);
@@ -37,29 +40,29 @@ const DonateIndex = () => {
     checkNFT();
   }, [projectData?.abc?.nftContractAddress, address, ownsNFT]);
 
-    if (!isConnected || !authenticated) {
-      return (
-        <>
+  if (!isConnected || !authenticated) {
+    return (
+      <>
         <WalletNotConnected />
-        </>
-      );
-    }
+      </>
+    );
+  }
   if (loading) {
     return <DonatePageLoader />;
   }
-  if (activeRoundDetails?.__typename === "EarlyAccessRound" && !ownsNFT) {
+  if (activeRoundDetails?.__typename === 'EarlyAccessRound' && !ownsNFT) {
     return (
       <InfoModal
         isOpen={true}
         onClose={() => true}
-        title="Missing Required NFT"
+        title='Missing Required NFT'
         description="You're logged in with an address that does not have the early-access NFT for this q/acc project. Early access is invite-only, and you need to be invited directly by the project team."
       />
     );
   }
 
   return (
-    <div className="mt-32 px-4 md:px-0 mx-auto w-full max-w-7xl">
+    <div className='mt-32 px-4 md:px-0 mx-auto w-full max-w-7xl'>
       <DonatePageBody setIsConfirming={setIsConfirming} />
     </div>
   );

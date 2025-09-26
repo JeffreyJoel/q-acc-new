@@ -1,9 +1,11 @@
 'use server';
 
-import { Address } from 'viem';
-import { Db } from 'mongodb';
-import { getMongoDB } from '@/lib/db';
 import { unstable_cache } from 'next/cache';
+
+import { Db } from 'mongodb';
+import { Address } from 'viem';
+
+import { getMongoDB } from '@/lib/db';
 
 export type AddressWhitelist = {
   deployerEOA: Address;
@@ -40,11 +42,11 @@ const cachedCheckWhitelist = unstable_cache(
 );
 
 export async function checkWhitelist(
-  projectOwner?: Address,
+  projectOwner?: Address
 ): Promise<AddressWhitelist | null> {
   if (!projectOwner) {
     return null;
   }
-  
+
   return cachedCheckWhitelist(projectOwner);
 }

@@ -106,14 +106,14 @@ export const GET_QACC_ROUND_STATS = /* GraphQL */ `
 
 export const GET_VESTING_SCHEDULES = /* GraphQL */ `
   query {
-      vestingSchedules{
-        id
-        name
-        start
-        cliff
-        end
-        createdAt
-        updatedAt
+    vestingSchedules {
+      id
+      name
+      start
+      cliff
+      end
+      createdAt
+      updatedAt
     }
   }
 `;

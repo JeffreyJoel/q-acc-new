@@ -1,5 +1,6 @@
-import { Address, Chain as viemChain } from 'viem';
 import { Chain } from '@reown/appkit/networks';
+import { Address, Chain as viemChain } from 'viem';
+
 import {
   PrivadoContractMethodV1,
   PrivadoContractMethodV2,

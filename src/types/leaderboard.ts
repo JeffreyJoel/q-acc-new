@@ -9,4 +9,4 @@ export interface LeaderboardUser {
   walletAddress: string;
   rank: number;
   username?: string | null;
-} 
+}

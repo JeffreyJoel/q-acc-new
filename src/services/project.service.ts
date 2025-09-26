@@ -1,7 +1,5 @@
 import { Address } from 'viem';
-import { requestGraphQL } from '../helpers/request';
-import config from '../config/configuration';
-import { IProject, IProjectCreation } from '../types/project.type';
+
 import {
   CREATE_PROJECT,
   GET_ALL_PROJECTS,
@@ -12,6 +10,10 @@ import {
   GET_PROJECTS_COUNT_BY_USER_ID,
   UPDATE_PROJECT_BY_ID,
 } from '@/queries/project.query';
+
+import config from '../config/configuration';
+import { requestGraphQL } from '../helpers/request';
+import { IProject, IProjectCreation } from '../types/project.type';
 import type { IGivethUser } from '../types/user.type';
 
 export const createProject = async (project: IProjectCreation) => {
@@ -21,7 +23,7 @@ export const createProject = async (project: IProjectCreation) => {
       { project },
       {
         url: config.GIVETH_GQL_ENDPOINT,
-      },
+      }
     );
     return res?.userByAddress;
   } catch (error) {
@@ -39,7 +41,7 @@ export const fetchProjectById = async (id: number, address?: Address) => {
       },
       {
         auth: false,
-      },
+      }
     );
     return res?.projectById;
   } catch (error) {
@@ -57,7 +59,7 @@ export const fetchProjectBySlug = async (slug: string, address?: Address) => {
       },
       {
         auth: false,
-      },
+      }
     );
     return res?.projectBySlug;
   } catch (error) {
@@ -77,10 +79,10 @@ export const fetchAllProjects = async () => {
       {},
       {
         auth: false,
-      },
+      }
     );
     res?.allProjects.projects.sort((a, b) =>
-      a.seasonNumber < b.seasonNumber ? 1 : -1,
+      a.seasonNumber < b.seasonNumber ? 1 : -1
     );
 
     return res?.allProjects;
@@ -91,7 +93,7 @@ export const fetchAllProjects = async () => {
 
 export const updateProjectById = async (
   projectId: number,
-  newProjectData: any,
+  newProjectData: any
 ) => {
   try {
     const res = await requestGraphQL<{ updateProject: any }>(
@@ -102,7 +104,7 @@ export const updateProjectById = async (
       },
       {
         auth: true,
-      },
+      }
     );
     return res?.updateProject;
   } catch (error) {
@@ -111,7 +113,7 @@ export const updateProjectById = async (
 };
 
 export const fetchProjectByUserId = async (
-  userId: number,
+  userId: number
 ): Promise<IProject | undefined> => {
   try {
     const res = await requestGraphQL<{
@@ -126,7 +128,7 @@ export const fetchProjectByUserId = async (
       },
       {
         auth: true,
-      },
+      }
     );
     return res?.projectsByUserId.projects[0];
   } catch (error) {
@@ -148,7 +150,7 @@ export const fetchProjectsCountByUserId = async (userId: number) => {
       },
       {
         auth: true,
-      },
+      }
     );
     return res?.projectsByUserId.totalCount;
   } catch (error) {
@@ -166,7 +168,7 @@ export const fetchProjectMetadata = async (slug: string, address?: Address) => {
       },
       {
         auth: true,
-      },
+      }
     );
     return res?.projectBySlug;
   } catch (error) {

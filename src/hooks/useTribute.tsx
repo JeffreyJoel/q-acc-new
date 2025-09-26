@@ -1,18 +1,20 @@
 import { useMemo } from 'react';
-import { ethers, BigNumberish, Contract } from 'ethers';
+
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { usePublicClient } from 'wagmi';
+import { ethers, BigNumberish, Contract } from 'ethers';
 import { Address, encodeFunctionData, getContract } from 'viem';
+import { usePublicClient } from 'wagmi';
+
 import config from '@/config/configuration';
-import { fundingManagerAbi, roleModuleAbi } from '@/lib/abi/inverter';
 import { useZeroDev } from '@/contexts/ZeroDevContext';
+import { fundingManagerAbi, roleModuleAbi } from '@/lib/abi/inverter';
 import { getClaimedTributesAndMintedTokenAmounts } from '@/services/tributeCollected.service';
 
 const provider = new ethers.JsonRpcProvider(config.NETWORK_RPC_ADDRESS);
 
 export const useClaimedTributesAndMintedTokenAmounts = (
   orchestratorAddress?: string,
-  projectAddress?: string,
+  projectAddress?: string
 ) => {
   const query = useQuery<
     {
@@ -29,7 +31,7 @@ export const useClaimedTributesAndMintedTokenAmounts = (
     queryFn: () =>
       getClaimedTributesAndMintedTokenAmounts(
         orchestratorAddress,
-        projectAddress,
+        projectAddress
       ),
     gcTime: 1000 * 60, // 1 minute
     enabled: !!orchestratorAddress && !!projectAddress, // Run only if orchestratorAddress and projectAddress is provided
@@ -83,7 +85,7 @@ export const useClaimCollectedFee = ({
       if (!kernelClient) {
         throw new Error('Smart account not initialized');
       }
-      
+
       if (isInitializing) {
         throw new Error('Smart account is still initializing');
       }
@@ -97,16 +99,16 @@ export const useClaimCollectedFee = ({
         abi: roleModuleAbi,
         client: kernelClient,
       });
-      
+
       const encoded = encodeFunctionData({
         abi: fundingManagerAbi,
         functionName: 'withdrawProjectCollateralFee',
         args: [feeRecipient, amount],
       });
-      
+
       const tx = await rolesModuleInstance.write.execTransactionFromModule(
         [fundingManagerAddress, 0, encoded, 0],
-        { gas: 1000000 },
+        { gas: 1000000 }
       );
 
       await publicClient.waitForTransactionReceipt({
@@ -118,8 +120,8 @@ export const useClaimCollectedFee = ({
     onSuccess,
   });
 
-  return { 
+  return {
     claim,
-    isSmartAccountReady: !!kernelClient && !isInitializing 
+    isSmartAccountReady: !!kernelClient && !isInitializing,
   };
 };

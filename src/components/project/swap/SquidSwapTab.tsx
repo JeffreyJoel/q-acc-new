@@ -1,24 +1,27 @@
-"use client";
+'use client';
 
-import { useState, useEffect, memo } from "react";
-import Image from "next/image";
-import { ArrowDown, Loader2 } from "lucide-react";
-import { usePrivy } from "@privy-io/react-auth";
-import { useChainManager } from "@/contexts/chainManager.context";
-import { Address } from "viem";
+import { useState, useEffect, memo } from 'react';
+
+import Image from 'next/image';
+
+import { usePrivy } from '@privy-io/react-auth';
+import { ArrowDown, Loader2 } from 'lucide-react';
+import { useForm, Controller } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Address } from 'viem';
+
+import SelectChainDialog from '@/components/modals/SelectChainDialog';
+import { POLYGON_POS_CHAIN_IMAGE } from '@/components/project/project-details/ProjectDonationTable';
+import ConnectWalletButton from '@/components/shared/wallet/SwapConnectWalletButton';
+import config from '@/config/configuration';
+import { useChainManager } from '@/contexts/chainManager.context';
+import { formatBalance } from '@/helpers/token';
+import { useGetCurrentTokenPrice } from '@/hooks/useGetCurrentTokenPrice';
+import useSquidSwap from '@/hooks/useSquidSwap';
 import {
   useTokenBalanceWithDecimals,
   useFetchPOLPriceSquid,
-} from "@/hooks/useTokens";
-import { formatBalance } from "@/helpers/token";
-import { useGetCurrentTokenPrice } from "@/hooks/useGetCurrentTokenPrice";
-import config from "@/config/configuration";
-import { POLYGON_POS_CHAIN_IMAGE } from "@/components/project/project-details/ProjectDonationTable";
-import useSquidSwap from "@/hooks/useSquidSwap";
-import ConnectWalletButton from "@/components/shared/wallet/SwapConnectWalletButton";
-import { toast } from "sonner";
-import SelectChainDialog from "@/components/modals/SelectChainDialog";
-import { useForm, Controller } from "react-hook-form";
+} from '@/hooks/useTokens';
 
 interface PayReceiveRowProps {
   label: string;
@@ -52,53 +55,53 @@ const PayReceiveRow = memo(
     onOpenModal,
     hasError = false,
   }: PayReceiveRowProps) => (
-    <div className="flex items-center justify-between bg-black px-4 py-6 h-full rounded-[18px] border border-white/10 text-white">
+    <div className='flex items-center justify-between bg-black px-4 py-6 h-full rounded-[18px] border border-white/10 text-white'>
       <div>
-        <span className="text-qacc-gray-light font-bold uppercase text-xs">
+        <span className='text-qacc-gray-light font-bold uppercase text-xs'>
           {label}
         </span>
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className='flex items-center gap-3'>
+          <div className='relative'>
             <Image
               src={iconSrc}
               alt={tokenSymbol}
               width={24}
               height={24}
-              className="rounded-full cursor-pointer"
+              className='rounded-full cursor-pointer'
               onClick={isInput ? onOpenModal : undefined}
             />
             {chainIconSrc && (
               <Image
                 src={chainIconSrc}
-                alt="Chain"
+                alt='Chain'
                 width={12}
                 height={12}
-                className="absolute -bottom-1 -right-1 rounded-full border border-black"
+                className='absolute -bottom-1 -right-1 rounded-full border border-black'
               />
             )}
           </div>
-          <span className="font-medium text-xl">{tokenSymbol}</span>
+          <span className='font-medium text-xl'>{tokenSymbol}</span>
         </div>
       </div>
-      <div className="text-right">
+      <div className='text-right'>
         {isInput ? (
           <>
-            <div className="text-xs text-white/40 mt-1">
-              Balance: {Number(balance) || "0.00"}
+            <div className='text-xs text-white/40 mt-1'>
+              Balance: {Number(balance) || '0.00'}
             </div>
             {control && (
               <Controller
                 control={control}
-                name="swapAmount"
+                name='swapAmount'
                 render={({ field }) => (
                   <input
-                    type="number"
-                    placeholder="0.0"
+                    type='number'
+                    placeholder='0.0'
                     {...field}
                     className={`bg-transparent text-xl font-bold text-right focus:outline-none w-32 ${
-                      hasError ? "text-red-500" : "text-white"
+                      hasError ? 'text-red-500' : 'text-white'
                     }`}
-                    inputMode="decimal"
+                    inputMode='decimal'
                   />
                 )}
               />
@@ -106,22 +109,22 @@ const PayReceiveRow = memo(
           </>
         ) : (
           <>
-            <div className="text-xs text-white/40 mt-1">
-              Balance: {balance || "0.00"}
+            <div className='text-xs text-white/40 mt-1'>
+              Balance: {balance || '0.00'}
             </div>
-            <div className="text-xl font-bold">
+            <div className='text-xl font-bold'>
               {isQuoting ? (
-                <div className="flex items-center gap-2 justify-end">
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                <div className='flex items-center gap-2 justify-end'>
+                  <Loader2 className='w-4 h-4 animate-spin' />
                 </div>
               ) : (
-                estimatedAmount || "0"
+                estimatedAmount || '0'
               )}
             </div>
           </>
         )}
 
-        <div className="text-xs text-white/40 mt-6">
+        <div className='text-xs text-white/40 mt-6'>
           ~${(usdValue || 0).toFixed(2)}
         </div>
       </div>
@@ -136,23 +139,23 @@ interface QuickSwapTabProps {
 }
 
 export default function SquidSwapTab({
-  receiveTokenAddress = "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
-  receiveTokenSymbol = "WMATIC",
-  receiveTokenIcon = "https://raw.githubusercontent.com/axelarnetwork/axelar-configs/main/images/tokens/wmatic.svg",
+  receiveTokenAddress = '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270',
+  receiveTokenSymbol = 'WMATIC',
+  receiveTokenIcon = 'https://raw.githubusercontent.com/axelarnetwork/axelar-configs/main/images/tokens/wmatic.svg',
 }: QuickSwapTabProps) {
   const { data: polUsdPrice } = useFetchPOLPriceSquid();
 
   const DEFAULT_FROM_CHAIN_DETAILS = {
-    chainId: "137",
+    chainId: '137',
     chainIcon: POLYGON_POS_CHAIN_IMAGE,
-    tokenAddress: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-    tokenSymbol: "POL",
+    tokenAddress: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+    tokenSymbol: 'POL',
     tokenIcon: POLYGON_POS_CHAIN_IMAGE,
     tokenDecimals: 18,
     tokenUsdPrice: polUsdPrice,
     blockExplorerUrl: config.SCAN_URL,
   };
-  const [slippageTolerance, setSlippageTolerance] = useState<string>("0.5%");
+  const [slippageTolerance, setSlippageTolerance] = useState<string>('0.5%');
   const [isQuoteValid, setIsQuoteValid] = useState<boolean>(false);
   const [receiveTokenDecimals, setReceiveTokenDecimals] = useState<number>(18);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -161,7 +164,7 @@ export default function SquidSwapTab({
   const [isChainChanging, setIsChainChanging] = useState(false);
 
   const { control, watch, reset } = useForm({
-    defaultValues: { swapAmount: "" },
+    defaultValues: { swapAmount: '' },
   });
 
   const { switchChain } = useChainManager();
@@ -179,21 +182,23 @@ export default function SquidSwapTab({
     Number(selectedFrom.chainId)
   );
 
-  const fromBalanceRaw = fromBalanceData?.formattedBalance ?? "0";
-  const formattedFromBalance = isChainChanging ? "0" : formatBalance(parseFloat(fromBalanceRaw));
+  const fromBalanceRaw = fromBalanceData?.formattedBalance ?? '0';
+  const formattedFromBalance = isChainChanging
+    ? '0'
+    : formatBalance(parseFloat(fromBalanceRaw));
 
   // Validate balance
   useEffect(() => {
     if (
-      !watch("swapAmount") ||
-      isNaN(parseFloat(watch("swapAmount"))) ||
-      parseFloat(watch("swapAmount")) <= 0
+      !watch('swapAmount') ||
+      isNaN(parseFloat(watch('swapAmount'))) ||
+      parseFloat(watch('swapAmount')) <= 0
     ) {
       setBalanceError(null);
       return;
     }
 
-    if (parseFloat(watch("swapAmount")) > parseFloat(fromBalanceRaw)) {
+    if (parseFloat(watch('swapAmount')) > parseFloat(fromBalanceRaw)) {
       setBalanceError(
         `Insufficient ${selectedFrom.tokenSymbol} balance. Available: ${formattedFromBalance} ${selectedFrom.tokenSymbol}`
       );
@@ -201,15 +206,15 @@ export default function SquidSwapTab({
       setBalanceError(null);
     }
   }, [
-    watch("swapAmount"),
+    watch('swapAmount'),
     fromBalanceRaw,
     formattedFromBalance,
     selectedFrom.tokenSymbol,
   ]);
 
   useEffect(() => {
-    if (fromBalanceData && typeof fromBalanceData.decimals === "number") {
-      setSelectedFrom((prev) => ({
+    if (fromBalanceData && typeof fromBalanceData.decimals === 'number') {
+      setSelectedFrom(prev => ({
         ...prev,
         tokenDecimals: fromBalanceData.decimals,
       }));
@@ -235,7 +240,7 @@ export default function SquidSwapTab({
   useEffect(() => {
     if (
       receiveTokenBalance &&
-      typeof receiveTokenBalance.decimals === "number"
+      typeof receiveTokenBalance.decimals === 'number'
     ) {
       setReceiveTokenDecimals(receiveTokenBalance.decimals);
     }
@@ -256,7 +261,7 @@ export default function SquidSwapTab({
   } = useSquidSwap();
 
   // Get swapAmount from form
-  const swapAmount = watch("swapAmount");
+  const swapAmount = watch('swapAmount');
 
   // Effect to get quote when amount changes
   useEffect(() => {
@@ -276,11 +281,11 @@ export default function SquidSwapTab({
             amount: swapAmount,
             fromDecimals: selectedFrom.tokenDecimals,
             toDecimals: receiveTokenDecimals,
-            slippageTolerance: parseFloat(slippageTolerance.replace("%", "")),
+            slippageTolerance: parseFloat(slippageTolerance.replace('%', '')),
           });
           setIsQuoteValid(true);
         } catch (error) {
-          console.error("Quote error:", error);
+          console.error('Quote error:', error);
           setIsQuoteValid(false);
         }
       } else {
@@ -301,7 +306,7 @@ export default function SquidSwapTab({
 
   useEffect(() => {
     if (swapError) {
-      if (!swapError.includes("not supported")) {
+      if (!swapError.includes('not supported')) {
         toast.error(swapError);
       }
     }
@@ -323,18 +328,14 @@ export default function SquidSwapTab({
     if (amount === undefined || amount === null) return 0;
     if (!tokenUsdPrice) return 0;
     const numericAmount =
-      typeof amount === "string" ? parseFloat(amount) : amount;
+      typeof amount === 'string' ? parseFloat(amount) : amount;
     if (isNaN(numericAmount)) return 0;
     return numericAmount * tokenUsdPrice;
   };
 
   const handleSwap = async () => {
     if (!swapAmount || !isQuoteValid || !selectedFrom) {
-      setTimeout(
-        () =>
-          toast.error("Please enter a valid amount"),
-        2000
-      );
+      setTimeout(() => toast.error('Please enter a valid amount'), 2000);
       return;
     }
 
@@ -346,46 +347,46 @@ export default function SquidSwapTab({
         amount: swapAmount,
         fromDecimals: selectedFrom.tokenDecimals,
         toDecimals: receiveTokenDecimals,
-        slippageTolerance: parseFloat(slippageTolerance.replace("%", "")),
+        slippageTolerance: parseFloat(slippageTolerance.replace('%', '')),
       });
 
       if (txHash) {
-        reset({ swapAmount: "" });
+        reset({ swapAmount: '' });
         setIsQuoteValid(false);
 
         // Refresh balances
         refetchFromBalance();
         refetchReceiveBalance();
-        toast.success("Swap successful!", {
+        toast.success('Swap successful!', {
           action: {
-            label: "View on Explorer",
+            label: 'View on Explorer',
             onClick: () =>
               window.open(
                 `${selectedFrom.blockExplorerUrl}tx/${txHash}`,
-                "_blank"
+                '_blank'
               ),
           },
         });
         handleChainSwitch();
       }
     } catch (error) {
-      console.error("Swap execution error:", error);
+      console.error('Swap execution error:', error);
     } finally {
       handleChainSwitch();
     }
   };
 
   const getSwapButtonText = () => {
-    if (!authenticated) return "CONNECT WALLET";
-    if (!isInitialized) return "INITIALIZING...";
-    if (isQuoting) return "GETTING QUOTE...";
-    if (isApproving) return "APPROVING...";
-    if (isSwapping) return "SWAPPING...";
-    if (!swapAmount || parseFloat(swapAmount) <= 0) return "ENTER AMOUNT";
-    if (swapError && swapError.includes("not supported"))
-      return "TOKEN NOT SUPPORTED";
-    if (!isQuoteValid) return "INVALID AMOUNT";
-    return "SWAP";
+    if (!authenticated) return 'CONNECT WALLET';
+    if (!isInitialized) return 'INITIALIZING...';
+    if (isQuoting) return 'GETTING QUOTE...';
+    if (isApproving) return 'APPROVING...';
+    if (isSwapping) return 'SWAPPING...';
+    if (!swapAmount || parseFloat(swapAmount) <= 0) return 'ENTER AMOUNT';
+    if (swapError && swapError.includes('not supported'))
+      return 'TOKEN NOT SUPPORTED';
+    if (!isQuoteValid) return 'INVALID AMOUNT';
+    return 'SWAP';
   };
 
   const handleChainSwitch = () => {
@@ -396,8 +397,8 @@ export default function SquidSwapTab({
       switchChain(Number(DEFAULT_FROM_CHAIN_DETAILS.chainId));
       setTimeout(
         () =>
-          toast.info("Switched back to Polygon network", {
-            description: "Primary swap network restored.",
+          toast.info('Switched back to Polygon network', {
+            description: 'Primary swap network restored.',
           }),
         1000
       );
@@ -411,7 +412,7 @@ export default function SquidSwapTab({
     !swapAmount ||
     parseFloat(swapAmount) <= 0 ||
     !isQuoteValid ||
-    Boolean(swapError && swapError.includes("not supported")) ||
+    Boolean(swapError && swapError.includes('not supported')) ||
     !!balanceError;
 
   // Cleanup: when component unmounts, switch back to Polygon if needed
@@ -425,9 +426,9 @@ export default function SquidSwapTab({
 
   return (
     <>
-      <div className="space-y-1">
+      <div className='space-y-1'>
         <PayReceiveRow
-          label="PAY"
+          label='PAY'
           tokenSymbol={selectedFrom.tokenSymbol}
           iconSrc={selectedFrom.tokenIcon}
           chainIconSrc={selectedFrom.chainIcon}
@@ -442,11 +443,11 @@ export default function SquidSwapTab({
           hasError={!!balanceError}
           onOpenModal={() => setIsModalOpen(true)}
         />
-        <div className="absolute top-[265px] left-1/2 -translate-x-1/2 -translate-y-1/2 -my-6 bg-neutral-800 border-neutral-900 backdrop-blur-[40px] w-8 h-8 rounded-lg flex items-center justify-center">
-          <ArrowDown className="w-4 h-4 text-qacc-gray-light" />
+        <div className='absolute top-[265px] left-1/2 -translate-x-1/2 -translate-y-1/2 -my-6 bg-neutral-800 border-neutral-900 backdrop-blur-[40px] w-8 h-8 rounded-lg flex items-center justify-center'>
+          <ArrowDown className='w-4 h-4 text-qacc-gray-light' />
         </div>
         <PayReceiveRow
-          label="RECEIVE"
+          label='RECEIVE'
           tokenSymbol={receiveTokenSymbol}
           iconSrc={receiveTokenIcon}
           isLoading={isReceiveTokenLoading}
@@ -464,7 +465,7 @@ export default function SquidSwapTab({
               : 0
           }
           estimatedAmount={
-            quote?.toAmount ? formatBalance(parseFloat(quote.toAmount)) : "0.0"
+            quote?.toAmount ? formatBalance(parseFloat(quote.toAmount)) : '0.0'
           }
         />
       </div>
@@ -478,20 +479,20 @@ export default function SquidSwapTab({
           className={`mt-4 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full transition-all flex items-center justify-center gap-2  disabled:opacity-50`}
         >
           {(isSwapping || isApproving) && (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className='w-4 h-4 animate-spin' />
           )}
           {getSwapButtonText()}
         </button>
       )}
 
-      <div className="w-full text-xs text-white/40 text-center mt-1 flex items-center justify-center gap-1">
+      <div className='w-full text-xs text-white/40 text-center mt-1 flex items-center justify-center gap-1'>
         Powered by
         <Image
-          src="/images/logos/squidrouter-logo.svg"
-          alt="Squid Router"
+          src='/images/logos/squidrouter-logo.svg'
+          alt='Squid Router'
           width={100}
           height={80}
-          className="ml-1.5 w-7 h-auto opacity-30"
+          className='ml-1.5 w-7 h-auto opacity-30'
         />
       </div>
       <SelectChainDialog

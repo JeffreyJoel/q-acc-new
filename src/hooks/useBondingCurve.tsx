@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
+
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Address, getContract, parseUnits, formatUnits } from 'viem';
+import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
+
 import bondingCurveABI from '@/lib/abi/bondingCurve';
 
 export interface BondingCurveData {
@@ -36,7 +38,7 @@ const useDebounce = (value: string, delay: number) => {
 export const useCalculatePurchaseReturn = (
   contractAddress: string,
   depositAmount: string,
-  debounceMs: number = 500,
+  debounceMs: number = 500
 ) => {
   const publicClient = usePublicClient();
   const debouncedAmount = useDebounce(depositAmount, debounceMs);
@@ -79,7 +81,7 @@ export const useCalculatePurchaseReturn = (
 export const useCalculateSaleReturn = (
   contractAddress: string,
   depositAmount: string,
-  debounceMs: number = 500,
+  debounceMs: number = 500
 ) => {
   const publicClient = usePublicClient();
   const debouncedAmount = useDebounce(depositAmount, debounceMs);
@@ -190,15 +192,15 @@ export const useBondingCurve = (contractAddress: string) => {
             formatUnits(
               ((StaticPriceForBuying.result as bigint) * BigInt(11)) /
                 BigInt(10),
-              6,
-            ),
+              6
+            )
           ), // add 10% fee
           SellPrice: Number(
             formatUnits(
               ((StaticPriceForSelling.result as bigint) * BigInt(9)) /
                 BigInt(10),
-              6,
-            ),
+              6
+            )
           ), // deduct 10% fee
           buyIsOpen: buyIsOpen.result as boolean,
           sellIsOpen: sellIsOpen.result as boolean,
@@ -211,7 +213,7 @@ export const useBondingCurve = (contractAddress: string) => {
       enabled: !!contractAddress && !!publicClient,
       staleTime: 30000, // 30 seconds
       gcTime: 300000, // 5 minutes
-    },
+    }
   );
 
   // Buy tokens
@@ -225,7 +227,7 @@ export const useBondingCurve = (contractAddress: string) => {
     }) => {
       if (!walletClient || !contractAddress || !address)
         throw new Error(
-          'Wallet client, contract address, or user address not available',
+          'Wallet client, contract address, or user address not available'
         );
 
       const contract = getContract({
@@ -242,7 +244,7 @@ export const useBondingCurve = (contractAddress: string) => {
         {
           account: address,
           value: depositAmountWei, // For native token purchases
-        },
+        }
       );
 
       return hash;
@@ -265,7 +267,7 @@ export const useBondingCurve = (contractAddress: string) => {
     }) => {
       if (!walletClient || !contractAddress || !address)
         throw new Error(
-          'Wallet client, contract address, or user address not available',
+          'Wallet client, contract address, or user address not available'
         );
 
       const contract = getContract({
@@ -282,7 +284,7 @@ export const useBondingCurve = (contractAddress: string) => {
         {
           account: address,
           value: depositAmountWei, // For native token purchases
-        },
+        }
       );
 
       return hash;
@@ -303,7 +305,7 @@ export const useBondingCurve = (contractAddress: string) => {
     }) => {
       if (!walletClient || !contractAddress || !address)
         throw new Error(
-          'Wallet client, contract address, or user address not available',
+          'Wallet client, contract address, or user address not available'
         );
 
       const contract = getContract({
@@ -319,7 +321,7 @@ export const useBondingCurve = (contractAddress: string) => {
         [depositAmountWei, minAmountOutWei],
         {
           account: address,
-        },
+        }
       );
 
       return hash;
@@ -342,7 +344,7 @@ export const useBondingCurve = (contractAddress: string) => {
     }) => {
       if (!walletClient || !contractAddress || !address)
         throw new Error(
-          'Wallet client, contract address, or user address not available',
+          'Wallet client, contract address, or user address not available'
         );
 
       const contract = getContract({
@@ -358,7 +360,7 @@ export const useBondingCurve = (contractAddress: string) => {
         [receiver as Address, depositAmountWei, minAmountOutWei],
         {
           account: address,
-        },
+        }
       );
 
       return hash;

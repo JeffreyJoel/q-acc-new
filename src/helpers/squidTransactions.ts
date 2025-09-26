@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { BrowserProvider, ethers, JsonRpcSigner } from 'ethers';
-import config from '@/config/configuration';
-import { getConnectorClient } from 'wagmi/actions';
 import { Account, Chain, Transport } from 'viem';
 import { Client } from 'viem';
+import { getConnectorClient } from 'wagmi/actions';
+
+import config from '@/config/configuration';
 import { wagmiConfig } from '@/providers/PrivyProvider';
 const integratorId: string = config.SQUID_INTEGRATOR_ID;
-
 
 export function clientToSigner(client: Client<Transport, Chain, Account>) {
   const { account, chain, transport } = client;
@@ -21,7 +21,7 @@ export function clientToSigner(client: Client<Transport, Chain, Account>) {
 }
 export async function getEthersSigner({ chainId }: { chainId?: string } = {}) {
   const client = await getConnectorClient(wagmiConfig, {
-    chainId: chainId ? Number(chainId) as 137 | 80002 : undefined,
+    chainId: chainId ? (Number(chainId) as 137 | 80002) : undefined,
   });
   return clientToSigner(client);
 }
@@ -97,7 +97,7 @@ export const getRoute = async (params: any) => {
           'x-integrator-id': integratorId,
           'Content-Type': 'application/json',
         },
-      },
+      }
     );
     const requestId = result.headers['x-request-id'];
     return { data: result.data, requestId: requestId };
@@ -113,7 +113,7 @@ export const getRoute = async (params: any) => {
 export const approveSpending = async (
   transactionRequestTarget: string,
   fromToken: string,
-  fromAmount: string,
+  fromAmount: string
 ) => {
   const erc20Abi = [
     'function approve(address spender, uint256 amount) public returns (bool)',
@@ -127,11 +127,11 @@ export const approveSpending = async (
   try {
     const tx = await tokenContract.approve(
       transactionRequestTarget,
-      fromAmount,
+      fromAmount
     );
     await tx.wait();
     console.log(
-      `Approved ${fromAmount} tokens for ${transactionRequestTarget}`,
+      `Approved ${fromAmount} tokens for ${transactionRequestTarget}`
     );
   } catch (error) {
     console.error('Approval failed:', error);
@@ -148,7 +148,7 @@ export const getStatus = async (params: any) => {
         headers: {
           'x-integrator-id': integratorId,
         },
-      },
+      }
     );
     return result.data;
   } catch (error: any) {
@@ -163,7 +163,7 @@ export const getStatus = async (params: any) => {
 export const updateTransactionStatus = async (
   txHash: string,
   requestId: string,
-  fromChainId: string,
+  fromChainId: string
 ) => {
   const getStatusParams = {
     transactionId: txHash,
@@ -222,7 +222,7 @@ export const fetchUSDPrices = async (uniqueTokens: any) => {
             'x-integrator-id': integratorId,
             'Content-Type': 'application/json',
           },
-        },
+        }
       );
 
       const tokenData = result.data?.tokens?.[0] || {};

@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 import config from '@/config/configuration';
 
 const getClaimedTributesAndMintedTokenAmountsQuery = `
@@ -22,7 +23,7 @@ query GetTokenTotalSupplyByAddress($orchestratorAddress: String!) {
 
 export async function getClaimedTributesAndMintedTokenAmounts(
   orchestratorAddress?: string,
-  projectAddress?: string,
+  projectAddress?: string
 ): Promise<{
   claimedTributes: number;
   mintedTokenAmounts: number;
@@ -39,7 +40,7 @@ export async function getClaimedTributesAndMintedTokenAmounts(
     const projectFees = result.data.data.BondingCurve[0]?.projectFees || [];
     const claimedTributes = projectFees.reduce(
       (sum: any, fee: { amount: any }) => sum + (Number(fee.amount) || 0),
-      0,
+      0
     );
 
     const swaps = result.data.data.BondingCurve[0]?.swaps;
@@ -50,12 +51,12 @@ export async function getClaimedTributesAndMintedTokenAmounts(
           swap.swapType === 'BUY' &&
           swap.initiator.toLowerCase() === swap.recipient.toLowerCase() &&
           (!projectAddress ||
-            swap.recipient.toLowerCase() === projectAddress?.toLowerCase()),
+            swap.recipient.toLowerCase() === projectAddress?.toLowerCase())
       )
       .reduce(
         (sum: any, swap: { amountISS: number }) =>
           sum + (Number(swap.amountISS) || 0),
-        0,
+        0
       );
 
     return {
@@ -65,7 +66,7 @@ export async function getClaimedTributesAndMintedTokenAmounts(
   } catch (e) {
     console.error(
       'error in getting claimed tributes and minted ABC token amounts',
-      e,
+      e
     );
     return {
       claimedTributes: 0,

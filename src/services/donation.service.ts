@@ -1,16 +1,16 @@
-import { requestGraphQL } from "@/helpers/request";
-import { SwapData } from "@/helpers/squidTransactions";
+import { requestGraphQL } from '@/helpers/request';
+import { SwapData } from '@/helpers/squidTransactions';
 import {
   GET_PROJECT_DONATIONS_BY_ID,
   SAVE_DONATION,
   GET_PROJECT_DONATIONS_USERS_BY_ID,
   CREATE_DRAFT_DONATION,
   UPDATE_DONATION_STATUS,
-} from "@/queries/project.query";
+} from '@/queries/project.query';
 import {
   GET_USER_DONATIONS,
   GET_USER_DONATIONS_COUNT,
-} from "@/queries/user.query";
+} from '@/queries/user.query';
 
 export const fetchProjectDonationsById = async (
   projectId: number,
@@ -174,6 +174,6 @@ export const updateDonation = async (status: string, donationId: number) => {
     );
     return res?.updateDonationStatus;
   } catch (error) {
-    console.error(error, "donation", donationId);
+    console.error(error, 'donation', donationId);
   }
 };

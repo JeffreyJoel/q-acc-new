@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
+
 import { requestGraphQL } from '@/helpers/request';
 import { UPDATE_USER } from '@/queries/user.query';
 import { INewUer } from '@/types/user.type';
@@ -14,7 +15,7 @@ export const useUpdateUser = () => {
       return await requestGraphQL(
         UPDATE_USER,
         {
-          username:user.username,
+          username: user.username,
           email: user.email,
           fullName: user.fullName,
           avatar: user.avatar,
@@ -22,7 +23,7 @@ export const useUpdateUser = () => {
         },
         {
           auth: true,
-        },
+        }
       );
     },
     onMutate: async variables => {

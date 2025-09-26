@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, {
   createContext,
@@ -6,19 +6,20 @@ import React, {
   useState,
   useEffect,
   ReactNode,
-} from "react";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
-import { createPublicClient, createWalletClient, custom, http } from "viem";
-import { polygonAmoy } from "viem/chains";
-import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
+} from 'react';
+
+import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import {
   createKernelAccount,
   createKernelAccountClient,
   createZeroDevPaymasterClient,
   KernelAccountClient,
-} from "@zerodev/sdk";
-import { KERNEL_V3_1 } from "@zerodev/sdk/constants";
-import { entryPoint07Address } from "viem/account-abstraction";
+} from '@zerodev/sdk';
+import { KERNEL_V3_1 } from '@zerodev/sdk/constants';
+import { createPublicClient, createWalletClient, custom, http } from 'viem';
+import { entryPoint07Address } from 'viem/account-abstraction';
+import { polygonAmoy } from 'viem/chains';
 
 interface ZeroDevContextType {
   kernelClient: KernelAccountClient | null;
@@ -32,7 +33,7 @@ const ZeroDevContext = createContext<ZeroDevContextType | null>(null);
 export const useZeroDev = (): ZeroDevContextType => {
   const ctx = useContext(ZeroDevContext);
   if (!ctx) {
-    throw new Error("useZeroDev must be used within a ZeroDevProvider");
+    throw new Error('useZeroDev must be used within a ZeroDevProvider');
   }
   return ctx;
 };
@@ -59,16 +60,14 @@ export const ZeroDevProvider: React.FC<ZeroDevProviderProps> = ({
 
   const initializeSmartAccount = async () => {
     if (!ready || wallets.length === 0) {
-      throw new Error("Wallets not ready");
+      throw new Error('Wallets not ready');
     }
     setIsInitializing(true);
     try {
       const userAddress = user?.wallet?.address;
-      const userWallet = wallets.find(
-        (wallet) => wallet.address === userAddress
-      );
+      const userWallet = wallets.find(wallet => wallet.address === userAddress);
       if (!userWallet) {
-        throw new Error("User wallet not found");
+        throw new Error('User wallet not found');
       }
 
       const provider = await userWallet.getEthereumProvider();
@@ -90,7 +89,7 @@ export const ZeroDevProvider: React.FC<ZeroDevProviderProps> = ({
         signer: walletClient,
         entryPoint: {
           address: entryPoint07Address,
-          version: "0.7",
+          version: '0.7',
         },
         kernelVersion: KERNEL_V3_1,
       });
@@ -100,7 +99,7 @@ export const ZeroDevProvider: React.FC<ZeroDevProviderProps> = ({
         plugins: { sudo: ecdsaValidator },
         entryPoint: {
           address: entryPoint07Address,
-          version: "0.7",
+          version: '0.7',
         },
         kernelVersion: KERNEL_V3_1,
       });
@@ -125,7 +124,7 @@ export const ZeroDevProvider: React.FC<ZeroDevProviderProps> = ({
       setKernelClient(kernelClient);
       setSmartAccountAddress(account.address);
     } catch (err) {
-      console.error("Failed to initialize smart account:", err);
+      console.error('Failed to initialize smart account:', err);
       throw err;
     } finally {
       setIsInitializing(false);

@@ -1,23 +1,26 @@
 'use client';
 
+import { Loader2 } from 'lucide-react';
+import { Address } from 'viem';
+import { useAccount } from 'wagmi';
+
 import {
   EligibilityBadge,
   EligibilityBadgeStatus,
 } from '@/components/verification-badges/EligibilityBadge';
+import config from '@/config/configuration';
+import { formatAmount } from '@/helpers/donations';
 import {
   GitcoinVerificationStatus,
   useGitcoinScore,
 } from '@/hooks/useGitcoinScore';
 import { usePrivado } from '@/hooks/usePrivado';
-import config from '@/config/configuration';
-import { GitcoinLow } from './GitcoinLow';
 import { useFetchAllRoundDetails } from '@/hooks/useRounds';
 import { IQfRound } from '@/types/round.type';
-import { formatAmount } from '@/helpers/donations';
-import { useAccount } from 'wagmi';
-import { Address } from 'viem';
+
 import { Button } from '../ui/button';
-import { Loader2 } from 'lucide-react';
+
+import { GitcoinLow } from './GitcoinLow';
 
 export const GitcoinVerifySection = () => {
   const { address } = useAccount();
@@ -32,7 +35,7 @@ export const GitcoinVerifySection = () => {
   const { data: allRounds } = useFetchAllRoundDetails();
 
   const qaccRound: IQfRound | undefined = allRounds?.filter(
-    round => round.__typename === 'QfRound',
+    round => round.__typename === 'QfRound'
   )[0];
 
   let low_cap;
@@ -88,7 +91,7 @@ export const GitcoinVerifySection = () => {
             Checking...
           </div>
         ) : (
-          "Check eligibility"
+          'Check eligibility'
         )}
       </Button>
     </section>

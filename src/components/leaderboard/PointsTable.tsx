@@ -1,18 +1,27 @@
-"use client";
+'use client';
 
-import { useState, useMemo, useEffect } from "react";
-import { LeaderboardItem } from "./LeaderboardItem";
-import { useFetchLeaderBoard } from "@/hooks/useFetchLeaderBoard";
-import { SortDirection, SortField, ILeaderBoardInfo } from "@/services/points.service";
-import { Pagination } from "./Pagination";
-import { Spinner } from "../loaders/Spinner";
-import { UserInfo } from "./UserInfo";
-import { LeaderboardUser } from "@/types/leaderboard";
+import { useState, useMemo, useEffect } from 'react';
+
+import { useFetchLeaderBoard } from '@/hooks/useFetchLeaderBoard';
+import {
+  SortDirection,
+  SortField,
+  ILeaderBoardInfo,
+} from '@/services/points.service';
+import { LeaderboardUser } from '@/types/leaderboard';
+
+import { Spinner } from '../loaders/Spinner';
+
+import { LeaderboardItem } from './LeaderboardItem';
+import { Pagination } from './Pagination';
+import { UserInfo } from './UserInfo';
 
 const LEADERBOARD_STORAGE_KEY = 'leaderboardData';
 const MAX_CACHE_AGE_MS = 1000 * 60 * 7;
 
-type LeaderboardQueryData = ILeaderBoardInfo['getUsersByQaccPoints'] | undefined;
+type LeaderboardQueryData =
+  | ILeaderBoardInfo['getUsersByQaccPoints']
+  | undefined;
 
 interface StoredLeaderboardData {
   timestamp: number;
@@ -32,24 +41,25 @@ const getInitialLeaderboardData = (): LeaderboardQueryData => {
     const parsedItem: StoredLeaderboardData = JSON.parse(storedItem);
 
     if (Date.now() - parsedItem.timestamp < MAX_CACHE_AGE_MS) {
-  
       return parsedItem.data;
     }
   } catch (error) {
-    console.error("Error reading leaderboard from session storage:", error);
+    console.error('Error reading leaderboard from session storage:', error);
     sessionStorage.removeItem(LEADERBOARD_STORAGE_KEY);
   }
   return undefined;
 };
 
 export function PointsTable() {
-  const [sortField, setSortField] = useState<SortField>("Rank");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("ASC");
+  const [sortField, setSortField] = useState<SortField>('Rank');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('ASC');
   const [page, setPage] = useState(0);
   const LIMIT = 15;
   const FETCH_ALL_LIMIT = 5000;
 
-  const [initialData] = useState<LeaderboardQueryData>(() => getInitialLeaderboardData());
+  const [initialData] = useState<LeaderboardQueryData>(() =>
+    getInitialLeaderboardData()
+  );
 
   const { data: leaderboardInfo, isLoading } = useFetchLeaderBoard(
     FETCH_ALL_LIMIT,
@@ -58,18 +68,16 @@ export function PointsTable() {
       field: sortField,
       direction: sortDirection,
     },
-    initialData 
+    initialData
   );
-  
+
   useEffect(() => {
     setPage(0);
-
   }, [sortField, sortDirection]);
 
   const filteredAndSortedUsers = useMemo(() => {
     return leaderboardInfo?.users ?? [];
   }, [leaderboardInfo?.users]);
-
 
   const total = filteredAndSortedUsers.length;
   const totalPages = Math.ceil(total / LIMIT);
@@ -80,24 +88,18 @@ export function PointsTable() {
   }, [filteredAndSortedUsers, page, LIMIT]);
 
   return (
-    <div className="flex flex-col">
+    <div className='flex flex-col'>
+      <UserInfo />
 
-      <UserInfo/>
-
-      <div className="space-y-3 my-4">
-
-
+      <div className='space-y-3 my-4'>
         {isLoading && (
-          <div className="flex justify-center items-center h-full">
+          <div className='flex justify-center items-center h-full'>
             <Spinner size={32} />
           </div>
         )}
 
-        {paginatedUsers.map((item) => (
-          <LeaderboardItem
-            key={item.id}
-            user={item as LeaderboardUser}
-          />
+        {paginatedUsers.map(item => (
+          <LeaderboardItem key={item.id} user={item as LeaderboardUser} />
         ))}
 
         {totalPages > 1 && (

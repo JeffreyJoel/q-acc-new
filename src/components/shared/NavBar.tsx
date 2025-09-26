@@ -1,38 +1,43 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useState, useEffect } from "react";
-import WalletConnect from "./wallet/WalletConnect";
-import Image from "next/image";
+import { useState, useEffect } from 'react';
+
+import Image from 'next/image';
+import Link from 'next/link';
+
 import {
   Sheet,
   SheetTrigger,
   SheetContent,
   SheetClose,
-} from "@/components/ui/sheet";
+} from '@/components/ui/sheet';
+
+import WalletConnect from './wallet/WalletConnect';
 
 export function NavBar() {
+  const [sheetOpen, setSheetOpen] = useState(false);
+
   const navItems = [
     {
-      name: "Projects",
-      link: "/",
+      name: 'Projects',
+      link: '/',
       blank: false,
     },
     {
-      name: "Leaderboard",
-      link: "/leaderboard",
+      name: 'Leaderboard',
+      link: '/leaderboard',
       blank: false,
     },
     {
-      name: "Paper",
-      link: "https://cdn.prod.website-files.com/667d6bc0b1e956f8d0b52c92/671a9d6f3bbff2f4d648e809_qacc.pdf",
+      name: 'Paper',
+      link: 'https://cdn.prod.website-files.com/667d6bc0b1e956f8d0b52c92/671a9d6f3bbff2f4d648e809_qacc.pdf',
       blank: true,
     },
     {
-      name: "About",
-      link: "/about",
+      name: 'About',
+      link: '/about',
       blank: false,
-    }
+    },
   ];
 
   const [scrolled, setScrolled] = useState(false);
@@ -41,40 +46,40 @@ export function NavBar() {
     const handleScroll = () => {
       setScrolled(window.scrollY > 0);
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
     <nav
       className={`fixed left-0 right-0 z-50  ${
         scrolled
-          ? "bg-qacc-black border-b border-neutral-800"
-          : "bg-transparent"
+          ? 'bg-qacc-black border-b border-neutral-800'
+          : 'bg-transparent'
       }`}
       style={{ top: 'var(--banner-height, 0rem)' }}
     >
-      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
+      <div className='w-full mx-auto px-4 sm:px-6 lg:px-8 py-6'>
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center'>
+            <Link href='/' className='flex items-center space-x-2'>
               <Image
-                src="/images/logos/logo-horisontal-light.svg"
-                alt="Quadratic Accelerator"
+                src='/images/logos/logo-horisontal-light.svg'
+                alt='Quadratic Accelerator'
                 width={200}
                 height={40}
-                className="h-8 w-auto"
+                className='h-8 w-auto'
               />
             </Link>
           </div>
 
-          <div className="hidden lg:block">
-            <div className=" flex items-baseline space-x-12">
+          <div className='hidden lg:block'>
+            <div className=' flex items-baseline space-x-12'>
               {navItems.map((item, idx) => (
                 <Link
                   key={`nav-link-${idx}`}
                   href={item.link}
-                  target={item.blank ? "_blank" : "_self"}
+                  target={item.blank ? '_blank' : '_self'}
                   prefetch={!item.blank}
                   className={`text-white hover:text-peach-400 text-sm font-medium transition-colors`}
                 >
@@ -83,39 +88,39 @@ export function NavBar() {
               ))}
             </div>
           </div>
-          <div className="hidden lg:block">
+          <div className='hidden lg:block'>
             <WalletConnect />
           </div>
 
-          <Sheet>
+          <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
-              <button className="text-neutral-400 hover:text-white p-2 lg:hidden">
+              <button className='text-neutral-400 hover:text-white p-2 lg:hidden'>
                 <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+                  className='h-6 w-6'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
                 >
                   <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
                     strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
+                    d='M4 6h16M4 12h16M4 18h16'
                   />
                 </svg>
               </button>
             </SheetTrigger>
             <SheetContent
-              side="right"
-              className="bg-[#141414] border-r border-neutral-800 flex flex-col h-full w-[300px]"
+              side='right'
+              className='bg-[#141414] border-r border-neutral-800 flex flex-col h-full w-[300px] lg:hidden'
             >
-              <div className="flex flex-col justify-between h-full pb-3">
-                <div className="space-y-6">
+              <div className='flex flex-col justify-between h-full pb-3'>
+                <div className='space-y-6'>
                   {navItems.map((item, idx) => (
                     <SheetClose asChild key={`mobile-link-${idx}`}>
                       <Link
                         href={item.link}
-                        target={item.blank ? "_blank" : "_self"}
+                        target={item.blank ? '_blank' : '_self'}
                         className={`block px-2 py-3 text-sm font-medium`}
                       >
                         {item.name}
@@ -124,7 +129,7 @@ export function NavBar() {
                   ))}
                 </div>
 
-                <WalletConnect />
+                <WalletConnect onSheetClose={() => setSheetOpen(false)} />
               </div>
             </SheetContent>
           </Sheet>

@@ -1,7 +1,6 @@
-import { NextRequest } from "next/server";
+import { NextRequest } from 'next/server';
 
-const BLOCKSCOUT_BASE_URL =
-  "https://polygon.blockscout.com/api/v2/tokens";
+const BLOCKSCOUT_BASE_URL = 'https://polygon.blockscout.com/api/v2/tokens';
 const TOP_HOLDERS_LIMIT = 20;
 
 /**
@@ -11,13 +10,11 @@ async function fetchJson<T = any>(url: string): Promise<T> {
   const res = await fetch(url, {
     // Blockscout rate-limits aggressively, so we disable cache to always
     // hit the network and get the freshest data.
-    cache: "no-store",
+    cache: 'no-store',
   });
 
   if (!res.ok) {
-    throw new Error(
-      `Blockscout request failed (status ${res.status}): ${url}`
-    );
+    throw new Error(`Blockscout request failed (status ${res.status}): ${url}`);
   }
 
   return res.json();
@@ -26,12 +23,12 @@ async function fetchJson<T = any>(url: string): Promise<T> {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const tokenAddress = searchParams.get("tokenAddress");
+    const tokenAddress = searchParams.get('tokenAddress');
 
     // Validate token address
-    if (!tokenAddress || tokenAddress === "0" || tokenAddress === "") {
+    if (!tokenAddress || tokenAddress === '0' || tokenAddress === '') {
       return Response.json(
-        { error: "Invalid token address", success: false },
+        { error: 'Invalid token address', success: false },
         { status: 400 }
       );
     }
@@ -42,7 +39,8 @@ export async function GET(request: NextRequest) {
 
     // Fallback defaults if Blockscout is missing some fields
     const decimals = Number(tokenInfo.decimals ?? 18);
-    const totalSupplyRaw = tokenInfo.total_supply ?? tokenInfo.totalSupply ?? "0";
+    const totalSupplyRaw =
+      tokenInfo.total_supply ?? tokenInfo.totalSupply ?? '0';
 
     const totalSupply = Number(totalSupplyRaw) / 10 ** decimals;
 
@@ -56,19 +54,19 @@ export async function GET(request: NextRequest) {
     // Fetch the holder list (limited to TOP_HOLDERS_LIMIT)
     const holdersUrl = `${BLOCKSCOUT_BASE_URL}/${tokenAddress}/holders?page=1&offset=${TOP_HOLDERS_LIMIT}`;
     const holdersResponse: any = await fetchJson(holdersUrl);
-  
+
     const holders = Array.isArray(holdersResponse)
       ? holdersResponse
-      : holdersResponse.items ?? [];
+      : (holdersResponse.items ?? []);
 
     // Shape response: address + percentage (with four-decimal precision)
     const shapedHolders = holders.slice(0, TOP_HOLDERS_LIMIT).map((h: any) => {
-      const rawBalance = h.balance ?? h.value ?? "0";
+      const rawBalance = h.balance ?? h.value ?? '0';
       const balance = Number(rawBalance) / 10 ** decimals;
       const percentage = totalSupply > 0 ? (balance / totalSupply) * 100 : 0;
 
       return {
-        address: h.address.hash ?? "",
+        address: h.address.hash ?? '',
         percentage: Number(percentage.toFixed(4)),
       };
     });
@@ -79,9 +77,9 @@ export async function GET(request: NextRequest) {
       holders: shapedHolders,
     });
   } catch (error) {
-    console.error("Error fetching token holders:", error);
+    console.error('Error fetching token holders:', error);
     return Response.json(
-      { error: "Failed to fetch token holders", success: false },
+      { error: 'Failed to fetch token holders', success: false },
       { status: 500 }
     );
   }

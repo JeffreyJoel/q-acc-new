@@ -1,8 +1,9 @@
-"use client";
-import { ModalProvider } from "@/contexts/ModalContext";
-import { UserController } from "@/controllers/userController";
-import Providers from "@/providers/PrivyProvider";
-import { Toaster } from "sonner";
+'use client';
+import { Toaster } from 'sonner';
+
+import { ModalProvider } from '@/contexts/ModalContext';
+import { UserController } from '@/controllers/userController';
+import Providers from '@/providers/PrivyProvider';
 export default function ClientLayout({
   children,
 }: {
@@ -12,7 +13,7 @@ export default function ClientLayout({
     <Providers>
       <ModalProvider>
         <div>{children}</div>
-        <Toaster position="top-center" richColors />
+        <Toaster position='top-center' richColors />
         <UserController />
       </ModalProvider>
     </Providers>
