@@ -50,10 +50,10 @@ export default function ProfileInfo() {
   if (donorContextLoading || !user) {
     return (
       // TODO: move this to a separate file
-      <div className='p-6 bg-neutral-800 rounded-2xl'>
+      <div className='p-6'>
         <div className='flex items-center justify-between w-full'>
           <div className='flex items-center'>
-            <div className='w-[140px] h-[140px] bg-neutral-700 rounded-lg overflow-hidden mr-4 flex items-center justify-center'>
+            <div className='w-[140px] h-[140px] bg-neutral-700 rounded-full overflow-hidden mr-4 flex items-center justify-center'>
               <Spinner size={40} />
             </div>
 

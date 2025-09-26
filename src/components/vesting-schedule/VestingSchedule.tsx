@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useFetchAllProjects } from '@/hooks/useProjects';
 import { useVestingSchedules } from '@/hooks/useVestingSchedules';
 import { IProject } from '@/types/project.type';
+import { handleImageUrl } from '@/helpers/image';
 
 interface VestingPeriod {
   name: string;
@@ -201,15 +202,16 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
     <div className='flex -space-x-2 items-center'>
       {projects.slice(0, 6).map((project, index) => (
         <div key={project.id || index} className='relative group'>
-          {project.abc?.icon ? (
+          {project.abc?.icon && (
             <Image
-              src={project?.icon || ''}
+              src={handleImageUrl(project.abc?.icon || '')}
               alt={project.abc.tokenTicker || project.title || 'Token'}
               className='w-6 h-6 rounded-full object-cover bg-black'
               width={24}
               height={24}
+              loading='lazy'
             />
-          ) : null}
+          )}
           <div
             className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
               seasonNumber === 1

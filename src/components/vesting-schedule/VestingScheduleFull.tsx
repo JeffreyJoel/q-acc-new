@@ -6,6 +6,7 @@ import Image from 'next/image';
 
 import { useVestingSchedules } from '@/hooks/useVestingSchedules';
 import { IProject } from '@/types/project.type';
+import { Spinner } from '@/components/loaders/Spinner';
 
 interface VestingPeriod {
   name: string;
@@ -260,305 +261,312 @@ const VestingScheduleFull: React.FC<VestingScheduleFullProps> = ({
         </h1>
       </div>
 
-      {/* Chart Container */}
-      <div
-        ref={containerRef}
-        className='relative group pb-0 w-full max-w-10/12 h-full lg:w-8/12 mx-auto overflow-x-clip'
-        onMouseEnter={handleContainerMouseEnter}
-        onMouseLeave={handleContainerMouseLeave}
-      >
-        {/* Vertical Grid Lines */}
-        <div className='absolute top-0 left-0 right-0 h-[380px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out'>
-          {timelineMonths.map((month, index) => (
-            <div
-              key={index}
-              className='absolute top-0 bottom-0 w-px bg-gray-700 opacity-30'
-              style={{ left: `${month.position}%` }}
-            />
-          ))}
-        </div>
-
-        {/* Season 1 */}
-        <div className='mb-8 relative'>
-          <div className='flex items-center mb-6 relative'>
-            <div
-              className='absolute flex items-center'
-              style={{ left: `${getDatePosition(new Date('2024-10-29'))}%` }}
-            >
-              <h3 className='text-xl font-anton text-peach-400 uppercase mr-8'>
-                SEASON 1
-              </h3>
-              <div className='flex items-center text-xs'>
-                <span className='text-qacc-gray-light font-semibold'>
-                  DEX Listing
-                </span>{' '}
-              </div>
-            </div>
-          </div>
-
-          <div className='space-y-4 relative'>
-            {season1.map(period => (
-              <div key={period.name} className='relative'>
-                <div
-                  className='relative h-9 cursor-pointer transition-all duration-300'
-                  onMouseEnter={e => handleMouseEnter(e, period)}
-                  onMouseMove={handleMouseMove}
-                  onMouseLeave={handleMouseLeave}
-                >
-                  {/* Period Bar */}
-                  <div
-                    className={`absolute top-0 bottom-0 rounded-lg flex items-center transition-all duration-300 hover:brightness-110 ${
-                      period.type === 'team'
-                        ? 'bg-qacc-gray-light/60'
-                        : 'bg-peach-400/60'
-                    }`}
-                    style={{
-                      left: `${getDatePosition(period.start)}%`,
-                      width: `${
-                        getDatePosition(period.end) -
-                        getDatePosition(period.start)
-                      }%`,
-                    }}
-                  >
-                    {/* Label and Icons */}
-                    <div className='flex items-center justify-between w-full px-4'>
-                      <div className='flex items-center space-x-1 md:space-x-3'>
-                        <span className='font-bold text-[10px] md:text-xs text-[#020202]'>
-                          {period.displayName}
-                        </span>
-                        {period.type === 'team' && (
-                          <TokenIcons projects={season1Projects} />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Unlock section */}
-                  <div
-                    className={`absolute top-0 bottom-0 rounded-r-lg flex items-center justify-center px-2 md:px-4 ${
-                      period.type === 'team'
-                        ? 'bg-qacc-gray-light'
-                        : 'bg-peach-400'
-                    }`}
-                    style={{
-                      left: `${getDatePosition(period.cliff)}%`,
-                      width: `${
-                        getDatePosition(period.end) -
-                        getDatePosition(period.cliff)
-                      }%`,
-                    }}
-                  >
-                    <div className='text-center flex items-center justify-center gap-1'>
-                      <span className='text-[#020202]/40 font-bold text-[9px] md:text-xs'>
-                        Unlock
-                      </span>
-                      <span className='text-[#020202]/30 text-[8px] md:text-xs'>
-                        {formatDate(period.cliff)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* End date */}
-                  <div
-                    className='absolute top-1/2 transform -translate-y-1/2 text-xs text-qacc-gray-light/60 ml-2'
-                    style={{
-                      left: `${getDatePosition(period.end)}%`,
-                    }}
-                  >
-                    {formatEndDate(period.end)}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Timeline */}
-        <div className='pb-12 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out'>
-          <div className='relative h-full flex items-center'>
+      {
+        projects.length > 0 ? (
+          <div
+          ref={containerRef}
+          className='relative group pb-0 w-full max-w-10/12 h-full lg:w-8/12 mx-auto overflow-x-clip'
+          onMouseEnter={handleContainerMouseEnter}
+          onMouseLeave={handleContainerMouseLeave}
+        >
+          {/* Vertical Grid Lines */}
+          <div className='absolute top-0 left-0 right-0 h-[380px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out'>
             {timelineMonths.map((month, index) => (
               <div
                 key={index}
-                className='absolute transform -translate-x-1/2'
+                className='absolute top-0 bottom-0 w-px bg-gray-700 opacity-30'
                 style={{ left: `${month.position}%` }}
-              >
-                <div className='text-xs text-qacc-gray-light/40 whitespace-nowrap'>
-                  {month.fullLabel}
-                </div>
-              </div>
+              />
             ))}
           </div>
-        </div>
-
-        {/* Season 2 */}
-        <div className='mb-12 relative'>
-          <div className='flex items-center mb-6 relative'>
-            <div
-              className='absolute flex items-center'
-              style={{ left: `${getDatePosition(new Date('2025-04-11'))}%` }}
-            >
-              <h3 className='text-xl font-anton text-peach-400 uppercase mr-8'>
-                SEASON 2
-              </h3>
-              <div className='text-xs'>
-                <span className='text-qacc-gray-light semibold'>
-                  DEX Listing
-                </span>{' '}
-                <span className='text-qacc-gray-light/40'>Sep-Nov</span>
+  
+          {/* Season 1 */}
+          <div className='mb-8 relative'>
+            <div className='flex items-center mb-6 relative'>
+              <div
+                className='absolute flex items-center'
+                style={{ left: `${getDatePosition(new Date('2024-10-29'))}%` }}
+              >
+                <h3 className='text-xl font-anton text-peach-400 uppercase mr-8'>
+                  SEASON 1
+                </h3>
+                <div className='flex items-center text-xs'>
+                  <span className='text-qacc-gray-light font-semibold'>
+                    DEX Listing
+                  </span>{' '}
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className='space-y-4 relative'>
-            {season2.map(period => (
-              <div key={period.name} className='relative'>
-                <div
-                  className='relative h-9 cursor-pointer transition-all duration-300'
-                  onMouseEnter={e => handleMouseEnter(e, period)}
-                  onMouseMove={handleMouseMove}
-                  onMouseLeave={handleMouseLeave}
-                >
-                  {/* Period Bar */}
+  
+            <div className='space-y-4 relative'>
+              {season1.map(period => (
+                <div key={period.name} className='relative'>
                   <div
-                    className={`absolute top-0 bottom-0 rounded-lg flex items-center transition-all duration-300 hover:brightness-110 ${
-                      period.type === 'team'
-                        ? 'bg-qacc-gray-light/60'
-                        : 'bg-peach-400/60'
-                    }`}
-                    style={{
-                      left: `${getDatePosition(period.start)}%`,
-                      width: `${
-                        getDatePosition(period.end) -
-                        getDatePosition(period.start)
-                      }%`,
-                    }}
+                    className='relative h-9 cursor-pointer transition-all duration-300'
+                    onMouseEnter={e => handleMouseEnter(e, period)}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
                   >
-                    {/* Label and Icons */}
-                    <div className='flex items-center justify-between w-full px-2 md:px-4'>
-                      <div className='flex items-center space-x-1 md:space-x-3'>
-                        <span className='font-bold text-[10px] md:text-xs text-[#020202]'>
-                          {period.displayName}
-                        </span>
-                        {period.type === 'team' && (
-                          <Season2TokenIcons projects={season2Projects} />
-                        )}
+                    {/* Period Bar */}
+                    <div
+                      className={`absolute top-0 bottom-0 rounded-lg flex items-center transition-all duration-300 hover:brightness-110 ${
+                        period.type === 'team'
+                          ? 'bg-qacc-gray-light/60'
+                          : 'bg-peach-400/60'
+                      }`}
+                      style={{
+                        left: `${getDatePosition(period.start)}%`,
+                        width: `${
+                          getDatePosition(period.end) -
+                          getDatePosition(period.start)
+                        }%`,
+                      }}
+                    >
+                      {/* Label and Icons */}
+                      <div className='flex items-center justify-between w-full px-4'>
+                        <div className='flex items-center space-x-1 md:space-x-3'>
+                          <span className='font-bold text-[10px] md:text-xs text-[#020202]'>
+                            {period.displayName}
+                          </span>
+                          {period.type === 'team' && (
+                            <TokenIcons projects={season1Projects} />
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Unlock section */}
-                  <div
-                    className={`absolute top-0 bottom-0 rounded-r-lg flex items-center justify-center px-2 md:px-4 ${
-                      period.type === 'team'
-                        ? 'bg-qacc-gray-light'
-                        : 'bg-peach-400'
-                    }`}
-                    style={{
-                      left: `${getDatePosition(period.cliff)}%`,
-                      width: `${
-                        getDatePosition(period.end) -
-                        getDatePosition(period.cliff)
-                      }%`,
-                    }}
-                  >
-                    <div className='text-center flex items-center justify-center gap-1'>
-                      <span className='text-[#020202]/40 font-bold text-[10px] md:text-xs'>
-                        Unlock
-                      </span>
-                      <span className='text-[#020202]/30 text-[10px] md:text-xs'>
-                        {formatDate(period.cliff)}
-                      </span>
+  
+                    {/* Unlock section */}
+                    <div
+                      className={`absolute top-0 bottom-0 rounded-r-lg flex items-center justify-center px-2 md:px-4 ${
+                        period.type === 'team'
+                          ? 'bg-qacc-gray-light'
+                          : 'bg-peach-400'
+                      }`}
+                      style={{
+                        left: `${getDatePosition(period.cliff)}%`,
+                        width: `${
+                          getDatePosition(period.end) -
+                          getDatePosition(period.cliff)
+                        }%`,
+                      }}
+                    >
+                      <div className='text-center flex items-center justify-center gap-1'>
+                        <span className='text-[#020202]/40 font-bold text-[9px] md:text-xs'>
+                          Unlock
+                        </span>
+                        <span className='text-[#020202]/30 text-[8px] md:text-xs'>
+                          {formatDate(period.cliff)}
+                        </span>
+                      </div>
+                    </div>
+  
+                    {/* End date */}
+                    <div
+                      className='absolute top-1/2 transform -translate-y-1/2 text-xs text-qacc-gray-light/60 ml-2'
+                      style={{
+                        left: `${getDatePosition(period.end)}%`,
+                      }}
+                    >
+                      {formatEndDate(period.end)}
                     </div>
                   </div>
-
-                  {/* End date */}
+                </div>
+              ))}
+            </div>
+          </div>
+  
+          {/* Timeline */}
+          <div className='pb-12 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out'>
+            <div className='relative h-full flex items-center'>
+              {timelineMonths.map((month, index) => (
+                <div
+                  key={index}
+                  className='absolute transform -translate-x-1/2'
+                  style={{ left: `${month.position}%` }}
+                >
+                  <div className='text-xs text-qacc-gray-light/40 whitespace-nowrap'>
+                    {month.fullLabel}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+  
+          {/* Season 2 */}
+          <div className='mb-12 relative'>
+            <div className='flex items-center mb-6 relative'>
+              <div
+                className='absolute flex items-center'
+                style={{ left: `${getDatePosition(new Date('2025-04-11'))}%` }}
+              >
+                <h3 className='text-xl font-anton text-peach-400 uppercase mr-8'>
+                  SEASON 2
+                </h3>
+                <div className='text-xs'>
+                  <span className='text-qacc-gray-light semibold'>
+                    DEX Listing
+                  </span>{' '}
+                  <span className='text-qacc-gray-light/40'>Sep-Nov</span>
+                </div>
+              </div>
+            </div>
+  
+            <div className='space-y-4 relative'>
+              {season2.map(period => (
+                <div key={period.name} className='relative'>
                   <div
-                    className='absolute top-1/2 transform -translate-y-1/2 text-xs text-qacc-gray-light/60 ml-3 min-w-20'
-                    style={{
-                      left: `${getDatePosition(period.end)}%`,
-                    }}
+                    className='relative h-9 cursor-pointer transition-all duration-300'
+                    onMouseEnter={e => handleMouseEnter(e, period)}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
                   >
-                    {formatEndDate(period.end)}
+                    {/* Period Bar */}
+                    <div
+                      className={`absolute top-0 bottom-0 rounded-lg flex items-center transition-all duration-300 hover:brightness-110 ${
+                        period.type === 'team'
+                          ? 'bg-qacc-gray-light/60'
+                          : 'bg-peach-400/60'
+                      }`}
+                      style={{
+                        left: `${getDatePosition(period.start)}%`,
+                        width: `${
+                          getDatePosition(period.end) -
+                          getDatePosition(period.start)
+                        }%`,
+                      }}
+                    >
+                      {/* Label and Icons */}
+                      <div className='flex items-center justify-between w-full px-2 md:px-4'>
+                        <div className='flex items-center space-x-1 md:space-x-3'>
+                          <span className='font-bold text-[10px] md:text-xs text-[#020202]'>
+                            {period.displayName}
+                          </span>
+                          {period.type === 'team' && (
+                            <Season2TokenIcons projects={season2Projects} />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+  
+                    {/* Unlock section */}
+                    <div
+                      className={`absolute top-0 bottom-0 rounded-r-lg flex items-center justify-center px-2 md:px-4 ${
+                        period.type === 'team'
+                          ? 'bg-qacc-gray-light'
+                          : 'bg-peach-400'
+                      }`}
+                      style={{
+                        left: `${getDatePosition(period.cliff)}%`,
+                        width: `${
+                          getDatePosition(period.end) -
+                          getDatePosition(period.cliff)
+                        }%`,
+                      }}
+                    >
+                      <div className='text-center flex items-center justify-center gap-1'>
+                        <span className='text-[#020202]/40 font-bold text-[10px] md:text-xs'>
+                          Unlock
+                        </span>
+                        <span className='text-[#020202]/30 text-[10px] md:text-xs'>
+                          {formatDate(period.cliff)}
+                        </span>
+                      </div>
+                    </div>
+  
+                    {/* End date */}
+                    <div
+                      className='absolute top-1/2 transform -translate-y-1/2 text-xs text-qacc-gray-light/60 ml-3 min-w-20'
+                      style={{
+                        left: `${getDatePosition(period.end)}%`,
+                      }}
+                    >
+                      {formatEndDate(period.end)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+  
+          {/* Today Line */}
+          {todayPosition >= 0 && (
+            <div
+              className='absolute top-0 w-[1px] bg-[#D6644F] pointer-events-none h-[380px] transition-all duration-100 ease-in-out'
+              style={{ left: `${todayPosition}%` }}
+            >
+              {/* Top circle */}
+              <div className='absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-[#D6644F] rounded-full'></div>
+  
+              {/* Bottom circle */}
+              <div className='absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-[#D6644F] rounded-full'></div>
+  
+              <div className='absolute -top-8 left-1/2 transform -translate-x-1/2'>
+                <span className='text-xs text-[#D6644F] font-semibold'>
+                  Today
+                </span>
+              </div>
+            </div>
+          )}
+  
+          {/* Tooltip */}
+          {tooltip.visible && (
+            <div
+              className='absolute z-50 bg-neutral-900 border border-neutral-700 rounded-lg p-4 shadow-xl pointer-events-none backdrop-blur-sm'
+              style={{
+                left: `${tooltip.x + 10}px`,
+                top: `${tooltip.y - 10}px`,
+                transform: 'translateY(-100%)',
+              }}
+            >
+              <div className='text-sm'>
+                <div className='font-semibold text-white mb-2'>
+                  {tooltip.period.displayName}
+                </div>
+                <div className='space-y-1 text-gray-300'>
+                  <div className='flex justify-between gap-4'>
+                    <span className='text-gray-400'>Start:</span>
+                    <span>{tooltip.period.start.toLocaleDateString()}</span>
+                  </div>
+                  <div className='flex justify-between gap-4'>
+                    <span className='text-gray-400'>Cliff:</span>
+                    <span>{tooltip.period.cliff.toLocaleDateString()}</span>
+                  </div>
+                  <div className='flex justify-between gap-4'>
+                    <span className='text-gray-400'>End:</span>
+                    <span>{tooltip.period.end.toLocaleDateString()}</span>
+                  </div>
+                  <div className='flex justify-between gap-4'>
+                    <span className='text-gray-400'>Cliff period:</span>
+                    <span>
+                      {calculateDays(tooltip.period.start, tooltip.period.cliff)}{' '}
+                      days
+                    </span>
+                  </div>
+                  <div className='flex justify-between gap-4'>
+                    <span className='text-gray-400'>Vesting period:</span>
+                    <span>
+                      {calculateDays(tooltip.period.cliff, tooltip.period.end)}{' '}
+                      days
+                    </span>
+                  </div>
+                  <div className='flex justify-between gap-4'>
+                    <span className='text-gray-400'>Total duration:</span>
+                    <span>
+                      {calculateDays(tooltip.period.start, tooltip.period.end)}{' '}
+                      days
+                    </span>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
-
-        {/* Today Line */}
-        {todayPosition >= 0 && (
-          <div
-            className='absolute top-0 w-[1px] bg-[#D6644F] pointer-events-none h-[380px] transition-all duration-100 ease-in-out'
-            style={{ left: `${todayPosition}%` }}
-          >
-            {/* Top circle */}
-            <div className='absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-[#D6644F] rounded-full'></div>
-
-            {/* Bottom circle */}
-            <div className='absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-[#D6644F] rounded-full'></div>
-
-            <div className='absolute -top-8 left-1/2 transform -translate-x-1/2'>
-              <span className='text-xs text-[#D6644F] font-semibold'>
-                Today
-              </span>
-            </div>
+        ) : (
+          <div className='flex justify-center items-center h-full'>
+            <Spinner />
           </div>
-        )}
-
-        {/* Tooltip */}
-        {tooltip.visible && (
-          <div
-            className='absolute z-50 bg-neutral-900 border border-neutral-700 rounded-lg p-4 shadow-xl pointer-events-none backdrop-blur-sm'
-            style={{
-              left: `${tooltip.x + 10}px`,
-              top: `${tooltip.y - 10}px`,
-              transform: 'translateY(-100%)',
-            }}
-          >
-            <div className='text-sm'>
-              <div className='font-semibold text-white mb-2'>
-                {tooltip.period.displayName}
-              </div>
-              <div className='space-y-1 text-gray-300'>
-                <div className='flex justify-between gap-4'>
-                  <span className='text-gray-400'>Start:</span>
-                  <span>{tooltip.period.start.toLocaleDateString()}</span>
-                </div>
-                <div className='flex justify-between gap-4'>
-                  <span className='text-gray-400'>Cliff:</span>
-                  <span>{tooltip.period.cliff.toLocaleDateString()}</span>
-                </div>
-                <div className='flex justify-between gap-4'>
-                  <span className='text-gray-400'>End:</span>
-                  <span>{tooltip.period.end.toLocaleDateString()}</span>
-                </div>
-                <div className='flex justify-between gap-4'>
-                  <span className='text-gray-400'>Cliff period:</span>
-                  <span>
-                    {calculateDays(tooltip.period.start, tooltip.period.cliff)}{' '}
-                    days
-                  </span>
-                </div>
-                <div className='flex justify-between gap-4'>
-                  <span className='text-gray-400'>Vesting period:</span>
-                  <span>
-                    {calculateDays(tooltip.period.cliff, tooltip.period.end)}{' '}
-                    days
-                  </span>
-                </div>
-                <div className='flex justify-between gap-4'>
-                  <span className='text-gray-400'>Total duration:</span>
-                  <span>
-                    {calculateDays(tooltip.period.start, tooltip.period.end)}{' '}
-                    days
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+        )
+      }
     </div>
   );
 };

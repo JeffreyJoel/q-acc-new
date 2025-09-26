@@ -6,6 +6,7 @@ import { shortenAddress } from '@/helpers/address';
 import { useTokenHolders } from '@/hooks/useTokenHolders';
 import { useTokenHolderTags } from '@/hooks/useTokenHolders';
 import { ITokenHolder, ITokenHolding } from '@/types/token-holders.type';
+import { Spinner } from '@/components/loaders/Spinner';
 
 export default function TokenHolders({
   tokenAddress,
@@ -57,7 +58,7 @@ export default function TokenHolders({
           </div>
         </div>
         <div className='flex flex-col items-center justify-center py-12'>
-          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-peach-400'></div>
+          <Spinner />
           <p className='text-gray-400 text-center mt-4'>
             Loading token holders...
           </p>

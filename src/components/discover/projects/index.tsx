@@ -10,6 +10,7 @@ import { useFetchAllProjects } from '@/hooks/useProjects';
 import { ProjectsCarousel } from './ProjectsCarousel';
 import ProjectsTable from './ProjectsTable';
 import { ProjectTile } from './ProjectTile';
+import ProjectsLoader from '@/components/loaders/ProjectsLoader';
 
 function Projects() {
   const [activeTile, setActiveTile] = useState<string | null>(null);
@@ -18,28 +19,6 @@ function Projects() {
 
   const { data: enrichedProjects, isLoading: isEnrichedLoading } =
     useEnrichedProjects(allProjects?.projects);
-
-  if (isLoading || isEnrichedLoading) {
-    return (
-      <div className='mx-auto px-6 lg:px-12 py-20 flex flex-col justify-center items-center'>
-        <h2 className='font-anton text-white text-[64px] mb-6 uppercase tracking-wide'>
-          Projects
-        </h2>
-        <div className='text-white'>Loading...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className='mx-auto px-6 lg:px-12 py-20 flex flex-col justify-center items-center'>
-        <h2 className='font-anton text-white text-[64px] mb-6 uppercase tracking-wide'>
-          Projects
-        </h2>
-        <div className='text-red-500'>Error loading projects.</div>
-      </div>
-    );
-  }
 
   const enrichedMap = new Map((enrichedProjects ?? []).map(p => [p.id, p]));
 
@@ -89,43 +68,51 @@ function Projects() {
         Projects
       </h2>
       <div>
-        <div className='hidden lg:block'>
-          <ProjectsCarousel tips={carouselItems} />
-        </div>
+        {isLoading || isEnrichedLoading ? (
+          <ProjectsLoader />
+        ) : error ? (
+          <div className='text-red-500'>Error loading projects.</div>
+        ) : (
+          <>
+            <div className='hidden lg:block'>
+              <ProjectsCarousel tips={carouselItems} />
+            </div>
 
-        <div
-          className={`lg:mt-10 ${showAll ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 justify-items-center' : 'flex flex-row gap-4 overflow-x-auto scrollbar-hide'}`}
-        >
-          {(showAll ? tiles : tiles.slice(0, 6)).map(tile => (
-            <ProjectTile
-              key={tile.text}
-              title={tile.text}
-              description={tile.description}
-              image={tile.image}
-              season={tile.season}
-              slug={tile.slug}
-              reelId={tile.reelId}
-              activeTile={activeTile}
-              setActiveTile={setActiveTile}
-            />
-          ))}
-        </div>
-
-        {!showAll && (
-          <div className='flex flex-row justify-center mt-6 md:mt-10'>
-            <button
-              onClick={() => setShowAll(true)}
-              className='w-full mx-10 sm:mx-0 sm:w-1/2 md:w-1/3 lg:w-1/4 rounded-xl px-6 py-2 uppercase border border-peach-400 text-peach-400 hover:bg-peach-400 hover:text-black transition-all duration-300 text-xs font-medium tracking-wide'
+            <div
+              className={`lg:mt-10 ${showAll ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 justify-items-center' : 'flex flex-row gap-4 overflow-x-auto scrollbar-hide'}`}
             >
-              Show All Projects
-            </button>
-          </div>
+              {(showAll ? tiles : tiles.slice(0, 6)).map(tile => (
+                <ProjectTile
+                  key={tile.text}
+                  title={tile.text}
+                  description={tile.description}
+                  image={tile.image}
+                  season={tile.season}
+                  slug={tile.slug}
+                  reelId={tile.reelId}
+                  activeTile={activeTile}
+                  setActiveTile={setActiveTile}
+                />
+              ))}
+            </div>
+
+            {!showAll && (
+              <div className='flex flex-row justify-center mt-6 md:mt-10'>
+                <button
+                  onClick={() => setShowAll(true)}
+                  className='w-full mx-10 sm:mx-0 sm:w-1/2 md:w-1/3 lg:w-1/4 rounded-xl px-6 py-2 uppercase border border-peach-400 text-peach-400 hover:bg-peach-400 hover:text-black transition-all duration-300 text-xs font-medium tracking-wide'
+                >
+                  Show All Projects
+                </button>
+              </div>
+            )}
+
+            <ProjectsTable projects={enrichedProjects || []} />
+          </>
         )}
 
-        <ProjectsTable projects={enrichedProjects || []} />
-
         <div id='vesting-schedule'>
-        <VestingScheduleFull projects={allProjects?.projects || []} />
+          <VestingScheduleFull projects={allProjects?.projects || []} />
         </div>
       </div>
     </div>

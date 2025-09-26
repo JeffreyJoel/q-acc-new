@@ -8,17 +8,10 @@ import { Button } from '@/components/ui/button';
 import { formatDateWithOrdinal } from '@/helpers/date';
 import { handleImageUrl } from '@/helpers/image';
 import { useMirrorArticles } from '@/hooks/useMirrorArticles';
+import BlogLoader from '@/components/loaders/BlogLoader';
 
 export const Blog = () => {
   const { articles, loading, error } = useMirrorArticles();
-
-  if (loading) {
-    return (
-      <div className='min-h-[400px] flex items-center justify-center'>
-        <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-peach-400'></div>
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -47,48 +40,52 @@ export const Blog = () => {
           </Link>
         </div>
 
-        {articles.length > 0 && (
-          <div className='mt-12'>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-14 '>
-              {articles.slice(0, 2).map(article => (
-                <Link
-                  href={`https://mirror.xyz/qacc.eth/${article.id}`}
-                  target='_blank'
-                  className='w-full cursor-pointer '
-                  key={article.id}
-                >
-                  <div className='w-full h-[300px] relative overflow-hidden rounded-3xl'>
-                    <Image
-                      src={
-                        handleImageUrl(article.imageURI) ||
-                        '/images/banners/banner-lg.jpg'
-                      }
-                      alt={article.title}
-                      width={530}
-                      height={200}
-                      className='w-full rounded-3xl'
-                    />
-                  </div>
-                  <div className='w-full mt-6'>
-                    <span className='h-[18px] w-fit px-2 py-1 rounded-md bg-[#202020] flex items-center text-white/30 text-[8px] font-bold uppercase mb-2'>
-                      {article.timestamp
-                        ? formatDateWithOrdinal(
-                            new Date(article.timestamp * 1000)
-                          )
-                        : 'Unknown date'}
-                    </span>
+        {loading || articles.length === 0 ? (
+          <BlogLoader />
+        ) : (
+          articles.length > 0 && (
+            <div className='mt-12'>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-14 '>
+                {articles.slice(0, 2).map(article => (
+                  <Link
+                    href={`https://mirror.xyz/qacc.eth/${article.id}`}
+                    target='_blank'
+                    className='w-full cursor-pointer '
+                    key={article.id}
+                  >
+                    <div className='w-full h-[300px] relative overflow-hidden rounded-3xl'>
+                      <Image
+                        src={
+                          handleImageUrl(article.imageURI) ||
+                          '/images/banners/banner-lg.jpg'
+                        }
+                        alt={article.title}
+                        width={530}
+                        height={200}
+                        className='w-full rounded-3xl'
+                      />
+                    </div>
+                    <div className='w-full mt-6'>
+                      <span className='h-[18px] w-fit px-2 py-1 rounded-md bg-[#202020] flex items-center text-white/30 text-[8px] font-bold uppercase mb-2'>
+                        {article.timestamp
+                          ? formatDateWithOrdinal(
+                              new Date(article.timestamp * 1000)
+                            )
+                          : 'Unknown date'}
+                      </span>
 
-                    <h3 className='text-white text-2xl font-anton uppercase'>
-                      {article.title}
-                    </h3>
-                    <p className='text-white text-sm leading-5 mt-2'>
-                      {article.description}
-                    </p>
-                  </div>
-                </Link>
-              ))}
+                      <h3 className='text-white text-2xl font-anton uppercase'>
+                        {article.title}
+                      </h3>
+                      <p className='text-white text-sm leading-5 mt-2'>
+                        {article.description}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          )
         )}
       </div>
     </div>
