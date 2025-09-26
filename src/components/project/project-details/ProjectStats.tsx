@@ -9,8 +9,8 @@ import { ArrowUpRight } from 'lucide-react';
 import { Spinner } from '@/components/loaders/Spinner';
 import { formatPercentageChange } from '@/helpers';
 import { formatAmount, calculateTotalDonations } from '@/helpers/donations';
-import { formatNumber } from "@/helpers/donations";
-import { useGetCurrentTokenPrice } from "@/hooks/useGetCurrentTokenPrice";
+import { formatNumber } from '@/helpers/donations';
+import { useGetCurrentTokenPrice } from '@/hooks/useGetCurrentTokenPrice';
 import {
   useFetchActiveRoundDetails,
   useFetchMostRecentEndRound,
@@ -23,7 +23,7 @@ import {
   calculateMarketCapChange,
   getMarketCap,
   fetchGeckoMarketCap,
-} from "@/services/tokenPrice.service";
+} from '@/services/tokenPrice.service';
 import { IProject } from '@/types/project.type';
 
 interface ProjectStatsProps {

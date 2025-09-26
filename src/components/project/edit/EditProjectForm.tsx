@@ -18,14 +18,13 @@ import { SocialMediaInput } from '@/components/project/create/SocialMediaInput';
 import { TeamForm } from '@/components/project/create/TeamForm';
 import { validators } from '@/components/project/create/validators';
 import { RichTextEditor } from '@/components/shared/RichTextEditor';
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useProjectCreationContext } from '@/contexts/projectCreation.context';
 import { handleImageUrl } from '@/helpers/image';
 import { useUpdateProject } from '@/hooks/useUpdateProject';
 import { uploadToIPFS } from '@/services/ipfs';
-import { EProjectSocialMediaType, ProjectFormData } from "@/types/project.type";
-
+import { EProjectSocialMediaType, ProjectFormData } from '@/types/project.type';
 import { IProjectCreation } from '@/types/project.type';
 import { TeamMember } from '@/types/project.type';
 

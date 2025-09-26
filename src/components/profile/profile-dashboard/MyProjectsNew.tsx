@@ -17,11 +17,23 @@ import {
   calculateUniqueDonors,
   formatAmount,
 } from '@/helpers/donations';
+import { formatNumber } from '@/helpers/donations';
 import { handleImageUrl } from '@/helpers/image';
 import { calculateCapAmount } from '@/helpers/round';
-import { useGetCurrentTokenPrice } from "@/hooks/useGetCurrentTokenPrice";
+import { useCountdown } from '@/hooks/useCountdown';
+import { useGetCurrentTokenPrice } from '@/hooks/useGetCurrentTokenPrice';
 import { useFetchAllRoundDetails } from '@/hooks/useRounds';
-import { fetchProjectDonationsById } from "@/services/donation.service";
+import { useFetchActiveRoundDetails } from '@/hooks/useRounds';
+import { useTokenHolders } from '@/hooks/useTokenHolders';
+import { useFetchPOLPriceSquid } from '@/hooks/useTokens';
+import { useTokenSupplyDetails } from '@/hooks/useTokens';
+import {
+  useClaimCollectedFee,
+  useClaimedTributesAndMintedTokenAmounts,
+  useProjectCollateralFeeCollected,
+} from '@/hooks/useTribute';
+import { useVestingSchedules } from '@/hooks/useVestingSchedules';
+import { fetchProjectDonationsById } from '@/services/donation.service';
 import {
   useTokenPriceRange,
   useTokenPriceRangeStatus,
@@ -30,19 +42,7 @@ import {
   fetchGeckoMarketCap,
 } from '@/services/tokenPrice.service';
 import { IProject } from '@/types/project.type';
-import { IEarlyAccessRound, IQfRound } from "@/types/round.type";
-import { useFetchPOLPriceSquid } from "@/hooks/useTokens";
-import {
-  useClaimCollectedFee,
-  useClaimedTributesAndMintedTokenAmounts,
-  useProjectCollateralFeeCollected,
-} from '@/hooks/useTribute';
-import { useFetchActiveRoundDetails } from '@/hooks/useRounds';
-import { useTokenSupplyDetails } from '@/hooks/useTokens';
-import { useTokenHolders } from '@/hooks/useTokenHolders';
-import { useVestingSchedules } from '@/hooks/useVestingSchedules';
-import { useCountdown } from '@/hooks/useCountdown';
-import { formatNumber } from '@/helpers/donations';
+import { IEarlyAccessRound, IQfRound } from '@/types/round.type';
 
 const MyProjects = ({ projectData }: { projectData: IProject }) => {
   const projectId = projectData?.id;

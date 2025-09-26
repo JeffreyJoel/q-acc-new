@@ -8,22 +8,8 @@ import { IconRefresh, IconCalendarClock, IconShare } from '@tabler/icons-react';
 
 // import { Button, ButtonColor } from '../Button';
 
-import { formatAmount } from "@/helpers/donations";
-import { usePrivado } from "@/hooks/usePrivado";
-import { useFetchUser } from "@/hooks/useFetchUser";
-import FlashMessage from "../shared/FlashMessage";
-import { IconTotalSupply } from "@/components/icons/IconTotalSupply";
-import {
-  useTokenPriceRange,
-  useTokenPriceRangeStatus,
-} from "@/services/tokenPrice.service";
-import {
-  useFetchActiveRoundDetails,
-  useFetchAllRoundDetails,
-} from "@/hooks/useRounds";
-import { calculateCapAmount } from "@/helpers/round";
-import { IconAlertTriangle } from "@tabler/icons-react";
-import debounce from "lodash/debounce";
+import { IconAlertTriangle } from '@tabler/icons-react';
+import debounce from 'lodash/debounce';
 import floor from 'lodash/floor';
 import round from 'lodash/round';
 import {
@@ -43,14 +29,18 @@ import {
   useSendTransaction,
 } from 'wagmi';
 
+import { IconTotalSupply } from '@/components/icons/IconTotalSupply';
+
 // import { TermsConditionModal } from '../Modals/TermsConditionModal';
 import SelectChainModal, {
   POLYGON_POS_CHAIN_ID,
   POLYGON_POS_CHAIN_IMAGE,
 } from '@/components/modals/SelectChainModal';
 import { ShareProjectModal } from '@/components/modals/ShareModal';
-import config from "@/config/configuration";
-import { useDonateContext } from "@/contexts/donation.context";
+import config from '@/config/configuration';
+import { useDonateContext } from '@/contexts/donation.context';
+import { formatAmount } from '@/helpers/donations';
+import { calculateCapAmount } from '@/helpers/round';
 import {
   approveSpending,
   convertToTokenUnits,
@@ -65,16 +55,27 @@ import {
   fetchBalanceWithDecimals,
   truncateToSignificantDigits,
 } from '@/helpers/token';
+import { useFetchUser } from '@/hooks/useFetchUser';
+import { usePrivado } from '@/hooks/usePrivado';
+import {
+  useFetchActiveRoundDetails,
+  useFetchAllRoundDetails,
+} from '@/hooks/useRounds';
 import { useFetchPOLPriceSquid } from '@/hooks/useTokens';
 import {
   createDraftDonation,
   saveDonations,
 } from '@/services/donation.service';
+import {
+  useTokenPriceRange,
+  useTokenPriceRangeStatus,
+} from '@/services/tokenPrice.service';
 import { fetchProjectUserDonationCapKyc } from '@/services/user.service';
 
 import { GitcoinEligibilityModal } from '../modals/GitcoinEligibilityModal';
 import { InfoModal } from '../modals/InfoModal';
 import { UserCapUpdateModal } from '../modals/UserCapUpdateModal';
+import FlashMessage from '../shared/FlashMessage';
 import { Button } from '../ui/button';
 
 import DonateSuccessPage from './DonateSuccessPage';

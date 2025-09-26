@@ -13,24 +13,18 @@ import VestingSchedule from '@/components/vesting-schedule/VestingSchedule';
 import config from '@/config/configuration';
 import { useProjectContext } from '@/contexts/project.context';
 import { capitalizeFirstLetter } from '@/helpers';
-
 import { shortenAddressLarger } from '@/helpers/address';
-import { GeckoTerminalChart } from "./GeckoTerminal";
+import { getPoolAddressByPair } from '@/helpers/getTokensListedData';
+import { handleImageUrl } from '@/helpers/image';
 
-
-
-
-import SocialLinks from '../common/SocialLinks';
 import { TailwindStyledContent } from '../common/RichTextViewer';
+import SocialLinks from '../common/SocialLinks';
+import SwapWidget from '../swap/SwapWidget';
 
+import { GeckoTerminalChart } from './GeckoTerminal';
 import ProjectStats from './ProjectStats';
 import TeamSection from './TeamSection';
 import TokenHolders from './TokenHolders';
-
-import SwapWidget from '../swap/SwapWidget';
-
-import { getPoolAddressByPair } from '@/helpers/getTokensListedData';
-import { handleImageUrl } from '@/helpers/image';
 
 export default function ProjectDetails() {
   const [projectPoolAddress, setProjectPoolAddress] = useState<string | null>(

@@ -21,6 +21,7 @@ import { IconTransactionVerified } from '@/components/icons/IconTransactionVerif
 import { IconViewTransaction } from '@/components/icons/IconViewTransaction';
 import config from '@/config/configuration';
 import { useDonateContext } from '@/contexts/donation.context';
+import { roundPoints } from '@/helpers/points';
 import { useFetchUser } from '@/hooks/useFetchUser';
 import { useFetchPointsHistoryOfUser } from '@/hooks/useFetchUserPointsHistory';
 import { updateDonation } from '@/services/donation.service';
@@ -28,8 +29,6 @@ import { updateDonation } from '@/services/donation.service';
 import { IconLinkedin } from '../icons/IconLinkedin';
 import { IconShare } from '../icons/IconShare';
 import { IconX } from '../icons/IconX';
-
-import { roundPoints } from '@/helpers/points';
 
 interface IDonateSuccessPage {
   transactionHash?: `0x${string}` | undefined; // Define the type for the transactionHash prop

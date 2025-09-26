@@ -21,15 +21,13 @@ import {
   useReleasableForStream,
   useReleasedForStream,
 } from '@/hooks/useClaimRewards';
-import { useVestingSchedules } from '@/hooks/useVestingSchedules';
-import type { IProject } from "@/types/project.type";
-
 import { useGetCurrentTokenPrice } from '@/hooks/useGetCurrentTokenPrice';
-import { useTokenPrice } from '@/hooks/useTokens';
-
-import { claimTokensABI } from '@/lib/abi/inverter';
-import { IEarlyAccessRound, IQfRound } from '@/types/round.type';
 import { useFetchAllRoundDetails } from '@/hooks/useRounds';
+import { useTokenPrice } from '@/hooks/useTokens';
+import { useVestingSchedules } from '@/hooks/useVestingSchedules';
+import { claimTokensABI } from '@/lib/abi/inverter';
+import type { IProject } from '@/types/project.type';
+import { IEarlyAccessRound, IQfRound } from '@/types/round.type';
 
 export interface PortfolioTableRowProps {
   project: IProject;

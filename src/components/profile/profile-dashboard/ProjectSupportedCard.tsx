@@ -22,15 +22,14 @@ import {
   useIsActivePaymentReceiver,
   useReleasableForStream,
 } from '@/hooks/useClaimRewards';
-
-import { useVestingSchedules } from '@/hooks/useVestingSchedules';
-import { useCountdown } from '@/hooks/useCountdown';
 import { useReleasedForStream } from '@/hooks/useClaimRewards';
+import { useCountdown } from '@/hooks/useCountdown';
 import { useGetCurrentTokenPrice } from '@/hooks/useGetCurrentTokenPrice';
-import { useTokenPrice } from '@/hooks/useTokens';
-import { IEarlyAccessRound, IQfRound } from '@/types/round.type';
 import { useFetchAllRoundDetails } from '@/hooks/useRounds';
-import { IProject } from "@/types/project.type";
+import { useTokenPrice } from '@/hooks/useTokens';
+import { useVestingSchedules } from '@/hooks/useVestingSchedules';
+import { IProject } from '@/types/project.type';
+import { IEarlyAccessRound, IQfRound } from '@/types/round.type';
 
 interface ProjectSupportedCardProps {
   project: IProject;
