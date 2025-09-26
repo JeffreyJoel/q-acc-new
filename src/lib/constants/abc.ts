@@ -1,1 +1,1 @@
-export const ABC_LAUNCH_COLLECTION = 'abc-launches'; 
+export const ABC_LAUNCH_COLLECTION = 'abc-launches';

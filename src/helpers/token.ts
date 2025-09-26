@@ -1,16 +1,16 @@
-import { readContract, writeContract } from "@wagmi/core";
-import { ethers } from "ethers";
-import axios from "axios";
+import { readContract, writeContract } from '@wagmi/core';
+import axios from 'axios';
+import { ethers } from 'ethers';
+import { Address, erc20Abi, formatUnits, parseUnits } from 'viem';
+import { multicall, getBalance, getPublicClient } from 'wagmi/actions';
 
-import { Address, erc20Abi, formatUnits, parseUnits } from "viem";
-import { multicall, getBalance, getPublicClient } from "wagmi/actions";
-import { wagmiConfig } from "@/providers/PrivyProvider";
+import config from '@/config/configuration';
+import { wagmiConfig } from '@/providers/PrivyProvider';
 
-import config from "@/config/configuration";
-import { SquidTokenType } from "./squidTransactions";
+import { SquidTokenType } from './squidTransactions';
 const integratorId: string = config.SQUID_INTEGRATOR_ID;
 
-export const AddressZero = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+export const AddressZero = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 
 export const fetchBalanceWithDecimals = async (
   tokenAddress: Address,
@@ -18,9 +18,10 @@ export const fetchBalanceWithDecimals = async (
   chainId?: number
 ) => {
   try {
-    const supportedChainIds = wagmiConfig.chains.map((c) => c.id);
+    const supportedChainIds = wagmiConfig.chains.map(c => c.id);
     const isSupported =
-      chainId !== undefined && supportedChainIds.includes(chainId as 137 | 80002);
+      chainId !== undefined &&
+      supportedChainIds.includes(chainId as 137 | 80002);
 
     if (tokenAddress === AddressZero) {
       const client = getPublicClient(wagmiConfig, {
@@ -31,20 +32,20 @@ export const fetchBalanceWithDecimals = async (
       const formattedBalance = formatUnits(balance!, 18);
       return {
         formattedBalance: formattedBalance,
-        decimals: 18, 
+        decimals: 18,
       };
     } else {
       const balance = await readContract(wagmiConfig, {
         address: tokenAddress,
         abi: erc20Abi,
-        functionName: "balanceOf",
+        functionName: 'balanceOf',
         args: [userAddress],
         chainId: isSupported ? (chainId as 137 | 80002) : undefined,
       });
       const decimals = await readContract(wagmiConfig, {
         address: tokenAddress,
         abi: erc20Abi,
-        functionName: "decimals",
+        functionName: 'decimals',
         chainId: isSupported ? (chainId as 137 | 80002) : undefined,
       });
       const formattedBalance = formatUnits(balance, decimals);
@@ -54,7 +55,7 @@ export const fetchBalanceWithDecimals = async (
       };
     }
   } catch (error) {
-    console.error("error on fetchBalanceWithDecimals", { error });
+    console.error('error on fetchBalanceWithDecimals', { error });
     return null;
   }
 };
@@ -73,21 +74,21 @@ export const fetchTokenDetails = async ({
       client.readContract({
         address: tokenAddress,
         abi: erc20Abi,
-        functionName: "balanceOf",
+        functionName: 'balanceOf',
         args: [address],
       }),
       client
         .readContract({
           address: tokenAddress,
           abi: erc20Abi,
-          functionName: "symbol",
+          functionName: 'symbol',
         })
-        .catch(() => "POL"),
+        .catch(() => 'POL'),
       client
         .readContract({
           address: tokenAddress,
           abi: erc20Abi,
-          functionName: "decimals",
+          functionName: 'decimals',
         })
         .catch(() => 18),
     ]);
@@ -97,8 +98,8 @@ export const fetchTokenDetails = async ({
     // Return the token details
     return { formattedBalance, symbol, decimals };
   } catch (error) {
-    console.error("Error getting token details:", error);
-    return { formattedBalance: "0", symbol: "NA", decimals: 0 };
+    console.error('Error getting token details:', error);
+    return { formattedBalance: '0', symbol: 'NA', decimals: 0 };
   }
 };
 
@@ -117,7 +118,7 @@ export const handleErc20Transfer = async ({
   const hash = await writeContract(wagmiConfig, {
     address: tokenAddress,
     abi: erc20Abi,
-    functionName: "transfer",
+    functionName: 'transfer',
     args: [projectAddress, value],
     chainId: chainId,
     // @ts-ignore -- needed for safe txs
@@ -127,7 +128,7 @@ export const handleErc20Transfer = async ({
 };
 
 export const fetchTokenPrice = async (
-  coingeckoId: string = "polygon-ecosystem-token"
+  coingeckoId: string = 'polygon-ecosystem-token'
 ) => {
   try {
     const res = await fetch(
@@ -136,7 +137,7 @@ export const fetchTokenPrice = async (
     const data = await res.json();
     return parseFloat(data[coingeckoId].usd) || 1;
   } catch (error) {
-    console.error("Error fetching token price:", error);
+    console.error('Error fetching token price:', error);
     return 1;
   }
 };
@@ -150,22 +151,22 @@ export const checkUserOwnsNFT = async (
 
   const abi = [
     {
-      inputs: [{ internalType: "address", name: "owner", type: "address" }],
-      name: "balanceOf",
-      outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-      stateMutability: "view",
-      type: "function",
+      inputs: [{ internalType: 'address', name: 'owner', type: 'address' }],
+      name: 'balanceOf',
+      outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+      stateMutability: 'view',
+      type: 'function',
     },
   ];
 
   try {
     const contract = new ethers.Contract(nftContractAddress, abi, provider);
     const balance = await contract.balanceOf(userAddress);
-    console.log("BAL", balance);
+    console.log('BAL', balance);
 
     return balance > 0;
   } catch (e) {
-    console.log("User Own NFT Error", e);
+    console.log('User Own NFT Error', e);
     return false;
   }
 };
@@ -177,9 +178,9 @@ export async function isContractAddress(address: string): Promise<boolean> {
   try {
     const provider = new ethers.JsonRpcProvider(config.NETWORK_RPC_ADDRESS);
     const code = await provider.getCode(address);
-    return code !== "0x";
+    return code !== '0x';
   } catch (error) {
-    console.error("Error checking contract:", error);
+    console.error('Error checking contract:', error);
     return false;
   }
 }
@@ -195,9 +196,9 @@ export const fetchEVMTokenBalances = async <T extends { [key: string]: any }>(
   const nativeTokens: T[] = [];
 
   // Use the correct property name based on the generic token type
-  const addressLabel = "address" in tokens[0] ? "address" : "id";
+  const addressLabel = 'address' in tokens[0] ? 'address' : 'id';
 
-  tokens.forEach((token) => {
+  tokens.forEach(token => {
     const tokenAddress = token[addressLabel as keyof T] as string;
 
     if (tokenAddress !== AddressZero) {
@@ -207,14 +208,14 @@ export const fetchEVMTokenBalances = async <T extends { [key: string]: any }>(
     }
   });
 
-  const erc20Calls = erc20Tokens.map((token) => {
+  const erc20Calls = erc20Tokens.map(token => {
     const tokenAddress = token[addressLabel as keyof T] as string;
 
     // Ensure the tokenAddress is cast as Address (format starting with 0x)
     return {
       address: tokenAddress as Address, // Cast to wagmi Address type
       abi: erc20Abi,
-      functionName: "balanceOf",
+      functionName: 'balanceOf',
       args: [walletAddress],
     };
   });
@@ -228,7 +229,7 @@ export const fetchEVMTokenBalances = async <T extends { [key: string]: any }>(
 
     // // Fetch balances for native tokens (e.g., ETH)
     const nativeTokenBalances = await Promise.all(
-      nativeTokens.map(async (nativeToken) => {
+      nativeTokens.map(async nativeToken => {
         const balance = await getBalance(wagmiConfig, {
           address: walletAddress as Address,
         });
@@ -255,30 +256,30 @@ export const fetchEVMTokenBalances = async <T extends { [key: string]: any }>(
     // Combine ERC20 and native token balances
     return [...nativeTokens, ...erc20Tokens];
   } catch (error) {
-    console.error("Error fetching EVM token balances:", error);
+    console.error('Error fetching EVM token balances:', error);
 
     // Return undefined balances in case of failure
-    return tokens.map((token) => ({ ...token, balance: 0 }));
+    return tokens.map(token => ({ ...token, balance: 0 }));
   }
 };
 
 export const truncateToDecimalPlaces = (strNum: string, decimals: number) => {
-  let index = strNum.indexOf(".");
+  const index = strNum.indexOf('.');
   if (index === -1 || decimals < 1) {
     return Number(strNum);
   }
-  let length = index + 1 + decimals;
+  const length = index + 1 + decimals;
   return Number(strNum.substring(0, length));
 };
 
 export const formatBalance = (balance?: number): string => {
-  if (balance === undefined || balance === null || isNaN(balance)) return "0";
+  if (balance === undefined || balance === null || isNaN(balance)) return '0';
 
   // Convert the balance to a string with high precision
   const balanceStr = balance.toFixed(10); // Use a high precision to avoid rounding issues
 
   // Find the index of the decimal point
-  const decimalIndex = balanceStr.indexOf(".");
+  const decimalIndex = balanceStr.indexOf('.');
 
   // If there's no decimal point, return the balance as is
   if (decimalIndex === -1) return balanceStr;
@@ -289,10 +290,10 @@ export const formatBalance = (balance?: number): string => {
 
   // Find the first two non-zero digits in the decimal part
   let nonZeroCount = 0;
-  let result = "";
+  let result = '';
 
   for (let i = 0; i < decimalPart.length; i++) {
-    if (decimalPart[i] !== "0") {
+    if (decimalPart[i] !== '0') {
       nonZeroCount++;
     }
     result += decimalPart[i];
@@ -316,14 +317,14 @@ export const convertDonationAmount = async (
     minPOL = polAmount;
   }
 
-  if (token.symbol === "POL") {
+  if (token.symbol === 'POL') {
     return minPOL;
   }
   const polPrice = await fetchSquidPOLUSDPrice();
   const targetTokenPrice = token.usdPrice;
 
   if (!polPrice || !targetTokenPrice) {
-    console.error("Error fetching token prices");
+    console.error('Error fetching token prices');
     return null;
   }
 
@@ -338,7 +339,7 @@ export const convertToPOLAmount = async (
   const tokenPrice = token.usdPrice;
 
   if (!polPrice || !tokenPrice) {
-    console.error("Error fetching token prices");
+    console.error('Error fetching token prices');
     return null;
   }
 
@@ -355,8 +356,8 @@ export const fetchSquidPOLUSDPrice = async () => {
       `https://v2.api.squidrouter.com/v2/tokens?chainId=137&address=0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee`,
       {
         headers: {
-          "x-integrator-id": integratorId,
-          "Content-Type": "application/json",
+          'x-integrator-id': integratorId,
+          'Content-Type': 'application/json',
         },
       }
     );
@@ -365,7 +366,7 @@ export const fetchSquidPOLUSDPrice = async () => {
     const usdPrice = tokenData.usdPrice || null;
     return usdPrice;
   } catch (error) {
-    console.error("Error fetching token prices:", error);
+    console.error('Error fetching token prices:', error);
     return {};
   }
 };

@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
+
 import 'quill/dist/quill.snow.css';
 import { useFormContext, RegisterOptions } from 'react-hook-form';
-import { uploadToIPFS } from '@/services/ipfs';
+
 import { handleImageUrl } from '@/helpers/image';
+import { uploadToIPFS } from '@/services/ipfs';
 
 // Custom dark theme for the Rich-Text editor
 const customStyles = `
@@ -221,7 +223,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                           quillInstance.insertEmbed(
                             range.index,
                             'image',
-                            imageUrl,
+                            imageUrl
                           );
                         }
                       }
@@ -232,7 +234,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 }
               }
             }
-          },
+          }
         );
         quillInstanceRef.current = quillInstance;
         quillStateRef.current = QuillState.INITIALIZED;
@@ -305,7 +307,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
               quillInstanceRef.current.insertEmbed(
                 range.index,
                 'image',
-                imageUrl,
+                imageUrl
               );
             }
           } catch (error) {

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { usePublicClient } from 'wagmi';
+
 import {
   checkBondingCurvePermissions,
   RoleCheckResult,
@@ -18,7 +19,7 @@ export const useRoleCheck = (bondingCurveAddress: string, address: string) => {
       return await checkBondingCurvePermissions(
         publicClient,
         bondingCurveAddress,
-        address,
+        address
       );
     },
     enabled: !!publicClient && !!bondingCurveAddress && !!address,

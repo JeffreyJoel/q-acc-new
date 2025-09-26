@@ -1,27 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import Pagination from '@/components/shared/Pagination';
-import { IconTotalDonations } from '@/components/icons/IconTotalDonations';
-import { IconTotalSupply } from '@/components/icons/IconTotalSupply';
-import { IconTotalDonars } from '@/components/icons/IconTotalDonors';
-import { useProjectContext } from '@/contexts/project.context';
-import { fetchProjectDonationsById } from '@/services/donation.service';
 
-import { checkMatchingFundAddress, formatAmount } from '@/helpers/donations';
-import config from '@/config/configuration';
-import { useTokenPrice } from '@/hooks/useTokens';
-import { calculateCapAmount } from '@/helpers/round';
-import { useFetchActiveRoundDetails } from '@/hooks/useRounds';
-import { isContractAddress } from '@/helpers/token';
-import { CHAIN_IMAGES, fetchUSDPrices } from '@/helpers/squidTransactions';
-import { Spinner } from '@/components/loaders/Spinner';
-import { useTokenSupplyDetails } from '@/hooks/useTokens';
+import Link from 'next/link';
+
 import { ArrowDownUp, ExternalLink } from 'lucide-react';
+
+import { IconTotalDonations } from '@/components/icons/IconTotalDonations';
+import { IconTotalDonars } from '@/components/icons/IconTotalDonors';
+import { IconTotalSupply } from '@/components/icons/IconTotalSupply';
+import { Spinner } from '@/components/loaders/Spinner';
+import Pagination from '@/components/shared/Pagination';
+import config from '@/config/configuration';
+import { useProjectContext } from '@/contexts/project.context';
+import { checkMatchingFundAddress, formatAmount } from '@/helpers/donations';
+import { calculateCapAmount } from '@/helpers/round';
+import { CHAIN_IMAGES, fetchUSDPrices } from '@/helpers/squidTransactions';
+import { isContractAddress } from '@/helpers/token';
+import { useFetchActiveRoundDetails } from '@/hooks/useRounds';
+import { useTokenPrice } from '@/hooks/useTokens';
+import { useTokenSupplyDetails } from '@/hooks/useTokens';
+import { fetchProjectDonationsById } from '@/services/donation.service';
 
 //TODO: move to constants
 export const POLYGON_POS_CHAIN_IMAGE =
   'https://raw.githubusercontent.com/0xsquid/assets/main/images/chains/polygon.svg';
-
 
 const itemPerPage = 5;
 
@@ -58,13 +59,13 @@ const ProjectDonationTable = () => {
   const [pageDonations, setPageDonations] = useState<any>();
   const [totalAmountDonated, setTotalAmountDonated] = useState(0);
   const [safeAddresses, setSafeAddresses] = useState<Record<string, boolean>>(
-    {},
+    {}
   );
   const [usdPrices, setUsdPrices] = useState<any>({});
   const [usdPricesLoading, setUsdPricesLoading] = useState(false);
 
   const { data: tokenDetails } = useTokenSupplyDetails(
-    projectData?.abc?.fundingManagerAddress,
+    projectData?.abc?.fundingManagerAddress
   );
   const { totalAmount: totalPOLDonated } = useProjectContext();
   useEffect(() => {
@@ -84,7 +85,7 @@ const ProjectDonationTable = () => {
         parseInt(projectData?.id),
         itemPerPage,
         page * itemPerPage,
-        { field: order.by, direction: order.direction },
+        { field: order.by, direction: order.direction }
       );
 
       if (data) {
@@ -103,7 +104,7 @@ const ProjectDonationTable = () => {
                 filteredDonations.push(donation);
               }
             }
-          }),
+          })
         );
         setSafeAddresses(prev => ({ ...prev, ...addressChecks }));
         // setPageDonations(filteredDonations);
@@ -127,8 +128,8 @@ const ProjectDonationTable = () => {
               ? `${chainId}-${tokenAddress}`
               : null;
           })
-          .filter(Boolean), // Remove null/undefined values
-      ),
+          .filter(Boolean) // Remove null/undefined values
+      )
     ).map((key: any) => {
       const [chainId, tokenAddress] = key.split('-');
       return { chainId: Number(chainId), tokenAddress };
@@ -159,7 +160,7 @@ const ProjectDonationTable = () => {
   };
 
   return (
-    <div className="bg-neutral-900 text-gray-300">
+    <div className='bg-neutral-900 text-gray-300'>
       <div className=' container flex  flex-col py-10 gap-10'>
         <div className='flex gap-10 lg:flex-row flex-col'>
           {totalCount === 0 ? (
@@ -182,7 +183,7 @@ const ProjectDonationTable = () => {
                   <button
                     onClick={() => orderChangeHandler(EOrderBy.CreationDate)}
                   >
-                    <ArrowDownUp size={16} className="text-peach-400" />
+                    <ArrowDownUp size={16} className='text-peach-400' />
                   </button>
                 </div>
                 {/* <div className='p-[8px_4px] flex gap-2 text-start w-full  font-medium text-[#1D1E1F] items-center min-w-[150px] border-b-2'>
@@ -194,7 +195,7 @@ const ProjectDonationTable = () => {
                 <div className='p-[8px_4px] flex gap-2 text-start w-full  font-medium text-gray-400 items-center min-w-[150px] border-b-2 border-neutral-700'>
                   Amount
                   <button onClick={() => orderChangeHandler(EOrderBy.Amount)}>
-                    <ArrowDownUp size={16} className="text-peach-400" />
+                    <ArrowDownUp size={16} className='text-peach-400' />
                   </button>
                 </div>
                 <div className='p-[8px_4px] flex gap-2 text-start w-full  font-medium text-gray-400 items-center min-w-[150px] border-b-2 border-neutral-700'>
@@ -204,7 +205,7 @@ const ProjectDonationTable = () => {
                       orderChangeHandler(EOrderBy.RewardTokenAmount)
                     }
                   >
-                    <ArrowDownUp size={16} className="text-peach-400" />
+                    <ArrowDownUp size={16} className='text-peach-400' />
                   </button>
                 </div>
               </div>
@@ -240,7 +241,7 @@ const ProjectDonationTable = () => {
                               day: 'numeric',
                               year: 'numeric',
                               month: 'short',
-                            },
+                            }
                           )}
                           {donation?.qfRound?.seasonNumber && (
                             <span className='px-2 py-[2px] border-2 border-neutral-600 bg-neutral-700 rounded-3xl text-xs text-gray-300 font-medium leading-4'>
@@ -364,8 +365,7 @@ const ProjectDonationTable = () => {
                       <div className='p-[18px_4px]  text-gray-200 font-medium flex gap-2 text-start border-b border-neutral-700 w-full min-w-[150px]'>
                         {donation.rewardTokenAmount
                           ? formatAmount(
-                              Math.round(donation.rewardTokenAmount * 100) /
-                                100,
+                              Math.round(donation.rewardTokenAmount * 100) / 100
                             ) +
                             ' ' +
                             projectData?.abc?.tokenTicker
@@ -401,7 +401,7 @@ const ProjectDonationTable = () => {
                   ~ ${' '}
                   {formatAmount(
                     Math.round(totalAmountDonated * Number(POLPrice) * 100) /
-                      100,
+                      100
                   )}
                 </h1>
                 <h2 className='font-medium text-gray-300'>
@@ -419,7 +419,9 @@ const ProjectDonationTable = () => {
                     Total supporters
                   </span>
                 </div>
-                <span className='font-semibold text-gray-200'>{uniqueDonars}</span>
+                <span className='font-semibold text-gray-200'>
+                  {uniqueDonars}
+                </span>
               </div>
 
               {/* Total Supply */}

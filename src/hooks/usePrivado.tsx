@@ -1,18 +1,25 @@
+import { useState, useEffect } from 'react';
+
+import { useQuery } from '@tanstack/react-query';
 import { Address, createPublicClient, http } from 'viem';
 import { useAccount } from 'wagmi';
-import { useQuery } from '@tanstack/react-query';
-// eslint-disable-next-line import/named
+
 import config from '@/config/configuration';
 import { requestGraphQL } from '@/helpers/request';
 import { CHECK_USER_PRIVADO_VERIFIED_STATE } from '@/queries/project.query';
-import { useFetchUser } from './useFetchUser';
-import { useState, useEffect } from 'react';
 import { generatePrivadoShortenedUrl } from '@/services/privado.service';
+
+import { useFetchUser } from './useFetchUser';
 
 const { chain, contractAddress, requestId } = config.privadoConfig;
 
-export const usePrivadoChainStatus = ({ disable, address }: { disable: boolean, address: Address }) => {
-
+export const usePrivadoChainStatus = ({
+  disable,
+  address,
+}: {
+  disable: boolean;
+  address: Address;
+}) => {
   const publicClient = createPublicClient({
     chain: chain,
     transport: http(),
@@ -67,7 +74,7 @@ export const useTriggerUserPrivadoStatusCheck = ({
         {},
         {
           auth: true,
-        },
+        }
       );
       return { [address]: res?.checkUserPrivadoVerifiedState };
     },
@@ -94,9 +101,6 @@ export const usePrivado = (userAddress: Address) => {
   const isLoading = privadoChainStatus.isLoading || userFetch.isPending;
   return { isVerified, isLoading, error };
 };
-
-
-
 
 export const usePrivadoUrl = () => {
   const [isLoading, setIsLoading] = useState(false);

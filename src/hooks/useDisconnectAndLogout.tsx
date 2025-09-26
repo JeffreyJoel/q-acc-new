@@ -1,5 +1,5 @@
-import { usePrivy } from "@privy-io/react-auth";
-import { useAccountEffect, useDisconnect } from "wagmi";
+import { usePrivy } from '@privy-io/react-auth';
+import { useAccountEffect, useDisconnect } from 'wagmi';
 
 export const useDisconnectAndLogout = () => {
   const { authenticated, logout } = usePrivy();

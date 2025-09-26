@@ -466,7 +466,7 @@ export const GET_ALL_PROJECTS = /* GraphQL */ `
         listed
         reviewStatus
         givingBlocksId
-        socialMedia { 
+        socialMedia {
           type
           link
         }

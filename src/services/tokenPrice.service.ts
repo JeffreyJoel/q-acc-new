@@ -1,12 +1,14 @@
 import { useMemo } from 'react';
-import { ethers, BigNumberish, Contract, formatUnits } from 'ethers';
+
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import { ethers, BigNumberish, Contract, formatUnits } from 'ethers';
+import { createPublicClient, http, formatUnits as viemFormatUnits } from 'viem';
+import { polygon } from 'viem/chains';
+
 import config from '@/config/configuration';
 import { IProject } from '@/types/project.type';
 import { IEarlyAccessRound, IQfRound } from '@/types/round.type';
-import { createPublicClient, http, formatUnits as viemFormatUnits } from 'viem';
-import { polygon } from 'viem/chains';
 
 const COINGECKO_API = 'https://api.coingecko.com/api/v3';
 
@@ -16,10 +18,10 @@ const COINGECKO_API = 'https://api.coingecko.com/api/v3';
  */
 export async function fetchCoinGeckoMarketChart(
   tokenAddress: string,
-  days: number = 7,
+  days: number = 7
 ) {
   try {
-    const baseUrl = `${COINGECKO_API}/coins/polygon-pos/contract/${tokenAddress}`
+    const baseUrl = `${COINGECKO_API}/coins/polygon-pos/contract/${tokenAddress}`;
 
     const { data } = await axios.get(baseUrl);
 
@@ -156,7 +158,7 @@ async function getTokenPriceRangeStatus({
     const latestEndedRound = allRounds
       .filter(round => new Date(round.endDate).getTime() < tenMinutesLater) // Select rounds with endDate in past or less than 10 minutes later
       .sort(
-        (a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime(),
+        (a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime()
       )[0]; // Sort descending and take the first one
     if (latestEndedRound) {
       // if batch minting was not executed yet for the past round, it means the token price range is not valid
@@ -188,7 +190,7 @@ async function getTokenPriceRangeStatus({
               (project.abc?.projectAddress
                 ? swap.recipient.toLowerCase() ===
                   project.abc?.projectAddress.toLowerCase()
-                : true),
+                : true)
           ).length;
           if (numberOfExecutedTransactions < expectedTransactionsNumber) {
             return {
@@ -251,20 +253,36 @@ export async function getTokenSupplyDetails(address: string) {
     });
 
     // Extract results and handle any failures
-    const [reserveRatioResult, virtualCollateralResult, virtualIssuanceResult] = results;
+    const [reserveRatioResult, virtualCollateralResult, virtualIssuanceResult] =
+      results;
 
     if (reserveRatioResult.status === 'failure') {
-      throw new Error(`Failed to get reserve ratio: ${reserveRatioResult.error}`);
+      throw new Error(
+        `Failed to get reserve ratio: ${reserveRatioResult.error}`
+      );
     }
     if (virtualCollateralResult.status === 'failure') {
-      throw new Error(`Failed to get virtual collateral supply: ${virtualCollateralResult.error}`);
+      throw new Error(
+        `Failed to get virtual collateral supply: ${virtualCollateralResult.error}`
+      );
     }
     if (virtualIssuanceResult.status === 'failure') {
-      throw new Error(`Failed to get virtual issuance supply: ${virtualIssuanceResult.error}`);
+      throw new Error(
+        `Failed to get virtual issuance supply: ${virtualIssuanceResult.error}`
+      );
     }
-    const collateral_supply = viemFormatUnits(virtualCollateralResult.result as bigint, 18);
-    const issuance_supply = viemFormatUnits(virtualIssuanceResult.result as bigint, 18);
-    const reserve_ration = viemFormatUnits(reserveRatioResult.result as bigint, 6);
+    const collateral_supply = viemFormatUnits(
+      virtualCollateralResult.result as bigint,
+      18
+    );
+    const issuance_supply = viemFormatUnits(
+      virtualIssuanceResult.result as bigint,
+      18
+    );
+    const reserve_ration = viemFormatUnits(
+      reserveRatioResult.result as bigint,
+      6
+    );
 
     return {
       reserve_ration,
@@ -277,12 +295,11 @@ export async function getTokenSupplyDetails(address: string) {
   }
 }
 
-
 export async function calculateMarketCapChange(
   donations: any[],
   contractAddress: string,
   hoursAgo: number = 24,
-  startDateISO?: string,
+  startDateISO?: string
 ) {
   // 1.  Fetch on-chain curve parameters once
   const { reserve_ration, collateral_supply, issuance_supply } =
@@ -306,7 +323,7 @@ export async function calculateMarketCapChange(
 
   // 2.  Replay donations chronologically
   donations
-    .filter((d) => new Date(d.createdAt).getTime() > genesisTs)
+    .filter(d => new Date(d.createdAt).getTime() > genesisTs)
     .sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt))
     .forEach(({ amount, createdAt }) => {
       supply = supply * Math.pow(1 + amount / reserve, reserveRatio);
@@ -323,9 +340,8 @@ export async function calculateMarketCapChange(
 
   const latestCap = history[history.length - 1].marketCap;
   const pastCap =
-    [...history]
-      .reverse()
-      .find((h) => h.ts <= cutoffTs)?.marketCap ?? history[0].marketCap;
+    [...history].reverse().find(h => h.ts <= cutoffTs)?.marketCap ??
+    history[0].marketCap;
 
   const pctChange = pastCap === 0 ? 0 : ((latestCap - pastCap) / pastCap) * 100;
 
@@ -346,7 +362,9 @@ export async function fetchGeckoMarketCap(tokenAddress: string) {
 
     // USD price for the token
     const priceUSD = parseFloat(
-      poolAttributes.token_price_usd ?? poolAttributes.base_token_price_usd ?? '0',
+      poolAttributes.token_price_usd ??
+        poolAttributes.base_token_price_usd ??
+        '0'
     );
     if (isNaN(priceUSD) || priceUSD === 0) {
       return null;
@@ -358,7 +376,9 @@ export async function fetchGeckoMarketCap(tokenAddress: string) {
       : null;
 
     // 24-hour price change percentage – directly available from GeckoTerminal pools response
-    const pct24 = parseFloat(poolAttributes.price_change_percentage?.h24 ?? '0');
+    const pct24 = parseFloat(
+      poolAttributes.price_change_percentage?.h24 ?? '0'
+    );
 
     const chart = await fetchCoinGeckoMarketChart(tokenAddress, 7);
     const pct7d = chart?.pctChange7d ?? 0;
@@ -403,20 +423,22 @@ export async function getMarketCap(
     return result?.marketCap ?? 0;
   } else {
     if (donations && donations.length > 0) {
-      const { marketCap } = await calculateMarketCapChange(donations, contract_address);
+      const { marketCap } = await calculateMarketCapChange(
+        donations,
+        contract_address
+      );
       return marketCap;
     }
-    
+
     const { reserve_ration, collateral_supply, issuance_supply } =
       await getTokenSupplyDetails(contract_address);
 
     const reserveRatio = Number(reserve_ration);
-    let reserve = Number(collateral_supply);
-    let supply = Number(issuance_supply);
+    const reserve = Number(collateral_supply);
+    const supply = Number(issuance_supply);
 
     const initialPrice = (reserve / (supply * reserveRatio)) * 1.1;
     const marketCap = supply * initialPrice;
     return marketCap;
   }
 }
-

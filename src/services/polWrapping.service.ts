@@ -1,4 +1,5 @@
 import { Address, parseEther, formatUnits, erc20Abi } from 'viem';
+
 import config from '@/config/configuration';
 import WRAPPED_POL_ABI from '@/lib/abi/wrappedPol';
 
@@ -18,7 +19,7 @@ import WRAPPED_POL_ABI from '@/lib/abi/wrappedPol';
  */
 export async function checkPOLBalance(
   publicClient: any,
-  userAddress: string,
+  userAddress: string
 ): Promise<string> {
   try {
     // Check if POL is native token (zero address) or ERC20
@@ -51,7 +52,7 @@ export async function checkPOLBalance(
  */
 export async function checkWPOLBalance(
   publicClient: any,
-  userAddress: string,
+  userAddress: string
 ): Promise<string> {
   try {
     const balance = await publicClient.readContract({
@@ -74,7 +75,7 @@ export async function wrapPOL(
   walletClient: any,
   userAddress: string,
   amount: string,
-  onStatusUpdate?: (status: string) => void,
+  onStatusUpdate?: (status: string) => void
 ): Promise<string> {
   try {
     onStatusUpdate?.('Wrapping POL to WPOL...');
@@ -101,7 +102,7 @@ export async function unwrapWPOL(
   walletClient: any,
   userAddress: string,
   amount: string,
-  onStatusUpdate?: (status: string) => void,
+  onStatusUpdate?: (status: string) => void
 ): Promise<string> {
   try {
     onStatusUpdate?.('Unwrapping WPOL to POL...');
@@ -126,7 +127,7 @@ export async function unwrapWPOL(
 export async function checkSufficientBalance(
   publicClient: any,
   userAddress: string,
-  requiredAmount: string,
+  requiredAmount: string
 ): Promise<{
   hasSufficientBalance: boolean;
   polBalance: string;
@@ -163,7 +164,7 @@ export async function executePOLWrappingFlow(
   walletClient: any,
   userAddress: string,
   requiredAmount: string,
-  onStatusUpdate?: (status: string) => void,
+  onStatusUpdate?: (status: string) => void
 ): Promise<{ wrapHash?: string; unwrapHash?: string }> {
   try {
     onStatusUpdate?.('Checking POL balance...');
@@ -175,7 +176,7 @@ export async function executePOLWrappingFlow(
 
     if (userPolBalance < required) {
       throw new Error(
-        `Insufficient POL balance. You need ${requiredAmount} POL but have ${polBalance} POL.`,
+        `Insufficient POL balance. You need ${requiredAmount} POL but have ${polBalance} POL.`
       );
     }
 
@@ -185,7 +186,7 @@ export async function executePOLWrappingFlow(
       walletClient,
       userAddress,
       requiredAmount,
-      onStatusUpdate,
+      onStatusUpdate
     );
     return { wrapHash };
   } catch (error) {

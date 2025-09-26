@@ -1,16 +1,13 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useState } from "react";
-import Image from "next/image";
-import Autoplay from "embla-carousel-autoplay";
-import {
-  AnimatePresence,
-  Variants,
-  motion,
-  useAnimation,
-} from "motion/react";
+import { useCallback, useEffect, useState } from 'react';
 
-import { cn } from "@/lib/utils";
+import Image from 'next/image';
+import Link from 'next/link';
+
+import Autoplay from 'embla-carousel-autoplay';
+import { AnimatePresence, Variants, motion, useAnimation } from 'motion/react';
+
 import {
   Carousel,
   CarouselContent,
@@ -18,9 +15,9 @@ import {
   CarouselNext,
   CarouselPrevious,
   type CarouselApi,
-} from "@/components/ui/carousel";
-import { capitalizeFirstLetter } from "@/helpers";
-import Link from "next/link";
+} from '@/components/ui/carousel';
+import { capitalizeFirstLetter } from '@/helpers';
+import { cn } from '@/lib/utils';
 
 interface Tip {
   text: string;
@@ -39,19 +36,17 @@ export interface CarouselProps {
   showNavigation?: boolean;
   showIndicators?: boolean;
   showProgress?: boolean;
-  aspectRatio?: "video" | "square" | "wide";
-  textPosition?: "top" | "bottom";
+  aspectRatio?: 'video' | 'square' | 'wide';
+  textPosition?: 'top' | 'bottom';
   onTipChange?: (index: number) => void;
   backgroundTips?: boolean;
   shuffleTips?: boolean;
   animateText?: boolean;
 }
 
-
-
 const carouselVariants: Variants = {
   enter: (direction: number) => ({
-    x: direction > 0 ? "100%" : "-100%",
+    x: direction > 0 ? '100%' : '-100%',
     opacity: 0,
   }),
   center: {
@@ -59,7 +54,7 @@ const carouselVariants: Variants = {
     opacity: 1,
   },
   exit: (direction: number) => ({
-    x: direction < 0 ? "100%" : "-100%",
+    x: direction < 0 ? '100%' : '-100%',
     opacity: 0,
   }),
 };
@@ -70,9 +65,9 @@ const textVariants: Variants = {
 };
 
 const aspectRatioClasses = {
-  video: "aspect-video",
-  square: "aspect-square",
-  wide: "aspect-[2/1]",
+  video: 'aspect-video',
+  square: 'aspect-square',
+  wide: 'aspect-[2/1]',
 };
 
 export function ProjectsCarousel({
@@ -80,7 +75,7 @@ export function ProjectsCarousel({
   className,
   tips,
   showProgress = true,
-  aspectRatio = "wide",
+  aspectRatio = 'wide',
   showNavigation = false,
   showIndicators = true,
   backgroundTips = false,
@@ -114,10 +109,10 @@ export function ProjectsCarousel({
       onTipChange?.(newIndex);
     };
 
-    api.on("select", onSelect);
+    api.on('select', onSelect);
 
     return () => {
-      api.off("select", onSelect);
+      api.off('select', onSelect);
     };
   }, [api, current, onTipChange]);
 
@@ -125,7 +120,7 @@ export function ProjectsCarousel({
     if (!showProgress) return;
 
     const timer = setInterval(() => {
-      setProgress((oldProgress) => {
+      setProgress(oldProgress => {
         if (oldProgress === 100) {
           return 0;
         }
@@ -161,34 +156,34 @@ export function ProjectsCarousel({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
+      transition={{ duration: 0.8, ease: 'easeOut' }}
       className={cn(
-        "w-full mx-auto rounded-3xl bg-muted shadow-[0px_1px_1px_0px_rgba(0,0,0,0.05),0px_1px_1px_0px_rgba(255,252,240,0.5)_inset,0px_0px_0px_1px_hsla(0,0%,100%,0.1)_inset,0px_0px_1px_0px_rgba(28,27,26,0.5)]",
+        'w-full mx-auto rounded-3xl bg-muted shadow-[0px_1px_1px_0px_rgba(0,0,0,0.05),0px_1px_1px_0px_rgba(255,252,240,0.5)_inset,0px_0px_0px_1px_hsla(0,0%,100%,0.1)_inset,0px_0px_1px_0px_rgba(28,27,26,0.5)]',
         className
       )}
     >
-      <div className="w-full max-h-[630px] overflow-hidden rounded-3xl">
+      <div className='w-full max-h-[630px] overflow-hidden rounded-3xl'>
         <Carousel
           setApi={setApi}
           plugins={[autoplay]}
-          className="w-full relative"
+          className='w-full relative'
           opts={{
             loop: true,
           }}
         >
           {/* Absolute top-center indicator */}
           {showIndicators && !backgroundTips && (
-            <div className="absolute top-20 left-20  z-10 flex space-x-2">
+            <div className='absolute top-20 left-20  z-10 flex space-x-2'>
               {(tips || []).map((_, index) => (
                 <motion.button
                   key={index}
                   className={`h-1 w-8 flex-shrink-0 rounded-full ${
-                    index === current ? "bg-muted" : "bg-primary"
+                    index === current ? 'bg-muted' : 'bg-primary'
                   }`}
                   initial={false}
                   animate={{
                     backgroundColor:
-                      index === current ? "#FBBA80" : "#FBBA8033",
+                      index === current ? '#FBBA80' : '#FBBA8033',
                   }}
                   transition={{ duration: 0.5 }}
                   onClick={() => handleSelect(index)}
@@ -203,76 +198,77 @@ export function ProjectsCarousel({
                 <CarouselItem key={index}>
                   <motion.div
                     variants={carouselVariants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
+                    initial='enter'
+                    animate='center'
+                    exit='exit'
                     custom={direction}
-                    transition={{ duration: 0.8, ease: "easeInOut" }}
+                    transition={{ duration: 0.8, ease: 'easeInOut' }}
                     className={`relative ${aspectRatioClasses[aspectRatio]} w-full overflow-hidden`}
                   >
                     <Image
                       src={tip.image}
                       alt={`Visual representation for tip: ${tip.text}`}
                       fill
-                      className="object-cover object-right"
+                      className='object-cover object-right'
                       priority
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-neutral-950 via-neutral-950/70 to-transparent" />
-                    <div className="absolute pl-20 py-40 w-full h-full flex flex-col  items-start z-10">
-                      <span className="uppercase text-[8px] text-black font-bold py-1 px-2 rounded-lg bg-qacc-gray-light mb-4">
+                    <div className='absolute inset-0 bg-gradient-to-r from-neutral-950 via-neutral-950/70 to-transparent' />
+                    <div className='absolute pl-20 py-40 w-full h-full flex flex-col  items-start z-10'>
+                      <span className='uppercase text-[8px] text-black font-bold py-1 px-2 rounded-lg bg-qacc-gray-light mb-4'>
                         Featured Project
                       </span>
-                      <div className="max-w-2xl">
-                        <h2 className="font-anton text-white text-4xl md:text-[40px] font-normal mb-4 drop-shadow-lg uppercase">
+                      <div className='max-w-2xl'>
+                        <h2 className='font-anton text-white text-4xl md:text-[40px] font-normal mb-4 drop-shadow-lg uppercase'>
                           {tip.text}
                         </h2>
 
                         {tip.description && (
-                          <p className="max-w-lg leading-[18px] text-white text-sm font-medium mb-6 drop-shadow-lg">
-                            {capitalizeFirstLetter(tip.description) || "No description available"}
+                          <p className='max-w-lg leading-[18px] text-white text-sm font-medium mb-6 drop-shadow-lg'>
+                            {capitalizeFirstLetter(tip.description) ||
+                              'No description available'}
                           </p>
                         )}
                         {/* Stats row */}
-                        <div className="flex flex-row gap-12 mb-8">
-                          <div className="flex flex-col items-start">
-                            <span className="text-white text-2xl md:text-3xl font-bold leading-tight">
+                        <div className='flex flex-row gap-12 mb-8'>
+                          <div className='flex flex-col items-start'>
+                            <span className='text-white text-2xl md:text-3xl font-bold leading-tight'>
                               {tip.donations?.toLocaleString(undefined, {
-                                style: "currency",
-                                currency: "USD",
+                                style: 'currency',
+                                currency: 'USD',
                                 maximumFractionDigits: 0,
                               })}
                             </span>
-                            <span className="text-neutral-500 text-[13px] text-center font-medium tracking-wide">
+                            <span className='text-neutral-500 text-[13px] text-center font-medium tracking-wide'>
                               Total received
                             </span>
                           </div>
-                          <div className="flex flex-col items-start">
-                            <span className="text-white text-2xl md:text-3xl font-bold leading-tight">
+                          <div className='flex flex-col items-start'>
+                            <span className='text-white text-2xl md:text-3xl font-bold leading-tight'>
                               {tip.supporters?.toLocaleString()}
                             </span>
-                            <span className="text-neutral-500 text-[13px] text-center font-medium tracking-wide">
+                            <span className='text-neutral-500 text-[13px] text-center font-medium tracking-wide'>
                               Supporters
                             </span>
                           </div>
-                          <div className="flex flex-col items-start">
-                            <span className="text-white text-2xl md:text-3xl font-bold leading-tight">
+                          <div className='flex flex-col items-start'>
+                            <span className='text-white text-2xl md:text-3xl font-bold leading-tight'>
                               {tip.marketCap?.toLocaleString(undefined, {
-                                style: "currency",
-                                currency: "USD",
+                                style: 'currency',
+                                currency: 'USD',
                                 maximumFractionDigits: 0,
                               })}
                             </span>
-                            <span className="text-neutral-500 text-[13px] text-center font-medium tracking-wide">
+                            <span className='text-neutral-500 text-[13px] text-center font-medium tracking-wide'>
                               Market Cap
                             </span>
                           </div>
                         </div>
 
                         <div>
-                          <Link href={tip?.url || ""}>
-                          <button className="rounded-xl px-6 py-3 bg-peach-400 text-black text-lg font-medium tracking-wide">
-                            SWAP TOKENS
-                          </button>
+                          <Link href={tip?.url || ''}>
+                            <button className='rounded-xl px-6 py-3 bg-peach-400 text-black text-lg font-medium tracking-wide'>
+                              SWAP TOKENS
+                            </button>
                           </Link>
                         </div>
                       </div>
@@ -284,8 +280,8 @@ export function ProjectsCarousel({
           </CarouselContent>
           {showNavigation && (
             <>
-              <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2" />
-              <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2" />
+              <CarouselPrevious className='absolute left-2 top-1/2 -translate-y-1/2' />
+              <CarouselNext className='absolute right-2 top-1/2 -translate-y-1/2' />
             </>
           )}
         </Carousel>
@@ -294,4 +290,4 @@ export function ProjectsCarousel({
   );
 }
 
-ProjectsCarousel.displayName = "ProjectsCarousel";
+ProjectsCarousel.displayName = 'ProjectsCarousel';

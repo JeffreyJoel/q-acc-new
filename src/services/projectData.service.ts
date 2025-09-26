@@ -1,10 +1,19 @@
-import { fetchProjectDonationsById } from './donation.service';
-import { getMarketCap, calculateMarketCapChange, fetchGeckoMarketCap, getTokenSupplyDetails } from './tokenPrice.service';
-import { getPoolAddressByPair } from '@/helpers/getTokensListedData';
-import { calculateTotalDonations, calculateUniqueDonors } from '@/helpers/donations';
-import { fetchSquidPOLUSDPrice } from '@/helpers/token';
 import config from '@/config/configuration';
+import {
+  calculateTotalDonations,
+  calculateUniqueDonors,
+} from '@/helpers/donations';
+import { getPoolAddressByPair } from '@/helpers/getTokensListedData';
+import { fetchSquidPOLUSDPrice } from '@/helpers/token';
 import { IProject } from '@/types/project.type';
+
+import { fetchProjectDonationsById } from './donation.service';
+import {
+  getMarketCap,
+  calculateMarketCapChange,
+  fetchGeckoMarketCap,
+  getTokenSupplyDetails,
+} from './tokenPrice.service';
 
 const PRISMO_TOKEN_ADDRESS = '0x0b7a46e1af45e1eaadeed34b55b6fc00a85c7c68';
 
@@ -59,7 +68,7 @@ export async function fetchProjectStats(project: IProject): Promise<{
     const donations = donationsData.donations;
     const totalDonatedPOL = calculateTotalDonations(donations);
     const supporterCount = calculateUniqueDonors(donations);
-    
+
     // Get POL price for USD conversion
     const polPriceUSD = await fetchSquidPOLUSDPrice();
     const totalDonatedUSD = totalDonatedPOL * (polPriceUSD || 0);
@@ -70,7 +79,10 @@ export async function fetchProjectStats(project: IProject): Promise<{
       supporterCount,
     };
   } catch (error) {
-    console.error(`Error fetching project stats for project ${project.id}:`, error);
+    console.error(
+      `Error fetching project stats for project ${project.id}:`,
+      error
+    );
     return { totalDonatedPOL: 0, totalDonatedUSD: 0, supporterCount: 0 };
   }
 }
@@ -88,11 +100,18 @@ export async function fetchTokenData(project: IProject): Promise<{
 }> {
   try {
     if (!project.abc?.issuanceTokenAddress) {
-      return { priceUSD: 0, pricePOL: 0, marketCapUSD: 0, isTokenListed: false, change24h: 0, change7d: 0 };
+      return {
+        priceUSD: 0,
+        pricePOL: 0,
+        marketCapUSD: 0,
+        isTokenListed: false,
+        change24h: 0,
+        change7d: 0,
+      };
     }
 
     const tokenAddress = project.abc.issuanceTokenAddress;
-    
+
     // Get token price and listing status
     const { price, isListed } = await getPoolAddressByPair(
       tokenAddress,
@@ -110,9 +129,8 @@ export async function fetchTokenData(project: IProject): Promise<{
     } else if (project.abc?.fundingManagerAddress) {
       // Derive price from bonding curve parameters
       try {
-        const { reserve_ration, collateral_supply, issuance_supply } = await getTokenSupplyDetails(
-          project.abc.fundingManagerAddress,
-        );
+        const { reserve_ration, collateral_supply, issuance_supply } =
+          await getTokenSupplyDetails(project.abc.fundingManagerAddress);
 
         const reserveRatio = Number(reserve_ration);
         const reserve = Number(collateral_supply);
@@ -176,7 +194,10 @@ export async function fetchTokenData(project: IProject): Promise<{
           change7d = res7d.pctChange;
         }
       } catch (error) {
-        console.error(`Error calculating market cap for project ${project.id}:`, error);
+        console.error(
+          `Error calculating market cap for project ${project.id}:`,
+          error
+        );
       }
     }
 
@@ -189,20 +210,32 @@ export async function fetchTokenData(project: IProject): Promise<{
       change7d,
     };
   } catch (error) {
-    console.error(`Error fetching token data for project ${project.id}:`, error);
-    return { priceUSD: 0, pricePOL: 0, marketCapUSD: 0, isTokenListed: false, change24h: 0, change7d: 0 };
+    console.error(
+      `Error fetching token data for project ${project.id}:`,
+      error
+    );
+    return {
+      priceUSD: 0,
+      pricePOL: 0,
+      marketCapUSD: 0,
+      isTokenListed: false,
+      change24h: 0,
+      change7d: 0,
+    };
   }
 }
 
 /**
  * Combines project stats and token data into a single enriched object
  */
-export async function fetchAndAggregateProjectData(project: IProject): Promise<EnrichedProjectData> {
+export async function fetchAndAggregateProjectData(
+  project: IProject
+): Promise<EnrichedProjectData> {
   try {
     // Fetch both stats and token data in parallel
     const [stats, tokenData] = await Promise.all([
       fetchProjectStats(project),
-      fetchTokenData(project)
+      fetchTokenData(project),
     ]);
 
     return {
@@ -257,7 +290,9 @@ export async function fetchAndAggregateProjectData(project: IProject): Promise<E
 /**
  * Batch fetches enriched data for multiple projects
  */
-export async function fetchAllProjectsData(projects: IProject[]): Promise<EnrichedProjectData[]> {
+export async function fetchAllProjectsData(
+  projects: IProject[]
+): Promise<EnrichedProjectData[]> {
   try {
     const CONCURRENCY = 5; // simultaneous RPC calls
 
@@ -269,7 +304,7 @@ export async function fetchAllProjectsData(projects: IProject[]): Promise<Enrich
 
       // run the current batch in parallel
       const batchResults = await Promise.all(
-        slice.map((p) => fetchAndAggregateProjectData(p))
+        slice.map(p => fetchAndAggregateProjectData(p))
       );
 
       enriched.push(...batchResults);
@@ -280,4 +315,4 @@ export async function fetchAllProjectsData(projects: IProject[]): Promise<Enrich
     console.error('Error fetching all projects data:', error);
     throw error;
   }
-} 
+}

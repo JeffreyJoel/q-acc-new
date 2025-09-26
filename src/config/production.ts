@@ -20,13 +20,13 @@ import {
   gnosis,
   zksync,
   bsc,
-  polygonAmoy
+  polygonAmoy,
 } from '@reown/appkit/networks';
 import { polygon as viemPolygon } from 'wagmi/chains';
 // import { polygon, polygonZkEvm } from 'wagmi/chains';
 
-import { EnvConfig } from '@/types/config.type';
 import { PrivadoContractMethodV2 } from '@/lib/constants/privado';
+import { EnvConfig } from '@/types/config.type';
 
 const config: EnvConfig = {
   SUPPORTED_CHAINS: [

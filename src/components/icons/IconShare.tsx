@@ -1,4 +1,5 @@
 import { FC } from 'react';
+
 import { IIcon } from './type';
 
 export const IconShare: FC<IIcon> = ({ size = 16, color = '#E1458D' }) => {

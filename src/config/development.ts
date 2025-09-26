@@ -19,8 +19,8 @@ import {
 } from '@reown/appkit/networks';
 import { polygonAmoy as viemPolygonAmoy } from 'wagmi/chains';
 
-import { EnvConfig } from '@/types/config.type';
 import { PrivadoContractMethodV2 } from '@/lib/constants/privado';
+import { EnvConfig } from '@/types/config.type';
 
 const config: EnvConfig = {
   SUPPORTED_CHAINS: [
@@ -78,7 +78,7 @@ const config: EnvConfig = {
     '0x84Ed70229D6Fc49d3624a81C8334cC0748ff0f5B',
   BONDING_CURVE_COLLATERAL_TOKEN:
     process.env.BONDING_CURVE_COLLATERAL_TOKEN ||
-    '0x806B448d6C5b507727AD715425B744f038E475bc'
+    '0x806B448d6C5b507727AD715425B744f038E475bc',
 };
 
 export default config;

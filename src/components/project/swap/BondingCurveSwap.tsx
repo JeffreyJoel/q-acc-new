@@ -1,40 +1,43 @@
 //TODO: Refactor this component and separate components and logic into separate files
 
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
-import { ArrowDownUp, ArrowUpRight, ChevronDown } from "lucide-react";
-import { usePublicClient, useWalletClient } from "wagmi";
-import { Address, erc20Abi } from "viem";
-import config from "@/config/configuration";
-import {
-  useTokenBalanceWithDecimals,
-  useFetchPOLPriceSquid,
-} from "@/hooks/useTokens";
-import { formatBalance } from "@/helpers/token";
-import {
-  executeBuyFlow,
-  executeSellFlow,
-} from "@/services/bondingCurveProxy.service";
-import { POLYGON_POS_CHAIN_IMAGE } from "@/components/project/project-details/ProjectDonationTable";
-import {
-  useBondingCurve,
-  useCalculatePurchaseReturn,
-  useCalculateSaleReturn,
-} from "@/hooks/useBondingCurve";
-import { useGetCurrentTokenPrice } from "@/hooks/useGetCurrentTokenPrice";
-import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { usePrivy } from "@privy-io/react-auth";
-import { useForm, Controller } from "react-hook-form";
-import { toast } from "sonner";
+import { useState, useEffect } from 'react';
+
+import Image from 'next/image';
+
+import { usePrivy } from '@privy-io/react-auth';
+import { ArrowDownUp, ArrowUpRight, ChevronDown } from 'lucide-react';
+import { useForm, Controller } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Address, erc20Abi } from 'viem';
+import { usePublicClient, useWalletClient } from 'wagmi';
+
+import { POLYGON_POS_CHAIN_IMAGE } from '@/components/project/project-details/ProjectDonationTable';
+import ConnectWalletButton from '@/components/shared/wallet/SwapConnectWalletButton';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import ConnectWalletButton from "@/components/shared/wallet/SwapConnectWalletButton";
+} from '@/components/ui/dropdown-menu';
+import config from '@/config/configuration';
+import { formatBalance } from '@/helpers/token';
+import {
+  useBondingCurve,
+  useCalculatePurchaseReturn,
+  useCalculateSaleReturn,
+} from '@/hooks/useBondingCurve';
+import { useGetCurrentTokenPrice } from '@/hooks/useGetCurrentTokenPrice';
+import { useRoleCheck } from '@/hooks/useRoleCheck';
+import {
+  useTokenBalanceWithDecimals,
+  useFetchPOLPriceSquid,
+} from '@/hooks/useTokens';
+import {
+  executeBuyFlow,
+  executeSellFlow,
+} from '@/services/bondingCurveProxy.service';
 
 interface BondingCurveSwapProps {
   contractAddress: string;
@@ -43,7 +46,7 @@ interface BondingCurveSwapProps {
   receiveTokenIcon: string;
 }
 
-type TradeSide = "buy" | "sell";
+type TradeSide = 'buy' | 'sell';
 
 type FormData = {
   payAmount: string;
@@ -86,32 +89,32 @@ const PayReceiveRow = ({
 }: PayReceiveRowProps) => {
   const currentSymbol = selectableTokens ? selectedToken! : tokenSymbol;
   const currentIcon = selectableTokens
-    ? selectableTokens.find((t) => t.symbol === selectedToken)?.icon || iconSrc
+    ? selectableTokens.find(t => t.symbol === selectedToken)?.icon || iconSrc
     : iconSrc;
 
   return (
-    <div className="flex items-center justify-between bg-black px-4 py-6 h-full rounded-[18px] border border-white/10 text-white">
+    <div className='flex items-center justify-between bg-black px-4 py-6 h-full rounded-[18px] border border-white/10 text-white'>
       <div>
-        <span className="text-qacc-gray-light font-bold uppercase text-xs">
+        <span className='text-qacc-gray-light font-bold uppercase text-xs'>
           {label}
         </span>
         {selectableTokens ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-3">
+              <button className='flex items-center gap-3'>
                 <Image
                   src={currentIcon}
                   alt={currentSymbol}
                   width={24}
                   height={24}
-                  className="rounded-full"
+                  className='rounded-full'
                 />
-                <span className="font-medium text-xl">{currentSymbol}</span>
-                <ChevronDown className="w-4 h-4" />
+                <span className='font-medium text-xl'>{currentSymbol}</span>
+                <ChevronDown className='w-4 h-4' />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              {selectableTokens.map((token) => (
+              {selectableTokens.map(token => (
                 <DropdownMenuItem
                   key={token.symbol}
                   onSelect={() => onTokenSelect?.(token.symbol)}
@@ -121,7 +124,7 @@ const PayReceiveRow = ({
                     alt={token.symbol}
                     width={20}
                     height={20}
-                    className="rounded-full mr-2"
+                    className='rounded-full mr-2'
                   />
                   {token.symbol}
                 </DropdownMenuItem>
@@ -129,68 +132,68 @@ const PayReceiveRow = ({
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <div className="flex items-center gap-3">
+          <div className='flex items-center gap-3'>
             <Image
               src={currentIcon}
               alt={currentSymbol}
               width={24}
               height={24}
-              className="rounded-full"
+              className='rounded-full'
             />
-            <span className="font-medium text-xl">{currentSymbol}</span>
+            <span className='font-medium text-xl'>{currentSymbol}</span>
           </div>
         )}
 
-        <div className="text-xs text-white/40 text-left mt-6">
+        <div className='text-xs text-white/40 text-left mt-6'>
           {bondingCurveData &&
-            `${isPay ? "Buy" : "Sell"} Price: ${bondingCurveData.BuyPrice} POL`}
+            `${isPay ? 'Buy' : 'Sell'} Price: ${bondingCurveData.BuyPrice} POL`}
         </div>
       </div>
-      <div className="text-right">
+      <div className='text-right'>
         {isPay ? (
           <>
-            <div className="text-xs text-white/40 mt-1">
-              Balance: {balance || "0.00"}
+            <div className='text-xs text-white/40 mt-1'>
+              Balance: {balance || '0.00'}
             </div>
             {control ? (
               <Controller
                 control={control}
-                name={name || "payAmount"}
+                name={name || 'payAmount'}
                 render={({ field }) => (
                   <input
-                    type="number"
-                    placeholder="0.0"
+                    type='number'
+                    placeholder='0.0'
                     {...field}
                     disabled={isDisabled}
                     className={`bg-transparent text-xl font-bold text-right focus:outline-none w-32 ${
-                      hasError ? "text-red-500" : "text-white"
+                      hasError ? 'text-red-500' : 'text-white'
                     }`}
                   />
                 )}
               />
             ) : (
               <input
-                type="number"
-                placeholder="0.0"
+                type='number'
+                placeholder='0.0'
                 disabled={true}
                 className={`bg-transparent text-xl font-bold text-right focus:outline-none w-32 ${
-                  hasError ? "text-red-500" : "text-white"
+                  hasError ? 'text-red-500' : 'text-white'
                 }`}
               />
             )}
           </>
         ) : (
           <>
-            <div className="text-xs text-white/40 mt-1">
-              Balance: {balance || "0.00"}
+            <div className='text-xs text-white/40 mt-1'>
+              Balance: {balance || '0.00'}
             </div>
-            <div className="text-xl font-bold">
-              {Number(formattedReceiveAmount).toFixed(1) || "0"}
+            <div className='text-xl font-bold'>
+              {Number(formattedReceiveAmount).toFixed(1) || '0'}
             </div>
           </>
         )}
 
-        <div className="text-xs text-white/40 mt-6">
+        <div className='text-xs text-white/40 mt-6'>
           ~${(usdValue || 0).toFixed(2)}
         </div>
       </div>
@@ -204,7 +207,7 @@ export default function BondingCurveSwap({
   receiveTokenSymbol,
   receiveTokenIcon,
 }: BondingCurveSwapProps) {
-  const [side, setSide] = useState<TradeSide>("buy");
+  const [side, setSide] = useState<TradeSide>('buy');
 
   const { user: privyUser } = usePrivy();
   const userAddress = privyUser?.wallet?.address as Address | undefined;
@@ -258,28 +261,26 @@ export default function BondingCurveSwap({
   };
 
   return (
-    <div className="">
-      {side === "buy" ? (
+    <div className=''>
+      {side === 'buy' ? (
         <BuyMode {...sharedProps} setSide={setSide} />
       ) : (
         <SellMode {...sharedProps} setSide={setSide} />
       )}
 
-      <div className=" w-full text-xs text-white/40 text-center mt-3 flex items-center justify-center gap-1">
+      <div className=' w-full text-xs text-white/40 text-center mt-3 flex items-center justify-center gap-1'>
         Powered by
         <Image
-          src="/images/logos/logo-horisontal-dim.svg"
-          alt="QACC"
+          src='/images/logos/logo-horisontal-dim.svg'
+          alt='QACC'
           width={120}
           height={16}
-          className="ml-1.5"
+          className='ml-1.5'
         />
       </div>
     </div>
   );
 }
-
-
 
 function BuyMode({
   contractAddress,
@@ -310,27 +311,27 @@ function BuyMode({
     reset,
     formState: { errors },
   } = useForm<FormData>({
-    defaultValues: { payAmount: "" },
+    defaultValues: { payAmount: '' },
   });
 
-  const payAmount = watch("payAmount");
+  const payAmount = watch('payAmount');
 
   const { data: receiveAmount } = useCalculatePurchaseReturn(
     contractAddress,
     payAmount
   );
-  const formattedReceiveAmount = receiveAmount || "0";
+  const formattedReceiveAmount = receiveAmount || '0';
 
   const minAmountOut = receiveAmount
     ? (parseFloat(receiveAmount) * (1 - slippage / 100)).toFixed(6)
-    : "0";
+    : '0';
 
-  const [selectedPayToken, setSelectedPayToken] = useState<"POL" | "WPOL">(
-    "POL"
+  const [selectedPayToken, setSelectedPayToken] = useState<'POL' | 'WPOL'>(
+    'POL'
   );
 
   const payTokenAddress =
-    selectedPayToken === "POL"
+    selectedPayToken === 'POL'
       ? config.NATIVE_TOKEN_ADDRESS
       : config.BONDING_CURVE_COLLATERAL_TOKEN;
 
@@ -355,7 +356,7 @@ function BuyMode({
         const tokenAddress = payTokenAddress;
         let userBalance: number;
 
-        if (tokenAddress === "0x0000000000000000000000000000000000001010") {
+        if (tokenAddress === '0x0000000000000000000000000000000000001010') {
           const balance = await publicClient.getBalance({
             address: userAddress,
           });
@@ -364,7 +365,7 @@ function BuyMode({
           const balance = (await publicClient.readContract({
             address: tokenAddress as Address,
             abi: erc20Abi,
-            functionName: "balanceOf",
+            functionName: 'balanceOf',
             args: [userAddress],
           })) as bigint;
           userBalance = Number(balance) / 1e18;
@@ -378,7 +379,7 @@ function BuyMode({
           );
         }
       } catch (error) {
-        setBalanceError("Failed to check balance");
+        setBalanceError('Failed to check balance');
       }
     };
 
@@ -392,12 +393,12 @@ function BuyMode({
   const onSubmit = async (data: FormData) => {
     if (!userAddress || !publicClient || !walletClient || balanceError) return;
     if (!bondingCurveData?.buyIsOpen || !roleCheckData?.hasRole) {
-      toast.error("Buy is not open or you lack required role");
+      toast.error('Buy is not open or you lack required role');
       return;
     }
 
     setIsProcessing(true);
-    setProcessingStatus("Starting buy transaction...");
+    setProcessingStatus('Starting buy transaction...');
 
     try {
       const result = await executeBuyFlow(
@@ -408,25 +409,25 @@ function BuyMode({
         data.payAmount,
         minAmountOut,
         handleStatusUpdate,
-        selectedPayToken === "WPOL"
+        selectedPayToken === 'WPOL'
       );
       toast.success(
         <div>
-          Buy successful!{" "}
+          Buy successful!{' '}
           <a
             href={`https://polygonscan.com/tx/${result.buyHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-green-700 underline"
+            target='_blank'
+            rel='noopener noreferrer'
+            className='text-green-700 underline'
           >
-            View Transaction <ArrowUpRight className="inline w-4 h-4" />
+            View Transaction <ArrowUpRight className='inline w-4 h-4' />
           </a>
         </div>
       );
-      reset({ payAmount: "" });
+      reset({ payAmount: '' });
     } catch (err) {
       console.error(err);
-      toast.error("Buy failed");
+      toast.error('Buy failed');
     } finally {
       setIsProcessing(false);
       setProcessingStatus(null);
@@ -436,17 +437,21 @@ function BuyMode({
   const payRowProps = {
     tokenSymbol: selectedPayToken,
     iconSrc: POLYGON_POS_CHAIN_IMAGE,
-    balance: userAddress && payBalance
-      ? formatBalance(parseFloat(payBalance.formattedBalance))
-      : "0.00",
+    balance:
+      userAddress && payBalance
+        ? formatBalance(parseFloat(payBalance.formattedBalance))
+        : '0.00',
     usdValue: payAmount ? calculateUsdValue(payAmount, 1) : 0,
     selectableTokens: [
-      { symbol: "POL", icon: POLYGON_POS_CHAIN_IMAGE },
-      { symbol: "WPOL", icon: "https://raw.githubusercontent.com/axelarnetwork/axelar-configs/main/images/tokens/wmatic.svg" },
+      { symbol: 'POL', icon: POLYGON_POS_CHAIN_IMAGE },
+      {
+        symbol: 'WPOL',
+        icon: 'https://raw.githubusercontent.com/axelarnetwork/axelar-configs/main/images/tokens/wmatic.svg',
+      },
     ],
     selectedToken: selectedPayToken,
     onTokenSelect: (symbol: string) =>
-      setSelectedPayToken(symbol as "POL" | "WPOL"),
+      setSelectedPayToken(symbol as 'POL' | 'WPOL'),
     hasError: !!balanceError,
     isDisabled: !userAddress,
   };
@@ -454,43 +459,42 @@ function BuyMode({
   const receiveRowProps = {
     tokenSymbol: receiveTokenSymbol,
     iconSrc: receiveTokenIcon,
-    balance: userAddress && receiveTokenBalance
-      ? formatBalance(parseFloat(receiveTokenBalance.formattedBalance))
-      : "0.00",
-    usdValue: userAddress && receiveTokenBalance
-      ? calculateUsdValue(
-          minAmountOut,
-          receiveTokenPriceInPOL ?? undefined
-        )
-      : 0,
+    balance:
+      userAddress && receiveTokenBalance
+        ? formatBalance(parseFloat(receiveTokenBalance.formattedBalance))
+        : '0.00',
+    usdValue:
+      userAddress && receiveTokenBalance
+        ? calculateUsdValue(minAmountOut, receiveTokenPriceInPOL ?? undefined)
+        : 0,
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       {errors.payAmount && (
-        <div className="text-red-500 text-xs mb-2">
+        <div className='text-red-500 text-xs mb-2'>
           {errors.payAmount.message}
         </div>
       )}
-      <div className="space-y-1">
+      <div className='space-y-1'>
         <PayReceiveRow
-          label="PAY"
+          label='PAY'
           isPay={true}
           control={userAddress ? control : undefined}
-          name="payAmount"
+          name='payAmount'
           {...payRowProps}
         />
-        <div className="absolute top-[250px] left-1/2 -translate-x-1/2 -translate-y-1/2 -my-6 flex justify-center">
+        <div className='absolute top-[250px] left-1/2 -translate-x-1/2 -translate-y-1/2 -my-6 flex justify-center'>
           <button
-            type="button"
-            onClick={() => setSide("sell")}
-            className="absolute top-0 bg-neutral-800 border-neutral-900 backdrop-blur-[40px] w-8 h-8 rounded-lg flex items-center justify-center"
+            type='button'
+            onClick={() => setSide('sell')}
+            className='absolute top-0 bg-neutral-800 border-neutral-900 backdrop-blur-[40px] w-8 h-8 rounded-lg flex items-center justify-center'
           >
-            <ArrowDownUp className="w-4 h-4 text-qacc-gray-light" />
+            <ArrowDownUp className='w-4 h-4 text-qacc-gray-light' />
           </button>
         </div>
         <PayReceiveRow
-          label="RECEIVE"
+          label='RECEIVE'
           isPay={false}
           formattedReceiveAmount={formattedReceiveAmount}
           bondingCurveData={bondingCurveData}
@@ -499,8 +503,8 @@ function BuyMode({
       </div>
       {userAddress ? (
         <button
-          type="submit"
-          className="mt-4 mb-1 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full disabled:opacity-50"
+          type='submit'
+          className='mt-4 mb-1 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full disabled:opacity-50'
           disabled={
             isProcessing ||
             !!balanceError ||
@@ -509,21 +513,22 @@ function BuyMode({
           }
         >
           {processingStatus || balanceError ? (
-            <span className="text-xs font-semibold">
+            <span className='text-xs font-semibold'>
               {processingStatus || balanceError}
             </span>
           ) : (
-            "BUY"
+            'BUY'
           )}
         </button>
       ) : (
         <ConnectWalletButton />
       )}
-      {(!bondingCurveData?.buyIsOpen || !roleCheckData?.hasRole) && userAddress && (
-        <div className="text-center text-xs text-red-500 mt-2">
-          Buy is currently not available. Please check permissions.
-        </div>
-      )}
+      {(!bondingCurveData?.buyIsOpen || !roleCheckData?.hasRole) &&
+        userAddress && (
+          <div className='text-center text-xs text-red-500 mt-2'>
+            Buy is currently not available. Please check permissions.
+          </div>
+        )}
     </form>
   );
 }
@@ -557,20 +562,20 @@ function SellMode({
     reset,
     formState: { errors },
   } = useForm<FormData>({
-    defaultValues: { payAmount: "" },
+    defaultValues: { payAmount: '' },
   });
 
-  const payAmount = watch("payAmount");
+  const payAmount = watch('payAmount');
 
   const { data: receiveAmount } = useCalculateSaleReturn(
     contractAddress,
     payAmount
   );
-  const formattedReceiveAmount = receiveAmount || "0";
+  const formattedReceiveAmount = receiveAmount || '0';
 
   const minAmountOut = receiveAmount
     ? (parseFloat(receiveAmount) * (1 - slippage / 100)).toFixed(6)
-    : "0";
+    : '0';
 
   const { data: receiveBalance } = useTokenBalanceWithDecimals(
     config.BONDING_CURVE_COLLATERAL_TOKEN as Address,
@@ -593,7 +598,7 @@ function SellMode({
         const balance = (await publicClient.readContract({
           address: receiveTokenAddress as Address,
           abi: erc20Abi,
-          functionName: "balanceOf",
+          functionName: 'balanceOf',
           args: [userAddress],
         })) as bigint;
         const userBalance = Number(balance) / 1e18;
@@ -606,7 +611,7 @@ function SellMode({
           );
         }
       } catch (error) {
-        setBalanceError("Failed to check balance");
+        setBalanceError('Failed to check balance');
       }
     };
 
@@ -626,12 +631,12 @@ function SellMode({
   const onSubmit = async (data: FormData) => {
     if (!userAddress || !publicClient || !walletClient || balanceError) return;
     if (!bondingCurveData?.sellIsOpen || !roleCheckData?.hasRole) {
-      toast.error("Sell is not open or you lack required role");
+      toast.error('Sell is not open or you lack required role');
       return;
     }
 
     setIsProcessing(true);
-    setProcessingStatus("Starting sell transaction...");
+    setProcessingStatus('Starting sell transaction...');
 
     try {
       const result = await executeSellFlow(
@@ -643,25 +648,25 @@ function SellMode({
         data.payAmount,
         minAmountOut,
         handleStatusUpdate,
-        true 
+        true
       );
       toast.success(
         <div>
-          Sell successful!{" "}
+          Sell successful!{' '}
           <a
             href={`https://polygonscan.com/tx/${result.sellHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-green-700 underline"
+            target='_blank'
+            rel='noopener noreferrer'
+            className='text-green-700 underline'
           >
-            View Transaction <ArrowUpRight className="inline w-4 h-4" />
+            View Transaction <ArrowUpRight className='inline w-4 h-4' />
           </a>
         </div>
       );
-      reset({ payAmount: "" });
+      reset({ payAmount: '' });
     } catch (err) {
       console.error(err);
-      toast.error("Sell failed");
+      toast.error('Sell failed');
     } finally {
       setIsProcessing(false);
       setProcessingStatus(null);
@@ -671,56 +676,55 @@ function SellMode({
   const payRowProps = {
     tokenSymbol: receiveTokenSymbol,
     iconSrc: receiveTokenIcon,
-    balance: userAddress && receiveTokenBalance
-      ? formatBalance(parseFloat(receiveTokenBalance.formattedBalance))
-      : "0.00",
+    balance:
+      userAddress && receiveTokenBalance
+        ? formatBalance(parseFloat(receiveTokenBalance.formattedBalance))
+        : '0.00',
     usdValue: payAmount
-      ? calculateUsdValue(
-          payAmount,
-          receiveTokenPriceInPOL ?? undefined
-        )
+      ? calculateUsdValue(payAmount, receiveTokenPriceInPOL ?? undefined)
       : 0,
     hasError: !!balanceError,
     isDisabled: !userAddress,
   };
 
   const receiveRowProps = {
-    tokenSymbol: "WPOL",
-    iconSrc: "https://raw.githubusercontent.com/axelarnetwork/axelar-configs/main/images/tokens/wmatic.svg",
-    balance: userAddress && receiveBalance
-      ? formatBalance(parseFloat(receiveBalance.formattedBalance))
-      : "0.00",
-    usdValue: userAddress && receiveBalance
-      ? calculateUsdValue(minAmountOut, 1)
-      : 0,
+    tokenSymbol: 'WPOL',
+    iconSrc:
+      'https://raw.githubusercontent.com/axelarnetwork/axelar-configs/main/images/tokens/wmatic.svg',
+    balance:
+      userAddress && receiveBalance
+        ? formatBalance(parseFloat(receiveBalance.formattedBalance))
+        : '0.00',
+    usdValue:
+      userAddress && receiveBalance ? calculateUsdValue(minAmountOut, 1) : 0,
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       {errors.payAmount && (
-        <div className="text-red-500 text-xs mb-2">
+        <div className='text-red-500 text-xs mb-2'>
           {errors.payAmount.message}
         </div>
       )}
-      <div className="space-y-1">
+      <div className='space-y-1'>
         <PayReceiveRow
-          label="PAY"
+          label='PAY'
           isPay={true}
           control={userAddress ? control : undefined}
-          name="payAmount"
+          name='payAmount'
           {...payRowProps}
         />
-        <div className="absolute top-[250px] left-1/2 -translate-x-1/2 -translate-y-1/2 -my-6 flex justify-center">
+        <div className='absolute top-[250px] left-1/2 -translate-x-1/2 -translate-y-1/2 -my-6 flex justify-center'>
           <button
-            type="button"
-            onClick={() => setSide("buy")}
-            className="absolute top-0 bg-neutral-800 border-neutral-900 backdrop-blur-[40px] w-8 h-8 rounded-lg flex items-center justify-center"
+            type='button'
+            onClick={() => setSide('buy')}
+            className='absolute top-0 bg-neutral-800 border-neutral-900 backdrop-blur-[40px] w-8 h-8 rounded-lg flex items-center justify-center'
           >
-            <ArrowDownUp className="w-4 h-4 text-qacc-gray-light" />
+            <ArrowDownUp className='w-4 h-4 text-qacc-gray-light' />
           </button>
         </div>
         <PayReceiveRow
-          label="RECEIVE"
+          label='RECEIVE'
           isPay={false}
           formattedReceiveAmount={formattedReceiveAmount}
           bondingCurveData={bondingCurveData}
@@ -729,8 +733,8 @@ function SellMode({
       </div>
       {userAddress ? (
         <button
-          type="submit"
-          className="mt-4 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full transition-all flex items-center justify-center gap-2  disabled:opacity-50"
+          type='submit'
+          className='mt-4 bg-peach-400 text-black font-semibold py-4 rounded-[18px] w-full transition-all flex items-center justify-center gap-2  disabled:opacity-50'
           disabled={
             isProcessing ||
             !!balanceError ||
@@ -739,22 +743,23 @@ function SellMode({
           }
         >
           {processingStatus || balanceError ? (
-            <span className="text-xs font-semibold">
+            <span className='text-xs font-semibold'>
               {processingStatus || balanceError}
             </span>
           ) : (
-            "SELL"
+            'SELL'
           )}
         </button>
       ) : (
         <ConnectWalletButton />
       )}
 
-      {(!bondingCurveData?.sellIsOpen || !roleCheckData?.hasRole) && userAddress && (
-        <div className="text-center text-xs text-red-500 mt-2">
-          Sell is currently not available. Please check permissions.
-        </div>
-      )}
+      {(!bondingCurveData?.sellIsOpen || !roleCheckData?.hasRole) &&
+        userAddress && (
+          <div className='text-center text-xs text-red-500 mt-2'>
+            Sell is currently not available. Please check permissions.
+          </div>
+        )}
     </form>
   );
 }

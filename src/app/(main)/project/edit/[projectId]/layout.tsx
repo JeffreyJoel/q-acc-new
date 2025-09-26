@@ -13,4 +13,4 @@ export default function EditLayout({
       <section>{children}</section>
     </ProjectCreationProvider>
   );
-} 
+}

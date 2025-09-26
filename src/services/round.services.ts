@@ -6,7 +6,12 @@ import {
   GET_QACC_ROUND_STATS,
   GET_VESTING_SCHEDULES,
 } from '@/queries/round.query';
-import { IEarlyAccessRound, IQaccStats, IQfRound, IVestingSchedule } from '@/types/round.type';
+import {
+  IEarlyAccessRound,
+  IQaccStats,
+  IQfRound,
+  IVestingSchedule,
+} from '@/types/round.type';
 
 export const fetchActiveRoundDetails = async () => {
   try {
@@ -35,7 +40,7 @@ export const fetchAllRoundDetails = async () => {
 export const fetchProjectRoundRecords = async (
   projectId: number,
   qfRoundNumber?: number,
-  earlyAccessRoundNumber?: number,
+  earlyAccessRoundNumber?: number
 ) => {
   try {
     const res = await requestGraphQL<{
@@ -62,7 +67,6 @@ export const fetchQaccRoundStats = async () => {
   }
 };
 
-//TODO: switch to use config.GRAPHQL_ENDPOINT after qacc-be is updated
 export const fetchVestingSchedules = async () => {
   try {
     const res = await requestGraphQL<{

@@ -1,6 +1,8 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import config from '@/config/configuration';
 import { useState, useEffect } from 'react';
+
+import { useQuery, UseQueryResult } from '@tanstack/react-query';
+
+import config from '@/config/configuration';
 
 const headers = {
   'x-integrator-id': config.SQUID_INTEGRATOR_ID,
@@ -74,14 +76,20 @@ interface ISquidChainResponse {
   chains: ISquidChain[];
 }
 
-export const useFetchChainsFromSquid = (): UseQueryResult<{ chains: ISquidChain[] }, Error> => {
+export const useFetchChainsFromSquid = (): UseQueryResult<
+  { chains: ISquidChain[] },
+  Error
+> => {
   return useQuery<{ chains: ISquidChain[] }, Error>({
     queryKey: ['squid-data'],
     queryFn: async () => {
-      const chainsResponse = await fetch('https://apiplus.squidrouter.com/v2/chains', { headers });
+      const chainsResponse = await fetch(
+        'https://apiplus.squidrouter.com/v2/chains',
+        { headers }
+      );
       const chainsJson: ISquidChainResponse = await chainsResponse.json();
 
-      return { chains: chainsJson.chains};
+      return { chains: chainsJson.chains };
     },
     staleTime: Infinity,
   });
@@ -97,7 +105,10 @@ export const useFetchTokensByChain = (
     queryFn: async () => {
       if (!chainId) return [];
 
-      const tokensResponse = await fetch('https://apiplus.squidrouter.com/v2/tokens', { headers });
+      const tokensResponse = await fetch(
+        'https://apiplus.squidrouter.com/v2/tokens',
+        { headers }
+      );
       const tokensJson: { tokens: any[] } = await tokensResponse.json();
 
       let filteredTokens = tokensJson.tokens.filter(
@@ -116,8 +127,10 @@ export const useFetchTokensByChain = (
 
       return filteredTokens.sort((a, b) => {
         if (searchTerm) {
-          const aExactSymbol = a.symbol?.toLowerCase() === searchTerm.toLowerCase();
-          const bExactSymbol = b.symbol?.toLowerCase() === searchTerm.toLowerCase();
+          const aExactSymbol =
+            a.symbol?.toLowerCase() === searchTerm.toLowerCase();
+          const bExactSymbol =
+            b.symbol?.toLowerCase() === searchTerm.toLowerCase();
           if (aExactSymbol && !bExactSymbol) return -1;
           if (!aExactSymbol && bExactSymbol) return 1;
         }

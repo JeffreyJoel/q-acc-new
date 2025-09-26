@@ -1,30 +1,35 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { Address } from "viem";
-import Image from "next/image";
-import { handleImageUrl } from "@/helpers/image";
-import type { IProject } from "@/types/project.type";
-import { usePrivy } from "@privy-io/react-auth";
+import { useState, useEffect, useCallback, useMemo } from 'react';
+
+import Image from 'next/image';
+
+import { usePrivy } from '@privy-io/react-auth';
+import { useQueryClient } from '@tanstack/react-query';
+import { ethers } from 'ethers';
+import { Address } from 'viem';
+import { getContract } from 'viem';
+import { useWalletClient, usePublicClient } from 'wagmi';
+
+import { useDonorContext } from '@/contexts/donor.context';
+import { formatPercentageChange } from '@/helpers';
+import { formatDateMonthDayYear } from '@/helpers/date';
+import { handleImageUrl } from '@/helpers/image';
 import {
   useClaimRewards,
   useIsActivePaymentReceiver,
   useReleasableForStream,
   useReleasedForStream,
-} from "@/hooks/useClaimRewards";
-import { useDonorContext } from "@/contexts/donor.context";
-import { useVestingSchedules } from "@/hooks/useVestingSchedules";
-import { formatDateMonthDayYear } from "@/helpers/date";
-import { ethers } from "ethers";
-import { useGetCurrentTokenPrice } from "@/hooks/useGetCurrentTokenPrice";
-import { useTokenPrice } from "@/hooks/useTokens";
-import { useWalletClient, usePublicClient } from "wagmi";
-import { getContract } from "viem";
-import { useQueryClient } from "@tanstack/react-query";
-import { claimTokensABI } from "@/lib/abi/inverter";
-import { IEarlyAccessRound, IQfRound } from "@/types/round.type";
-import { useFetchAllRoundDetails } from "@/hooks/useRounds";
-import { formatPercentageChange } from "@/helpers";
+} from '@/hooks/useClaimRewards';
+import { useVestingSchedules } from '@/hooks/useVestingSchedules';
+import type { IProject } from "@/types/project.type";
+
+import { useGetCurrentTokenPrice } from '@/hooks/useGetCurrentTokenPrice';
+import { useTokenPrice } from '@/hooks/useTokens';
+
+import { claimTokensABI } from '@/lib/abi/inverter';
+import { IEarlyAccessRound, IQfRound } from '@/types/round.type';
+import { useFetchAllRoundDetails } from '@/hooks/useRounds';
 
 export interface PortfolioTableRowProps {
   project: IProject;
@@ -46,8 +51,8 @@ function PortfolioTableRow({
   const [lockedTokens, setLockedTokens] = useState(0);
   const [recentlyClaimed, setRecentlyClaimed] = useState(false);
 
-  const proccessorAddress = project.abc?.paymentProcessorAddress || "";
-  const router = project.abc?.paymentRouterAddress || "";
+  const proccessorAddress = project.abc?.paymentProcessorAddress || '';
+  const router = project.abc?.paymentRouterAddress || '';
 
   const projectDonations = donationsGroupedByProject[Number(project.id)] || [];
 
@@ -154,11 +159,11 @@ function PortfolioTableRow({
       const season = seasonMatch ? parseInt(seasonMatch[1]) : 0;
 
       return {
-        name: nameLower.replace(/\s+/g, "-"),
+        name: nameLower.replace(/\s+/g, '-'),
         displayName: schedule.name,
-        type: (nameLower.includes("projects") ? "team" : "supporters") as
-          | "team"
-          | "supporters",
+        type: (nameLower.includes('projects') ? 'team' : 'supporters') as
+          | 'team'
+          | 'supporters',
         season,
         order: index,
         start: new Date(schedule.start),
@@ -174,11 +179,11 @@ function PortfolioTableRow({
     if (!project || !roundData) return 1;
 
     if (project.qfRounds && project.qfRounds.length > 0) {
-      const activeQfRound = project.qfRounds.find((round) => round.isActive);
+      const activeQfRound = project.qfRounds.find(round => round.isActive);
       if (activeQfRound) {
         const roundNumber =
           parseInt(activeQfRound.id) ||
-          parseInt(activeQfRound.name.match(/\d+/)?.[0] || "1");
+          parseInt(activeQfRound.name.match(/\d+/)?.[0] || '1');
         return roundNumber;
       }
     }
@@ -194,13 +199,13 @@ function PortfolioTableRow({
     if (project?.seasonNumber === 1) {
       const projectRound = determineProjectRound(project, allRoundData);
 
-      let dateFromRound = allVestingData.find((period) => {
+      let dateFromRound = allVestingData.find(period => {
         const nameLower = period.name.toLowerCase();
         return (
-          period.type === "supporters" &&
+          period.type === 'supporters' &&
           period.season === 1 &&
           (projectRound === 1
-            ? nameLower.includes("round-1") || nameLower.includes("round 1")
+            ? nameLower.includes('round-1') || nameLower.includes('round 1')
             : nameLower.includes(`round-${projectRound}`) ||
               nameLower.includes(`round ${projectRound}`))
         );
@@ -208,15 +213,15 @@ function PortfolioTableRow({
 
       if (!dateFromRound) {
         dateFromRound = allVestingData.find(
-          (period) => period.type === "supporters" && period.season === 1
+          period => period.type === 'supporters' && period.season === 1
         )?.cliff;
       }
 
       return dateFromRound;
     } else {
       return allVestingData.find(
-        (period) =>
-          period.type === "supporters" &&
+        period =>
+          period.type === 'supporters' &&
           period.season === (project?.seasonNumber || 2)
       )?.cliff;
     }
@@ -254,21 +259,21 @@ function PortfolioTableRow({
   // }, [isActivePaymentReceiver.data]);
 
   return (
-    <tr className="hover:bg-white/5 font-bold">
-      <td className="py-4 flex items-center space-x-1 md:space-x-3">
+    <tr className='hover:bg-white/5 font-bold'>
+      <td className='py-4 flex items-center space-x-1 md:space-x-3'>
         <Image
           src={handleImageUrl(
             project.abc?.icon ||
-              "Qmeb6CzCBkyEkAhjrw5G9GShpKiVjUDaU8F3Xnf5bPHtm4"
+              'Qmeb6CzCBkyEkAhjrw5G9GShpKiVjUDaU8F3Xnf5bPHtm4'
           )}
-          alt={project.title || ""}
+          alt={project.title || ''}
           width={36}
           height={36}
-          className="rounded-full  w-6 h-6 md:w-9 md:h-9"
+          className='rounded-full  w-6 h-6 md:w-9 md:h-9'
         />
-        <div className="flex flex-col md:flex-row md:gap-1">
-          <p className="text-white text-sm md:text-xl">{project.title}</p>
-          <p className="text-qacc-gray-light/40 text-sm md:text-xl font-bold">
+        <div className='flex flex-col md:flex-row md:gap-1'>
+          <p className='text-white text-sm md:text-xl'>{project.title}</p>
+          <p className='text-qacc-gray-light/40 text-sm md:text-xl font-bold'>
             ${project.abc?.tokenTicker}
           </p>
         </div>
@@ -282,24 +287,24 @@ function PortfolioTableRow({
         {formatPercentageChange(returnPercent).formatted}
       </td>
       {/* In Wallet */}
-      <td className="py-4 px-4 text-xs md:text-sm text-white font-ibm-mono font-bold text-end">
+      <td className='py-4 px-4 text-xs md:text-sm text-white font-ibm-mono font-bold text-end'>
         {inWallet.toFixed(2)}
       </td>
       {/* Locked */}
-      <td className="py-4 px-4 text-xs md:text-sm text-[#65D1FF] font-ibm-mono font-bold text-end">
+      <td className='py-4 px-4 text-xs md:text-sm text-[#65D1FF] font-ibm-mono font-bold text-end'>
         {lockedTokens.toFixed(2)}
       </td>
       {/* Available to Claim */}
-      <td className="py-4 px-4 text-xs md:text-sm text-white/30 font-ibm-mono font-bold text-end">
+      <td className='py-4 px-4 text-xs md:text-sm text-white/30 font-ibm-mono font-bold text-end'>
         {isActive.data && isTokenClaimable && !recentlyClaimed ? (
           <>
-            <span className="mr-2">{availableToClaim.toFixed(2)}</span>
+            <span className='mr-2'>{availableToClaim.toFixed(2)}</span>
             <button
-              className="px-2 py-1 rounded-lg text-[10px] uppercase font-bold border border-peach-400 text-peach-400 hover:bg-peach-400 hover:text-black disabled:opacity-80 disabled:cursor-not-allowed"
+              className='px-2 py-1 rounded-lg text-[10px] uppercase font-bold border border-peach-400 text-peach-400 hover:bg-peach-400 hover:text-black disabled:opacity-80 disabled:cursor-not-allowed'
               onClick={() => claim.mutateAsync()}
               disabled={!isSmartAccountReady || claim.isPending}
             >
-              {claim.isPending ? "Claiming..." : "Claim"}
+              {claim.isPending ? 'Claiming...' : 'Claim'}
             </button>
           </>
         ) : (
@@ -307,14 +312,14 @@ function PortfolioTableRow({
         )}
       </td>
       {/* Total Tokens */}
-      <td className="py-4 px-4 text-xs md:text-sm text-end text-white/30 font-bold font-ibm-mono">
+      <td className='py-4 px-4 text-xs md:text-sm text-end text-white/30 font-bold font-ibm-mono'>
         ~$
         {totalAmountPerTokenInUSD.toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         })}
         &nbsp;
-        <span className="text-white font-semibold">
+        <span className='text-white font-semibold'>
           {totalAmountPerToken.toFixed(2)} {project.abc?.tokenTicker}
         </span>
       </td>
@@ -337,20 +342,20 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
 
   const handleRowTotalChange = useCallback(
     (projectId: number, value: number) => {
-      setRowTotalsUSD((prev) => ({ ...prev, [projectId]: value }));
+      setRowTotalsUSD(prev => ({ ...prev, [projectId]: value }));
     },
     []
   );
 
   const handleAvailableChange = useCallback(
     (projectId: number, value: number) => {
-      setAvailablePerRow((prev) => ({ ...prev, [projectId]: value }));
+      setAvailablePerRow(prev => ({ ...prev, [projectId]: value }));
     },
     []
   );
 
   const rowCallbacks = useMemo(() => {
-    return rows.map((row) => ({
+    return rows.map(row => ({
       projectId: row.project.id,
       callback: (value: number) =>
         handleRowTotalChange(Number(row.project.id), value),
@@ -358,7 +363,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
   }, [rows, handleRowTotalChange]);
 
   const availableCallbacks = useMemo(() => {
-    return rows.map((row) => ({
+    return rows.map(row => ({
       projectId: row.project.id,
       callback: (value: number) =>
         handleAvailableChange(Number(row.project.id), value),
@@ -383,9 +388,9 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
         const available = availablePerRow[Number(row.project.id)] || 0;
         if (available > 0) {
           const paymentProcessorAddress =
-            row.project.abc?.paymentProcessorAddress || "";
+            row.project.abc?.paymentProcessorAddress || '';
           const paymentRouterAddress =
-            row.project.abc?.paymentRouterAddress || "";
+            row.project.abc?.paymentRouterAddress || '';
           const contract = getContract({
             address: paymentProcessorAddress as Address,
             abi: claimTokensABI,
@@ -397,42 +402,42 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
           await publicClient.waitForTransactionReceipt({ hash: tx });
         }
       }
-      queryClient.invalidateQueries({ queryKey: ["releasableForStream"] });
-      queryClient.invalidateQueries({ queryKey: ["releasedForStream"] });
+      queryClient.invalidateQueries({ queryKey: ['releasableForStream'] });
+      queryClient.invalidateQueries({ queryKey: ['releasedForStream'] });
     } catch (error) {
-      console.error("Error claiming all:", error);
+      console.error('Error claiming all:', error);
     } finally {
       setIsClaiming(false);
     }
   };
 
   return (
-    <div className="bg-white/[7%]  rounded-3xl p-8 mt-8">
-      <div className="overflow-x-auto scrollbar-hide w-full">
-        <table className="w-full table-auto min-w-lg  whitespace-nowrap">
+    <div className='bg-white/[7%]  rounded-3xl p-8 mt-8'>
+      <div className='overflow-x-auto scrollbar-hide w-full'>
+        <table className='w-full table-auto min-w-lg  whitespace-nowrap'>
           <thead>
-            <tr className="items-center pb-8 mb-8">
+            <tr className='items-center pb-8 mb-8'>
               <th colSpan={totalAvailable > 0 ? 4 : 5}>
-                <h2 className="text-[32px] md:text-[40px] text-left font-anton tracking-wide text-white">
+                <h2 className='text-[32px] md:text-[40px] text-left font-anton tracking-wide text-white'>
                   Portfolio
                 </h2>
               </th>
               {totalAvailable > 0 && (
-                <th className="pb-2 px-4 text-end">
+                <th className='pb-2 px-4 text-end'>
                   <button
                     disabled={isClaiming}
                     onClick={handleClaimAll}
-                    className="bg-peach-400 text-[10px] uppercase font-bold text-black px-3 py-1 rounded-lg"
+                    className='bg-peach-400 text-[10px] uppercase font-bold text-black px-3 py-1 rounded-lg'
                   >
                     Claim All Available
                   </button>
                 </th>
               )}
-              <th className="pb-2 px-4 text-end">
-                <span className="text-qacc-gray-light/60 text-xs uppercase mr-1.5">
+              <th className='pb-2 px-4 text-end'>
+                <span className='text-qacc-gray-light/60 text-xs uppercase mr-1.5'>
                   Total
                 </span>
-                <span className="text-white text-sm font-ibm-mono font-semibold mr-1">
+                <span className='text-white text-sm font-ibm-mono font-semibold mr-1'>
                   ~$
                   {portfolioTotalUSD.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
@@ -443,20 +448,20 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
             </tr>
             {/* Label Row */}
             {rows.length > 0 && (
-              <tr className="text-[10px] uppercase text-qacc-gray-light/60 border-b border-white/5">
-                <th className="w-[340px] pb-2 text-left">Project</th>
-                <th className="w-[120px] pb-2 px-4 text-end">Your Return</th>
-                <th className="w-[120px] pb-2 px-4 text-end">In Wallet</th>
-                <th className="w-[120px] pb-2 px-4 text-end">Locked</th>
-                <th className="w-[120px] pb-2 px-4 text-end">
+              <tr className='text-[10px] uppercase text-qacc-gray-light/60 border-b border-white/5'>
+                <th className='w-[340px] pb-2 text-left'>Project</th>
+                <th className='w-[120px] pb-2 px-4 text-end'>Your Return</th>
+                <th className='w-[120px] pb-2 px-4 text-end'>In Wallet</th>
+                <th className='w-[120px] pb-2 px-4 text-end'>Locked</th>
+                <th className='w-[120px] pb-2 px-4 text-end'>
                   Available to Claim
                 </th>
-                <th className="w-[250px] pb-2 px-4 text-end">
-                  <div className="flex items-center justify-end space-x-1.5">
+                <th className='w-[250px] pb-2 px-4 text-end'>
+                  <div className='flex items-center justify-end space-x-1.5'>
                     <span>~$$$</span>
-                    <span className="text-qacc-gray-light/60 text-[10px] uppercase">
-                      Your Total Tokens{" "}
-                      <span className="text-peach-400 text-[10px]">↓</span>
+                    <span className='text-qacc-gray-light/60 text-[10px] uppercase'>
+                      Your Total Tokens{' '}
+                      <span className='text-peach-400 text-[10px]'>↓</span>
                     </span>
                   </div>
                 </th>
@@ -464,13 +469,13 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
             )}
           </thead>
           {rows.length > 0 ? (
-            <tbody className="divide-y  divide-white/5">
-              {rows.map((row) => {
+            <tbody className='divide-y  divide-white/5'>
+              {rows.map(row => {
                 const rowCallback = rowCallbacks.find(
-                  (cb) => cb.projectId === String(row.project.id)
+                  cb => cb.projectId === String(row.project.id)
                 );
                 const availableCallback = availableCallbacks.find(
-                  (cb) => cb.projectId === String(row.project.id)
+                  cb => cb.projectId === String(row.project.id)
                 );
                 return (
                   <PortfolioTableRow
@@ -484,8 +489,8 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
               })}
             </tbody>
           ) : (
-            <div className="py-6 w-full">
-              <p className="text-qacc-gray-light text-base font-medium">
+            <div className='py-6 w-full'>
+              <p className='text-qacc-gray-light text-base font-medium'>
                 You have not invested in any projects yet.
               </p>
             </div>

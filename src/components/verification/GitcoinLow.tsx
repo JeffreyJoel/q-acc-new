@@ -1,13 +1,16 @@
 import { FC } from 'react';
-import { Button } from '../ui/button';
-import links from '@/lib/constants/links';
+
 import { IconExternalLink } from '@tabler/icons-react';
-import { IconGitcoinPassport } from '@/components/icons/IconGitcoin';
-import { useUpdateSkipVerification } from '@/hooks/useUpdateSkipVerification';
-import { useFetchUser } from '@/hooks/useFetchUser';
+import { Loader2 } from 'lucide-react';
 import { Address } from 'viem';
 import { useAccount } from 'wagmi';
-import { Loader2 } from 'lucide-react';
+
+import { IconGitcoinPassport } from '@/components/icons/IconGitcoin';
+import { useFetchUser } from '@/hooks/useFetchUser';
+import { useUpdateSkipVerification } from '@/hooks/useUpdateSkipVerification';
+import links from '@/lib/constants/links';
+
+import { Button } from '../ui/button';
 
 interface IGitcoinLowProps {
   userGitcoinScore: number;
@@ -54,9 +57,7 @@ export const GitcoinLow: FC<IGitcoinLowProps> = ({
         </Button>
 
         <a href={links.PASSPORT} target='_blank' referrerPolicy='no-referrer'>
-          <Button
-            className=' bg-peach-300'
-          >
+          <Button className=' bg-peach-300'>
             <div className='flex items-center gap-1'>
               Increase Score to 15
               <IconExternalLink size={16} />
@@ -70,13 +71,15 @@ export const GitcoinLow: FC<IGitcoinLowProps> = ({
         >
           <div className='flex gap-2'>
             <IconGitcoinPassport size={16} />
-            
+
             {isScoreFetching ? (
               <div className='flex items-center gap-2'>
                 <Loader2 className='w-4 h-4 animate-spin' />
                 Checking...
               </div>
-            ):"Refresh Score"}
+            ) : (
+              'Refresh Score'
+            )}
           </div>
         </Button>
       </div>

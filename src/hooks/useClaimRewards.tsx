@@ -1,8 +1,9 @@
-import { usePublicClient, useWalletClient } from "wagmi";
-import { Address, getContract } from "viem";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { claimTokensABI } from "@/lib/abi/inverter";
-import { useZeroDev } from "@/contexts/ZeroDevContext";
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Address, getContract } from 'viem';
+import { usePublicClient, useWalletClient } from 'wagmi';
+
+import { useZeroDev } from '@/contexts/ZeroDevContext';
+import { claimTokensABI } from '@/lib/abi/inverter';
 
 // export const useClaimRewards = ({
 //   paymentProcessorAddress,
@@ -58,11 +59,11 @@ export const useClaimRewards = ({
   const claim = useMutation({
     mutationFn: async () => {
       if (!kernelClient) {
-        throw new Error("Smart account not initialized");
+        throw new Error('Smart account not initialized');
       }
-      
+
       if (isInitializing) {
-        throw new Error("Smart account is still initializing");
+        throw new Error('Smart account is still initializing');
       }
 
       // Use the kernel client directly for gasless transactions
@@ -85,9 +86,9 @@ export const useClaimRewards = ({
     onError,
   });
 
-  return { 
-    claim, 
-    isSmartAccountReady: !!kernelClient && !isInitializing 
+  return {
+    claim,
+    isSmartAccountReady: !!kernelClient && !isInitializing,
   };
 };
 
@@ -133,7 +134,7 @@ export const useReleasableForStream = ({
       // Sum all releasable amounts
       const totalReleasable = releasableAmounts.reduce(
         (sum, amount) => sum + amount,
-        BigInt(0),
+        BigInt(0)
       );
 
       return totalReleasable;
@@ -186,7 +187,7 @@ export const useReleasedForStream = ({
       // Sum all released amounts
       const totalReleased = releasedAmounts.reduce(
         (sum, amount) => sum + amount,
-        BigInt(0),
+        BigInt(0)
       );
 
       return totalReleased;
@@ -208,7 +209,7 @@ export const useIsActivePaymentReceiver = ({
 }) => {
   const publicClient = usePublicClient();
   return useQuery({
-    queryKey: ["isActivePaymentReceiver", paymentProcessorAddress],
+    queryKey: ['isActivePaymentReceiver', paymentProcessorAddress],
     queryFn: async (): Promise<boolean> => {
       const contract = getContract({
         address: paymentProcessorAddress as Address,
@@ -228,5 +229,3 @@ export const useIsActivePaymentReceiver = ({
     enabled: !!receiver && !!client,
   });
 };
-
-

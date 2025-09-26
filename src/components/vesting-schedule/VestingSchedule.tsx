@@ -1,15 +1,17 @@
-"use client";
+'use client';
 
-import React, { useState, useRef } from "react";
-import { IProject } from "@/types/project.type";
-import Image from "next/image";
-import { useVestingSchedules } from "@/hooks/useVestingSchedules";
-import { useFetchAllProjects } from "@/hooks/useProjects";
+import React, { useState, useRef } from 'react';
+
+import Image from 'next/image';
+
+import { useFetchAllProjects } from '@/hooks/useProjects';
+import { useVestingSchedules } from '@/hooks/useVestingSchedules';
+import { IProject } from '@/types/project.type';
 
 interface VestingPeriod {
   name: string;
   displayName: string;
-  type: "team" | "supporters";
+  type: 'team' | 'supporters';
   season: number;
   order: number;
   start: Date;
@@ -61,11 +63,11 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
         const season = seasonMatch ? parseInt(seasonMatch[1]) : 0;
 
         return {
-          name: nameLower.replace(/\s+/g, "-"),
+          name: nameLower.replace(/\s+/g, '-'),
           displayName: schedule.name,
-          type: (nameLower.includes("projects") ? "team" : "supporters") as
-            | "team"
-            | "supporters",
+          type: (nameLower.includes('projects') ? 'team' : 'supporters') as
+            | 'team'
+            | 'supporters',
           season,
           order: index,
           start: new Date(schedule.start),
@@ -73,7 +75,7 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
           end: new Date(schedule.end),
         };
       })
-      ?.filter((period) => period.season === seasonNumber) || [];
+      ?.filter(period => period.season === seasonNumber) || [];
 
   vestingData.sort((a, b) => a.start.getTime() - b.start.getTime());
 
@@ -84,18 +86,18 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
 
   const today = new Date();
 
-  let minDate = new Date("2024-11-01");
-  let maxDate = new Date("2027-03-31");
+  let minDate = new Date('2024-11-01');
+  let maxDate = new Date('2027-03-31');
 
   // Dynamic min/max dates with padding
   if (vestingData.length > 0) {
-    const allStarts = vestingData.map((p) => p.start.getTime());
-    const allEnds = vestingData.map((p) => p.end.getTime());
+    const allStarts = vestingData.map(p => p.start.getTime());
+    const allEnds = vestingData.map(p => p.end.getTime());
     const minTime = Math.min(...allStarts);
     const maxTime = Math.max(...allEnds);
     const rangePadding = 30 * 24 * 60 * 60 * 1000; // 30 days
     minDate = new Date(
-      Math.max(minTime - rangePadding, new Date("2024-10-01").getTime())
+      Math.max(minTime - rangePadding, new Date('2024-10-01').getTime())
     );
     maxDate = new Date(maxTime + rangePadding);
   }
@@ -108,14 +110,14 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
       months.push({
         date: new Date(currentDate),
         position: getDatePosition(currentDate),
-        shortLabel: currentDate.toLocaleDateString("en-US", { month: "short" }),
+        shortLabel: currentDate.toLocaleDateString('en-US', { month: 'short' }),
         fullLabel:
           currentDate.getMonth() === 0
-            ? currentDate.toLocaleDateString("en-US", {
-                month: "short",
-                year: "numeric",
+            ? currentDate.toLocaleDateString('en-US', {
+                month: 'short',
+                year: 'numeric',
               })
-            : currentDate.toLocaleDateString("en-US", { month: "short" }),
+            : currentDate.toLocaleDateString('en-US', { month: 'short' }),
       });
       currentDate.setMonth(currentDate.getMonth() + 2);
     }
@@ -124,17 +126,17 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
 
   // Helper functions
   const formatDate = (date: Date): string => {
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
     });
   };
 
   const formatEndDate = (date: Date): string => {
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
     });
   };
 
@@ -171,7 +173,7 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
   const handleMouseMove = (event: React.MouseEvent) => {
     const rect = containerRef.current?.getBoundingClientRect();
     if (rect && tooltip.visible) {
-      setTooltip((prev) => ({
+      setTooltip(prev => ({
         ...prev,
         x: event.clientX - rect.left,
         y: event.clientY - rect.top,
@@ -181,7 +183,7 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
 
   const handleMouseLeave = () => {
     setShowTimeline(false);
-    setTooltip((prev) => ({ ...prev, visible: false }));
+    setTooltip(prev => ({ ...prev, visible: false }));
   };
 
   const handleContainerMouseEnter = () => {
@@ -196,14 +198,14 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
   const timelineMonths = generateTimelineMonths();
 
   const TokenIcons = ({ projects }: { projects: IProject[] }) => (
-    <div className="flex -space-x-2 items-center">
+    <div className='flex -space-x-2 items-center'>
       {projects.slice(0, 6).map((project, index) => (
-        <div key={project.id || index} className="relative group">
+        <div key={project.id || index} className='relative group'>
           {project.abc?.icon ? (
             <Image
-              src={project?.icon || ""}
-              alt={project.abc.tokenTicker || project.title || "Token"}
-              className="w-6 h-6 rounded-full object-cover bg-black"
+              src={project?.icon || ''}
+              alt={project.abc.tokenTicker || project.title || 'Token'}
+              className='w-6 h-6 rounded-full object-cover bg-black'
               width={24}
               height={24}
             />
@@ -211,16 +213,16 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
           <div
             className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
               seasonNumber === 1
-                ? "bg-gradient-to-br from-peach-400 to-peach-600 text-black"
-                : "bg-gradient-to-br from-purple-400 to-purple-600 text-white"
+                ? 'bg-gradient-to-br from-peach-400 to-peach-600 text-black'
+                : 'bg-gradient-to-br from-purple-400 to-purple-600 text-white'
             }`}
-            style={{ display: project.abc?.icon ? "none" : "flex" }}
+            style={{ display: project.abc?.icon ? 'none' : 'flex' }}
           >
             {project.abc?.tokenTicker?.charAt(0) ||
               project.title?.charAt(0) ||
-              "T"}
+              'T'}
           </div>
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none z-10">
+          <div className='absolute bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none z-10'>
             {project.abc?.tokenTicker || project.title}
           </div>
         </div>
@@ -231,26 +233,26 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
   const seasonTitle = `SEASON ${seasonNumber}`;
   const headerPosition =
     vestingData.length > 0
-      ? Math.min(...vestingData.map((p) => getDatePosition(p.start)))
+      ? Math.min(...vestingData.map(p => getDatePosition(p.start)))
       : 0;
 
   return (
-    <div className="bg-white/5 p-6 rounded-3xl text-white">
+    <div className='bg-white/5 p-6 rounded-3xl text-white'>
       {/* Header */}
-      <div className="flex items-center gap-6 mb-10">
-        <h1 className="text-2xl md:text-[40px] font-anton text-white tracking-wide">
+      <div className='flex items-center gap-6 mb-10'>
+        <h1 className='text-2xl md:text-[40px] font-anton text-white tracking-wide'>
           VESTING SCHEDULE
         </h1>
 
         <Image
-          src={projectIcon || ""}
-          alt="Vesting Schedule"
+          src={projectIcon || ''}
+          alt='Vesting Schedule'
           width={32}
           height={32}
-          className="rounded-full h-6 w-6 md:h-8 md:w-8"
+          className='rounded-full h-6 w-6 md:h-8 md:w-8'
         />
 
-        <p className="text-peach-400 text-xl md:text-[40px] font-anton tracking-wide">
+        <p className='text-peach-400 text-xl md:text-[40px] font-anton tracking-wide'>
           ${projectTicker}
         </p>
       </div>
@@ -258,54 +260,54 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
       {/* Chart Container */}
       <div
         ref={containerRef}
-        className="relative group pb-0 w-10/12 mx-auto"
+        className='relative group pb-0 w-10/12 mx-auto'
         onMouseEnter={handleContainerMouseEnter}
         onMouseLeave={handleContainerMouseLeave}
       >
         {/* Vertical Grid Lines */}
-        <div className="absolute top-0 left-0 right-0 h-[190px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+        <div className='absolute top-0 left-0 right-0 h-[190px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out'>
           {timelineMonths.map((month, index) => (
             <div
               key={index}
-              className="absolute top-0 bottom-0 w-px bg-gray-700 opacity-30"
+              className='absolute top-0 bottom-0 w-px bg-gray-700 opacity-30'
               style={{ left: `${month.position}%` }}
             />
           ))}
         </div>
 
         {/* Season Header */}
-        <div className="mb-8 relative">
-          <div className="flex items-center mb-6 relative">
+        <div className='mb-8 relative'>
+          <div className='flex items-center mb-6 relative'>
             <div
-              className="absolute flex items-center"
+              className='absolute flex items-center'
               style={{ left: `${headerPosition}%` }}
             >
-              <h3 className="text-xl font-anton text-peach-400 uppercase mr-8">
+              <h3 className='text-xl font-anton text-peach-400 uppercase mr-8'>
                 {seasonTitle}
               </h3>
-              <div className="flex items-center text-xs">
-                <span className="text-qacc-gray-light font-semibold">
+              <div className='flex items-center text-xs'>
+                <span className='text-qacc-gray-light font-semibold'>
                   DEX Listing
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="space-y-4 relative">
-            {vestingData.map((period) => (
-              <div key={period.name} className="relative">
+          <div className='space-y-4 relative'>
+            {vestingData.map(period => (
+              <div key={period.name} className='relative'>
                 <div
-                  className="relative h-9 cursor-pointer transition-all duration-300"
-                  onMouseEnter={(e) => handleMouseEnter(e, period)}
+                  className='relative h-9 cursor-pointer transition-all duration-300'
+                  onMouseEnter={e => handleMouseEnter(e, period)}
                   onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
                 >
                   {/* Period Bar */}
                   <div
                     className={`absolute top-0 bottom-0 rounded-lg flex items-center transition-all duration-300 hover:brightness-110 ${
-                      period.type === "team"
-                        ? "bg-qacc-gray-light/60"
-                        : "bg-peach-400/60"
+                      period.type === 'team'
+                        ? 'bg-qacc-gray-light/60'
+                        : 'bg-peach-400/60'
                     }`}
                     style={{
                       left: `${getDatePosition(period.start)}%`,
@@ -316,12 +318,12 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
                     }}
                   >
                     {/* Label and Icons */}
-                    <div className="flex items-center justify-between w-full px-4">
-                      <div className="flex items-center space-x-3">
-                        <span className="font-bold text-xs text-[#020202]">
+                    <div className='flex items-center justify-between w-full px-4'>
+                      <div className='flex items-center space-x-3'>
+                        <span className='font-bold text-xs text-[#020202]'>
                           {period.displayName}
                         </span>
-                        {period.type === "team" && (
+                        {period.type === 'team' && (
                           <TokenIcons projects={seasonProjects} />
                         )}
                       </div>
@@ -331,9 +333,9 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
                   {/* Unlock section */}
                   <div
                     className={`absolute top-0 bottom-0 rounded-r-lg flex items-center justify-center px-4 ${
-                      period.type === "team"
-                        ? "bg-qacc-gray-light"
-                        : "bg-peach-400"
+                      period.type === 'team'
+                        ? 'bg-qacc-gray-light'
+                        : 'bg-peach-400'
                     }`}
                     style={{
                       left: `${getDatePosition(period.cliff)}%`,
@@ -343,11 +345,11 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
                       }%`,
                     }}
                   >
-                    <div className="text-center flex items-center justify-center gap-1">
-                      <span className="text-[#020202]/40 font-bold text-xs">
+                    <div className='text-center flex items-center justify-center gap-1'>
+                      <span className='text-[#020202]/40 font-bold text-xs'>
                         Unlock
                       </span>
-                      <span className="text-[#020202]/30 text-xs">
+                      <span className='text-[#020202]/30 text-xs'>
                         {formatDate(period.cliff)}
                       </span>
                     </div>
@@ -355,7 +357,7 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
 
                   {/* End date */}
                   <div
-                    className="absolute top-1/2 transform -translate-y-1/2 text-xs text-qacc-gray-light/60 ml-2"
+                    className='absolute top-1/2 transform -translate-y-1/2 text-xs text-qacc-gray-light/60 ml-2'
                     style={{
                       left: `${getDatePosition(period.end)}%`,
                     }}
@@ -369,15 +371,15 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
         </div>
 
         {/* Timeline */}
-        <div className="pb-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
-          <div className="relative h-full flex items-center">
+        <div className='pb-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out'>
+          <div className='relative h-full flex items-center'>
             {timelineMonths.map((month, index) => (
               <div
                 key={index}
-                className="absolute transform -translate-x-1/2"
+                className='absolute transform -translate-x-1/2'
                 style={{ left: `${month.position}%` }}
               >
-                <div className="text-xs text-qacc-gray-light/40 whitespace-nowrap">
+                <div className='text-xs text-qacc-gray-light/40 whitespace-nowrap'>
                   {month.fullLabel}
                 </div>
               </div>
@@ -388,17 +390,17 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
         {/* Today Line */}
         {todayPosition >= 0 && (
           <div
-            className={`absolute -top-2 w-[1px] bg-[#D6644F] pointer-events-none transition-all duration-100 ease-in-out ${seasonNumber == 1 ? "h-[190px]" : "h-[160px]"}`}
+            className={`absolute -top-2 w-[1px] bg-[#D6644F] pointer-events-none transition-all duration-100 ease-in-out ${seasonNumber == 1 ? 'h-[190px]' : 'h-[160px]'}`}
             style={{ left: `${todayPosition}%` }}
           >
             {/* Top circle */}
-            <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-[#D6644F] rounded-full"></div>
+            <div className='absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-[#D6644F] rounded-full'></div>
 
             {/* Bottom circle */}
-            <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-[#D6644F] rounded-full"></div>
+            <div className='absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-[#D6644F] rounded-full'></div>
 
-            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2">
-              <span className="text-xs text-[#D6644F] font-semibold">
+            <div className='absolute -top-8 left-1/2 transform -translate-x-1/2'>
+              <span className='text-xs text-[#D6644F] font-semibold'>
                 Today
               </span>
             </div>
@@ -408,48 +410,48 @@ const VestingSchedule: React.FC<VestingScheduleProps> = ({
         {/* Tooltip */}
         {tooltip.visible && (
           <div
-            className="absolute z-50 bg-neutral-900 border border-neutral-700 rounded-lg p-4 shadow-xl pointer-events-none backdrop-blur-sm"
+            className='absolute z-50 bg-neutral-900 border border-neutral-700 rounded-lg p-4 shadow-xl pointer-events-none backdrop-blur-sm'
             style={{
               left: `${tooltip.x + 10}px`,
               top: `${tooltip.y - 10}px`,
-              transform: "translateY(-100%)",
+              transform: 'translateY(-100%)',
             }}
           >
-            <div className="text-sm">
-              <div className="font-semibold text-white mb-2">
+            <div className='text-sm'>
+              <div className='font-semibold text-white mb-2'>
                 {tooltip.period.displayName}
               </div>
-              <div className="space-y-1 text-gray-300">
-                <div className="flex justify-between gap-4">
-                  <span className="text-gray-400">Start:</span>
+              <div className='space-y-1 text-gray-300'>
+                <div className='flex justify-between gap-4'>
+                  <span className='text-gray-400'>Start:</span>
                   <span>{tooltip.period.start.toLocaleDateString()}</span>
                 </div>
-                <div className="flex justify-between gap-4">
-                  <span className="text-gray-400">Cliff:</span>
+                <div className='flex justify-between gap-4'>
+                  <span className='text-gray-400'>Cliff:</span>
                   <span>{tooltip.period.cliff.toLocaleDateString()}</span>
                 </div>
-                <div className="flex justify-between gap-4">
-                  <span className="text-gray-400">End:</span>
+                <div className='flex justify-between gap-4'>
+                  <span className='text-gray-400'>End:</span>
                   <span>{tooltip.period.end.toLocaleDateString()}</span>
                 </div>
-                <div className="flex justify-between gap-4">
-                  <span className="text-gray-400">Cliff period:</span>
+                <div className='flex justify-between gap-4'>
+                  <span className='text-gray-400'>Cliff period:</span>
                   <span>
-                    {calculateDays(tooltip.period.start, tooltip.period.cliff)}{" "}
+                    {calculateDays(tooltip.period.start, tooltip.period.cliff)}{' '}
                     days
                   </span>
                 </div>
-                <div className="flex justify-between gap-4">
-                  <span className="text-gray-400">Vesting period:</span>
+                <div className='flex justify-between gap-4'>
+                  <span className='text-gray-400'>Vesting period:</span>
                   <span>
-                    {calculateDays(tooltip.period.cliff, tooltip.period.end)}{" "}
+                    {calculateDays(tooltip.period.cliff, tooltip.period.end)}{' '}
                     days
                   </span>
                 </div>
-                <div className="flex justify-between gap-4">
-                  <span className="text-gray-400">Total duration:</span>
+                <div className='flex justify-between gap-4'>
+                  <span className='text-gray-400'>Total duration:</span>
                   <span>
-                    {calculateDays(tooltip.period.start, tooltip.period.end)}{" "}
+                    {calculateDays(tooltip.period.start, tooltip.period.end)}{' '}
                     days
                   </span>
                 </div>

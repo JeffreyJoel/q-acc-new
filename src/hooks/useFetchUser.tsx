@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchUserInfo } from '@/services/user.service';
 import { Address } from 'viem';
 
-export const useFetchUser = (enabled: boolean = false, address: Address) => {
+import { fetchUserInfo } from '@/services/user.service';
 
+export const useFetchUser = (enabled: boolean = false, address: Address) => {
   return useQuery({
     queryKey: ['user', address],
     queryFn: async () => {

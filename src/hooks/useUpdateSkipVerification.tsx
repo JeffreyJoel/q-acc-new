@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
+
 import { requestGraphQL } from '@/helpers/request';
 import { USER_SET_SKIP_VERIFICATION_MUTATION } from '@/queries/user.query';
 
@@ -17,7 +18,7 @@ export const useUpdateSkipVerification = (onSuccess?: () => void) => {
         },
         {
           auth: true,
-        },
+        }
       );
     },
     onMutate: async (newSkipVerification: boolean) => {
@@ -43,7 +44,7 @@ export const useUpdateSkipVerification = (onSuccess?: () => void) => {
         'skipVerification updated successfully',
         data,
         variables,
-        context,
+        context
       );
       onSuccess && onSuccess();
     },

@@ -1,7 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { ITokenHoldersResponse, ITokenHolding } from '@/types/token-holders.type';
-import { GET_TOKEN_HOLDERS_BY_PROJECT } from '@/queries/project.query';
+
 import { requestGraphQL } from '@/helpers/request';
+import { GET_TOKEN_HOLDERS_BY_PROJECT } from '@/queries/project.query';
+import {
+  ITokenHoldersResponse,
+  ITokenHolding,
+} from '@/types/token-holders.type';
 
 /**
  * Fetches token holders (top 20) & total count from the internal API.
@@ -18,7 +22,9 @@ export const useTokenHolders = (
   return useQuery<ITokenHoldersResponse, Error>({
     queryKey: ['tokenHolders', tokenAddress],
     queryFn: async () => {
-      const res = await fetch(`/api/token-holders?tokenAddress=${tokenAddress}`);
+      const res = await fetch(
+        `/api/token-holders?tokenAddress=${tokenAddress}`
+      );
       if (!res.ok) throw new Error('Failed to fetch token holders');
       return res.json();
     },
@@ -27,15 +33,13 @@ export const useTokenHolders = (
   });
 };
 
-
 export const useTokenHolderTags = (projectName: string) => {
   return useQuery<ITokenHolding[], Error>({
     queryKey: ['tokenHolderTags', projectName],
     queryFn: async () => {
-      const res = await requestGraphQL<{ tokenHoldersByProject: ITokenHolding[] }>(
-        GET_TOKEN_HOLDERS_BY_PROJECT,
-        { projectName }
-      );
+      const res = await requestGraphQL<{
+        tokenHoldersByProject: ITokenHolding[];
+      }>(GET_TOKEN_HOLDERS_BY_PROJECT, { projectName });
       return res.tokenHoldersByProject;
     },
     enabled: !!projectName,

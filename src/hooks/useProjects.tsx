@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Address } from 'viem';
+
+import { Abc } from '@/app/api/projects/abc/[address]/route';
 import {
   createProject,
   fetchProjectById,
@@ -11,7 +13,6 @@ import {
   fetchProjectMetadata,
 } from '@/services/project.service';
 import { IProjectCreation } from '@/types/project.type';
-import { Abc } from '@/app/api/projects/abc/[address]/route';
 
 /**
  * Hook to fetch all projects
@@ -66,7 +67,7 @@ export const useFetchProjectBySlug = (slug: string, address?: Address) => {
  */
 export const useCreateProject = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (project: IProjectCreation) => createProject(project),
     onSuccess: () => {
@@ -81,13 +82,20 @@ export const useCreateProject = () => {
  */
 export const useUpdateProject = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: ({ projectId, newProjectData }: { projectId: number; newProjectData: any }) => 
-      updateProjectById(projectId, newProjectData),
+    mutationFn: ({
+      projectId,
+      newProjectData,
+    }: {
+      projectId: number;
+      newProjectData: any;
+    }) => updateProjectById(projectId, newProjectData),
     onSuccess: (_, variables) => {
       // Invalidate queries related to the updated project
-      queryClient.invalidateQueries({ queryKey: ['project', variables.projectId] });
+      queryClient.invalidateQueries({
+        queryKey: ['project', variables.projectId],
+      });
       queryClient.invalidateQueries({ queryKey: ['allProjects'] });
     },
   });

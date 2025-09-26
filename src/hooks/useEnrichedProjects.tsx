@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { IProject } from '@/types/project.type';
+
 import {
   fetchAllProjectsData,
   EnrichedProjectData,
 } from '@/services/projectData.service';
+import { IProject } from '@/types/project.type';
 
 /**
  * Hook that takes the light-weight IProject[] (GraphQL response)
@@ -11,7 +12,9 @@ import {
  * The result is cached with React-Query to prevent duplicate network calls
  * across carousel, table, etc.
  */
-export const useEnrichedProjects = (initialProjects: IProject[] | undefined) => {
+export const useEnrichedProjects = (
+  initialProjects: IProject[] | undefined
+) => {
   return useQuery<EnrichedProjectData[], Error>({
     queryKey: ['enrichedProjects', initialProjects?.length ?? 0],
     queryFn: () => fetchAllProjectsData(initialProjects ?? []),
@@ -19,7 +22,7 @@ export const useEnrichedProjects = (initialProjects: IProject[] | undefined) => 
     staleTime: 1000 * 60 * 10,
     placeholderData: () => {
       if (!initialProjects) return [];
-      return initialProjects.map<EnrichedProjectData>((p) => ({
+      return initialProjects.map<EnrichedProjectData>(p => ({
         id: p.id!,
         title: p.title || '',
         slug: p.slug || '',
