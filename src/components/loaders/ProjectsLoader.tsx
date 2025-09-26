@@ -1,9 +1,6 @@
 export default function ProjectsLoader() {
   return (
     <div className='mx-auto px-4 sm:px-6 py-10 md:py-20 lg:px-12 flex flex-col justify-center'>
-      <h2 className='font-anton text-white text-[46px] md:text-5xl lg:text-[64px] mb-4 md:mb-8 uppercase tracking-wide'>
-        Projects
-      </h2>
       <div>
         {/* ProjectsCarousel Skeleton - Hidden on mobile, shown on lg+ */}
         <div className='hidden lg:block'>
