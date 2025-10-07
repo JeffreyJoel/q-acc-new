@@ -1,4 +1,5 @@
-import { Address, parseEther, formatUnits, erc20Abi } from 'viem';
+import { Address, parseEther, formatUnits, erc20Abi, encodeFunctionData } from 'viem';
+import { KernelAccountClient } from '@zerodev/sdk';
 
 import config from '@/config/configuration';
 import WRAPPED_POL_ABI from '@/lib/abi/wrappedPol';
@@ -72,22 +73,32 @@ export async function checkWPOLBalance(
  * Wrap POL tokens to WPOL (without waiting for confirmation)
  */
 export async function wrapPOL(
-  walletClient: any,
-  userAddress: string,
+  kernelClient: KernelAccountClient,
   amount: string,
   onStatusUpdate?: (status: string) => void
 ): Promise<string> {
   try {
     onStatusUpdate?.('Wrapping POL to WPOL...');
     const amountWei = parseEther(amount);
-    const hash = await walletClient.writeContract({
-      address: config.BONDING_CURVE_COLLATERAL_TOKEN as Address,
+
+    // Encode the deposit function call
+    const depositData = encodeFunctionData({
       abi: WRAPPED_POL_ABI,
       functionName: 'deposit',
       args: [],
-      account: userAddress as Address,
-      value: amountWei,
     });
+
+    // Send transaction using smart account
+    const hash = await kernelClient.sendTransaction({
+      calls: [
+        {
+          to: config.BONDING_CURVE_COLLATERAL_TOKEN as Address,
+          data: depositData,
+          value: amountWei,
+        },
+      ],
+    });
+
     return hash;
   } catch (error) {
     console.error('Error wrapping POL:', error);
@@ -99,21 +110,32 @@ export async function wrapPOL(
  * Unwrap WPOL tokens to POL (without waiting for confirmation)
  */
 export async function unwrapWPOL(
-  walletClient: any,
-  userAddress: string,
+  kernelClient: KernelAccountClient,
   amount: string,
   onStatusUpdate?: (status: string) => void
 ): Promise<string> {
   try {
     onStatusUpdate?.('Unwrapping WPOL to POL...');
     const amountWei = parseEther(amount);
-    const hash = await walletClient.writeContract({
-      address: config.BONDING_CURVE_COLLATERAL_TOKEN as Address,
+
+    // Encode the withdraw function call
+    const withdrawData = encodeFunctionData({
       abi: WRAPPED_POL_ABI,
       functionName: 'withdraw',
       args: [amountWei],
-      account: userAddress as Address,
     });
+
+    // Send transaction using smart account
+    const hash = await kernelClient.sendTransaction({
+      calls: [
+        {
+          to: config.BONDING_CURVE_COLLATERAL_TOKEN as Address,
+          data: withdrawData,
+          value: BigInt(0),
+        },
+      ],
+    });
+
     return hash;
   } catch (error) {
     console.error('Error unwrapping WPOL:', error);
@@ -161,7 +183,7 @@ export async function checkSufficientBalance(
  */
 export async function executePOLWrappingFlow(
   publicClient: any,
-  walletClient: any,
+  kernelClient: KernelAccountClient,
   userAddress: string,
   requiredAmount: string,
   onStatusUpdate?: (status: string) => void
@@ -183,8 +205,7 @@ export async function executePOLWrappingFlow(
     // Always wrap the full amount
     onStatusUpdate?.('Wrapping POL to WPOL...');
     const wrapHash = await wrapPOL(
-      walletClient,
-      userAddress,
+      kernelClient,
       requiredAmount,
       onStatusUpdate
     );

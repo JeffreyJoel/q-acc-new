@@ -38,7 +38,12 @@ const privyConfig: PrivyClientConfig = {
 };
 
 const transports = Object.fromEntries(
-  config.SUPPORTED_CHAINS.map(chain => [chain.id, http()])
+ config.SUPPORTED_CHAINS.map(chain => [
+    chain.id,
+    chain.id === polygon.id
+      ? http('https://polygon-rpc.com')
+      : http()
+  ])
 );
 
 export const wagmiConfig = createConfig({

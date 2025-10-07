@@ -124,7 +124,7 @@ export default function ProjectDetails() {
             {isTokenListed ? (
               <div className='w-full lg:w-[30%] h-full'>
                 <SwapWidget
-                  contractAddress={project.abc?.fundingManagerAddress || ''}
+                  contractAddress={project.abc?.fundingManagerAddress}
                   receiveTokenAddress={project.abc?.issuanceTokenAddress || ''}
                   receiveTokenSymbol={project.abc?.tokenTicker || ''}
                   receiveTokenIcon={handleImageUrl(project.abc?.icon || '')}

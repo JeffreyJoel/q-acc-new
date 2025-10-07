@@ -84,11 +84,6 @@ export default function ProfileInfo() {
             </div>
             <div className='h-6 bg-neutral-700 rounded w-16 animate-pulse ml-3'></div>
           </div>
-
-          <div className='flex flex-col md:flex-row gap-4'>
-            <div className='h-8 bg-neutral-700 rounded w-32 animate-pulse'></div>
-            <div className='h-8 bg-neutral-700 rounded w-32 animate-pulse'></div>
-          </div>
         </div>
       </div>
     );

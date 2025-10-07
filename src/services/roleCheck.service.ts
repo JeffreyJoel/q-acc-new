@@ -81,7 +81,7 @@ async function checkRole(
 export async function checkBondingCurvePermissions(
   publicClient: any,
   bondingCurveAddress: string,
-  userAddress: string
+  userAddress: string,
 ): Promise<RoleCheckResult> {
   try {
     // Get the orchestrator address from the bonding curve contract
@@ -104,31 +104,31 @@ export async function checkBondingCurvePermissions(
       }),
     ]);
 
-    console.log('orchestratorAddress:', orchestratorAddress);
+    // console.log('orchestratorAddress:', orchestratorAddress);
 
     // Get authorizer address
     const authorizerAddress = await getAuthorizerAddress(
       publicClient,
-      orchestratorAddress
+      orchestratorAddress,
     );
 
-    console.log('authorizerAddress:', authorizerAddress);
+    // console.log('authorizerAddress:', authorizerAddress);
 
     // Generate role ID
     const roleId = await generateRoleId(
       publicClient,
       authorizerAddress,
-      bondingCurveAddress
+      bondingCurveAddress,
     );
 
-    console.log('roleId:', roleId);
+    // console.log('roleId:', roleId);
 
     // Check if user has the role
     const hasRole = await checkRole(
       publicClient,
       authorizerAddress,
       roleId,
-      userAddress
+      userAddress,
     );
 
     console.log('hasRole:', hasRole);

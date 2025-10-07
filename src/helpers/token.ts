@@ -21,12 +21,11 @@ export const fetchBalanceWithDecimals = async (
     const supportedChainIds = wagmiConfig.chains.map(c => c.id);
     const isSupported =
       chainId !== undefined &&
-      supportedChainIds.includes(chainId as 137 | 80002);
+      supportedChainIds.includes(chainId as 137);
 
-    if (tokenAddress === AddressZero) {
+    if (tokenAddress === AddressZero || tokenAddress === config.NATIVE_TOKEN_ADDRESS) {
       const client = getPublicClient(wagmiConfig, {
-        // Only provide chainId if supported by the current wagmiConfig to avoid ChainNotConfiguredError.
-        chainId: isSupported ? (chainId as 137 | 80002) : undefined,
+        chainId: isSupported ? (chainId as 137) : undefined,
       });
       const balance = await client?.getBalance({ address: userAddress });
       const formattedBalance = formatUnits(balance!, 18);
@@ -40,13 +39,13 @@ export const fetchBalanceWithDecimals = async (
         abi: erc20Abi,
         functionName: 'balanceOf',
         args: [userAddress],
-        chainId: isSupported ? (chainId as 137 | 80002) : undefined,
+        chainId: isSupported ? (chainId as 137) : undefined,
       });
       const decimals = await readContract(wagmiConfig, {
         address: tokenAddress,
         abi: erc20Abi,
         functionName: 'decimals',
-        chainId: isSupported ? (chainId as 137 | 80002) : undefined,
+        chainId: isSupported ? (chainId as 137) : undefined,
       });
       const formattedBalance = formatUnits(balance, decimals);
       return {

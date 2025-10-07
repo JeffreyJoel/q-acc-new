@@ -139,9 +139,9 @@ interface QuickSwapTabProps {
 }
 
 export default function SquidSwapTab({
-  receiveTokenAddress = '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270',
-  receiveTokenSymbol = 'WMATIC',
-  receiveTokenIcon = 'https://raw.githubusercontent.com/axelarnetwork/axelar-configs/main/images/tokens/wmatic.svg',
+  receiveTokenAddress, 
+  receiveTokenSymbol,
+  receiveTokenIcon,
 }: QuickSwapTabProps) {
   const { data: polUsdPrice } = useFetchPOLPriceSquid();
 
@@ -448,8 +448,8 @@ export default function SquidSwapTab({
         </div>
         <PayReceiveRow
           label='RECEIVE'
-          tokenSymbol={receiveTokenSymbol}
-          iconSrc={receiveTokenIcon}
+          tokenSymbol={receiveTokenSymbol ?? ''}
+          iconSrc={receiveTokenIcon ?? ''}
           isLoading={isReceiveTokenLoading}
           balance={
             receiveTokenBalance

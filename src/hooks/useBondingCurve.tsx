@@ -1,10 +1,17 @@
 import { useState, useEffect } from 'react';
 
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Address, getContract, parseUnits, formatUnits } from 'viem';
+import { Address, getContract, parseUnits, formatUnits, http, createPublicClient } from 'viem';
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
 
 import bondingCurveABI from '@/lib/abi/bondingCurve';
+import { polygon } from 'viem/chains';
+import { usePrivy } from '@privy-io/react-auth';
+
+const publicClient = createPublicClient({
+  chain: polygon,
+  transport: http(process.env.NEXT_PUBLIC_POLYGON_RPC_URL || polygon.rpcUrls.default.http[0]),
+});
 
 export interface BondingCurveData {
   BuyPrice: number;
@@ -40,7 +47,6 @@ export const useCalculatePurchaseReturn = (
   depositAmount: string,
   debounceMs: number = 500
 ) => {
-  const publicClient = usePublicClient();
   const debouncedAmount = useDebounce(depositAmount, debounceMs);
 
   return useQuery({
@@ -83,7 +89,6 @@ export const useCalculateSaleReturn = (
   depositAmount: string,
   debounceMs: number = 500
 ) => {
-  const publicClient = usePublicClient();
   const debouncedAmount = useDebounce(depositAmount, debounceMs);
 
   return useQuery({
@@ -121,8 +126,9 @@ export const useCalculateSaleReturn = (
 };
 
 export const useBondingCurve = (contractAddress: string) => {
-  const { address } = useAccount();
-  const publicClient = usePublicClient();
+  const { user } = usePrivy();
+  const address = user?.wallet?.address;
+  
   const { data: walletClient } = useWalletClient();
 
   // Get bonding curve data

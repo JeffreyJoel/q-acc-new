@@ -19,7 +19,7 @@ import {
 import { KERNEL_V3_1 } from '@zerodev/sdk/constants';
 import { createPublicClient, createWalletClient, custom, http } from 'viem';
 import { entryPoint07Address } from 'viem/account-abstraction';
-import { polygonAmoy } from 'viem/chains';
+import { polygon } from 'viem/chains';
 
 interface ZeroDevContextType {
   kernelClient: KernelAccountClient | null;
@@ -56,7 +56,7 @@ export const ZeroDevProvider: React.FC<ZeroDevProviderProps> = ({
   const [isInitializing, setIsInitializing] = useState(false);
 
   const ZERODEV_RPC = process.env.NEXT_PUBLIC_ZERODEV_RPC;
-  const chain = polygonAmoy;
+  const chain = polygon;
 
   const initializeSmartAccount = async () => {
     if (!ready || wallets.length === 0) {
