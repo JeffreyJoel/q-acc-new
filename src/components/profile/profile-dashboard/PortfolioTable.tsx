@@ -135,6 +135,7 @@ function PortfolioTableRow({
   const { claim, isSmartAccountReady } = useClaimRewards({
     paymentProcessorAddress: proccessorAddress,
     paymentRouterAddress: router,
+    tokenContractAddress: project.abc?.issuanceTokenAddress,
     onSuccess: () => {
       // Immediately show unlock
       setRecentlyClaimed(true);
