@@ -2,13 +2,13 @@ import { useMemo } from 'react';
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ethers, BigNumberish, Contract } from 'ethers';
-import { Address, encodeFunctionData, getContract } from 'viem';
-import { usePublicClient } from 'wagmi';
+import { Address, createPublicClient, encodeFunctionData, getContract, http } from 'viem';
 
 import config from '@/config/configuration';
 import { useZeroDev } from '@/contexts/ZeroDevContext';
 import { fundingManagerAbi, roleModuleAbi } from '@/lib/abi/inverter';
 import { getClaimedTributesAndMintedTokenAmounts } from '@/services/tributeCollected.service';
+import { polygon } from 'viem/chains';
 
 const provider = new ethers.JsonRpcProvider(config.NETWORK_RPC_ADDRESS);
 
@@ -78,7 +78,10 @@ export const useClaimCollectedFee = ({
   onSuccess?: () => void;
 }) => {
   const { kernelClient, isInitializing } = useZeroDev();
-  const publicClient = usePublicClient();
+  const publicClient = createPublicClient({
+    chain: polygon,
+    transport: http(polygon.rpcUrls.default.http[0]),
+  });
 
   const claim = useMutation({
     mutationFn: async () => {
