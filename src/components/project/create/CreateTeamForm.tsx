@@ -11,7 +11,6 @@ import { useAccount } from 'wagmi';
 
 import ProjectPreview from '@/components/project/create/ProjectPreview';
 import { TeamForm } from '@/components/project/create/TeamForm';
-// import { Button, ButtonColor } from '@/components/ui/button';
 import { useProjectCreationContext } from '@/contexts/projectCreation.context';
 import { useCreateProject } from '@/hooks/useCreateProject';
 import { useFetchUser } from '@/hooks/useFetchUser';
@@ -21,7 +20,6 @@ import {
   ProjectFormData,
 } from '@/types/project.type';
 
-// /import { CreateProjectModal } from '@/components/Modals/CreateProjectModal';
 
 export interface TeamMember {
   name: string;
@@ -32,7 +30,7 @@ export interface TeamMember {
 }
 
 export interface TeamFormData {
-  team: TeamMember[]; // Array to store team member data
+  team: TeamMember[];
 }
 
 const CreateTeamForm: FC = () => {
@@ -46,7 +44,7 @@ const CreateTeamForm: FC = () => {
         ? (formData as ProjectFormData).team
         : [{ name: '', image: null }],
     }, // Initialize with existing team members or one empty member
-    mode: 'onChange', // This enables validation on change
+    mode: 'onChange',
   });
   const router = useRouter();
 
@@ -59,7 +57,7 @@ const CreateTeamForm: FC = () => {
 
   const { handleSubmit, setValue, watch, reset, getValues } = methods;
 
-  const teamMembers = watch('team'); // Watch the team members array
+  const teamMembers = watch('team');
 
   const { mutateAsync: createProject, isPending, error } = useCreateProject();
 
@@ -73,7 +71,7 @@ const CreateTeamForm: FC = () => {
   }, [(formData as ProjectFormData).team, reset]);
 
   const addTeamMember = () => {
-    setValue('team', [...teamMembers, { name: '', image: null }]); // Add a new team member
+    setValue('team', [...teamMembers, { name: '', image: null }]);
   };
 
   const removeTeamMember = (index: number) => {
@@ -87,10 +85,10 @@ const CreateTeamForm: FC = () => {
     const teamMembers = data.team;
     setFormData({
       ...(formData as ProjectFormData),
-      team: teamMembers, // Update the team array within the project
+      team: teamMembers,
     });
 
-    console.log('TEAM', teamMembers);
+  
     const projectData = {
       ...(formData as ProjectFormData),
       team: teamMembers,
