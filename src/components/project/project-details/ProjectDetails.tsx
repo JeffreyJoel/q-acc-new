@@ -34,7 +34,6 @@ export default function ProjectDetails() {
 
   const { projectData: project, isLoading, error } = useProjectContext();
 
-  console.log(project);
 
   useEffect(() => {
     const fetchPoolAddress = async () => {
@@ -56,8 +55,6 @@ export default function ProjectDetails() {
 
     fetchPoolAddress();
   }, [project?.abc?.issuanceTokenAddress]);
-
-  // console.log(project);
 
   return (
     <div className='mt-32 mb-12 max-w-7xl min-h-screen  mx-auto px-6'>
@@ -124,7 +121,7 @@ export default function ProjectDetails() {
             {isTokenListed ? (
               <div className='w-full lg:w-[30%] h-full'>
                 <SwapWidget
-                  contractAddress={project.abc?.fundingManagerAddress || ''}
+                  contractAddress={project.abc?.fundingManagerAddress}
                   receiveTokenAddress={project.abc?.issuanceTokenAddress || ''}
                   receiveTokenSymbol={project.abc?.tokenTicker || ''}
                   receiveTokenIcon={handleImageUrl(project.abc?.icon || '')}

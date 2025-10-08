@@ -135,6 +135,7 @@ function PortfolioTableRow({
   const { claim, isSmartAccountReady } = useClaimRewards({
     paymentProcessorAddress: proccessorAddress,
     paymentRouterAddress: router,
+    tokenContractAddress: project.abc?.issuanceTokenAddress,
     onSuccess: () => {
       // Immediately show unlock
       setRecentlyClaimed(true);
@@ -466,9 +467,9 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
               </tr>
             )}
           </thead>
-          {rows.length > 0 ? (
+          {rows.length > 0 && (
             <tbody className='divide-y  divide-white/5'>
-              {rows.map(row => {
+              {rows.map((row: { project: IProject; inWallet: number }) => {
                 const rowCallback = rowCallbacks.find(
                   cb => cb.projectId === String(row.project.id)
                 );
@@ -486,14 +487,15 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ rows }) => {
                 );
               })}
             </tbody>
-          ) : (
-            <div className='py-6 w-full'>
-              <p className='text-qacc-gray-light text-base font-medium'>
-                You have not invested in any projects yet.
-              </p>
-            </div>
           )}
         </table>
+        {rows.length === 0 && (
+          <div className='py-6 w-full'>
+            <p className='text-qacc-gray-light text-base font-medium'>
+              You have not invested in any projects yet.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

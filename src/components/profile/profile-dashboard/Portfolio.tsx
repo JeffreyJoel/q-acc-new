@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 
 import { usePrivy } from '@privy-io/react-auth';
 
-import { SmartUSDCTransfer } from '@/components/shared/SmartUSDCTransfer';
 import { useDonorContext } from '@/contexts/donor.context';
 import { fetchEVMTokenBalances } from '@/helpers/token';
 import type { IProject } from '@/types/project.type';
@@ -52,8 +51,6 @@ export default function Portfolio() {
 
   return (
     <div className='space-y-12'>
-      <SmartUSDCTransfer />
-
       <PortfolioTable rows={portfolioData} />
 
       <div className=''>

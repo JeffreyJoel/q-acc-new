@@ -56,8 +56,9 @@ export default function SwapWidget({
       {/* Content */}
       {tab === 'squidswap' ? (
         <SquidSwapTab
-        // receiveTokenAddress={receiveTokenAddress}
-        // receiveTokenSymbol={receiveTokenSymbol}
+          receiveTokenAddress={receiveTokenAddress}
+          receiveTokenSymbol={receiveTokenSymbol}
+          receiveTokenIcon={receiveTokenIcon}
         // receiveTokenIcon={receiveTokenIcon}
         />
       ) : (

@@ -40,12 +40,13 @@ export interface BuyParams {
   minAmountOut: string;
 }
 
+
+
 /**
  * Check if the proxy contract has sufficient allowance to spend tokens
  */
 export async function checkAllowance(
   publicClient: any,
-  walletClient: any,
   tokenAddress: string,
   spenderAddress: string,
   userAddress: string,
@@ -184,6 +185,7 @@ export async function executeBuyFlow(
 
     let wrapHash: string | undefined;
     let approvalHash: string | undefined;
+    let buyHash: string;
 
     if (payWithWPOL) {
       onStatusUpdate?.('Checking WPOL balance...');
@@ -196,7 +198,6 @@ export async function executeBuyFlow(
 
       const hasAllowance = await checkAllowance(
         publicClient,
-        walletClient,
         collateralToken,
         proxyAddress,
         userAddress,
@@ -227,6 +228,26 @@ export async function executeBuyFlow(
       }
 
       onStatusUpdate?.('Executing buy...');
+      buyHash = await buyThroughProxy(
+        walletClient,
+        proxyAddress,
+        {
+          targetContract: bondingCurveAddress,
+          collateralToken,
+          depositAmount,
+          minAmountOut,
+        },
+        userAddress
+      );
+
+      onStatusUpdate?.('Waiting for buy confirmation...');
+      const buyReceipt = await waitForTransactionReceipt(publicClient, {
+        hash: buyHash as Address,
+      });
+
+      if (buyReceipt.status === 'reverted') {
+        throw new Error('Buy transaction failed');
+      }
     } else {
       onStatusUpdate?.('Wrapping POL to WPOL...');
       const wrapResult = await executePOLWrappingFlow(
@@ -255,7 +276,6 @@ export async function executeBuyFlow(
 
       const hasAllowance = await checkAllowance(
         publicClient,
-        walletClient,
         collateralToken,
         proxyAddress,
         userAddress,
@@ -286,27 +306,26 @@ export async function executeBuyFlow(
       }
 
       onStatusUpdate?.('Executing buy...');
-    }
+      buyHash = await buyThroughProxy(
+        walletClient,
+        proxyAddress,
+        {
+          targetContract: bondingCurveAddress,
+          collateralToken,
+          depositAmount,
+          minAmountOut,
+        },
+        userAddress
+      );
 
-    const buyHash = await buyThroughProxy(
-      walletClient,
-      proxyAddress,
-      {
-        targetContract: bondingCurveAddress,
-        collateralToken,
-        depositAmount,
-        minAmountOut,
-      },
-      userAddress
-    );
+      onStatusUpdate?.('Waiting for buy confirmation...');
+      const buyReceipt = await waitForTransactionReceipt(publicClient, {
+        hash: buyHash as Address,
+      });
 
-    onStatusUpdate?.('Waiting for buy confirmation...');
-    const buyReceipt = await waitForTransactionReceipt(publicClient, {
-      hash: buyHash as Address,
-    });
-
-    if (buyReceipt.status === 'reverted') {
-      throw new Error('Buy transaction failed');
+      if (buyReceipt.status === 'reverted') {
+        throw new Error('Buy transaction failed');
+      }
     }
 
     onStatusUpdate?.('Buy complete!');
@@ -340,7 +359,6 @@ export async function executeSellFlow(
 
     const hasAllowance = await checkAllowance(
       publicClient,
-      walletClient,
       tokenToSell,
       proxyAddress,
       userAddress,

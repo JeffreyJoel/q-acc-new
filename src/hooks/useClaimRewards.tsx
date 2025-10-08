@@ -1,60 +1,47 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Address, getContract } from 'viem';
-import { usePublicClient, useWalletClient } from 'wagmi';
+import { usePublicClient } from 'wagmi';
+import { usePrivy } from '@privy-io/react-auth';
 
 import { useZeroDev } from '@/contexts/ZeroDevContext';
 import { claimTokensABI } from '@/lib/abi/inverter';
 
-// export const useClaimRewards = ({
-//   paymentProcessorAddress,
-//   paymentRouterAddress,
-//   onSuccess = () => {},
-//   onError = () => {},
-// }: {
-//   paymentProcessorAddress: string;
-//   paymentRouterAddress: string;
-//   onSuccess?: () => void;
-//   onError?: (error: Error) => void;
-// }) => {
-//   const { data: walletClient } = useWalletClient();
-//   const publicClient = usePublicClient();
-
-//   const claim = useMutation({
-//     mutationFn: async () => {
-//       if (!walletClient) throw new Error("Wallet not connected");
-
-//       const contract = getContract({
-//         address: paymentProcessorAddress as Address,
-//         abi: claimTokensABI,
-//         client: walletClient,
-//       });
-
-//       const tx = await contract.write.claimAll([paymentRouterAddress]);
-
-//       await publicClient!.waitForTransactionReceipt({
-//         hash: tx,
-//       });
-//     },
-//     onSuccess,
-//     onError,
-//   });
-
-//   return { claim };
-// };
+const erc20ABI = [
+  {
+    inputs: [
+      { name: 'dst', type: 'address' },
+      { name: 'wad', type: 'uint256' },
+    ],
+    name: 'transfer',
+    outputs: [{ name: '', type: 'bool' }],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ name: 'account', type: 'address' }],
+    name: 'balanceOf',
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+];
 
 export const useClaimRewards = ({
   paymentProcessorAddress,
   paymentRouterAddress,
+  tokenContractAddress,
   onSuccess = () => {},
   onError = () => {},
 }: {
   paymentProcessorAddress: string;
   paymentRouterAddress: string;
+  tokenContractAddress?: string;
   onSuccess?: () => void;
   onError?: (error: Error) => void;
 }) => {
   const { kernelClient, isInitializing } = useZeroDev();
   const publicClient = usePublicClient();
+  const { user: privyUser } = usePrivy();
 
   const claim = useMutation({
     mutationFn: async () => {
@@ -66,21 +53,77 @@ export const useClaimRewards = ({
         throw new Error('Smart account is still initializing');
       }
 
+      const userWalletAddress = privyUser?.wallet?.address;
+      if (!userWalletAddress) {
+        throw new Error('User wallet address not available for auto-transfer');
+      }
+
+      if (!tokenContractAddress) {
+        throw new Error('Token contract address required for auto-transfer');
+      }
+
+      if (!kernelClient.account) {
+        throw new Error(
+          'Smart account not properly initialized for auto-transfer'
+        );
+      }
+
+      const smartAccountAddress = kernelClient.account!.address;
+
       // Use the kernel client directly for gasless transactions
-      const contract = getContract({
+      const paymentProcessorContract = getContract({
         address: paymentProcessorAddress as Address,
         abi: claimTokensABI,
         client: kernelClient,
       });
 
-      const tx = await contract.write.claimAll([paymentRouterAddress]);
+      // Execute claim
+      const claimTx = await paymentProcessorContract.write.claimAll([
+        paymentRouterAddress,
+      ]);
 
-      // Wait for transaction confirmation
+      // Wait for claim transaction confirmation
       await publicClient!.waitForTransactionReceipt({
-        hash: tx,
+        hash: claimTx,
       });
 
-      return tx;
+      // Transfer tokens to user's regular wallet
+      if (tokenContractAddress && userWalletAddress) {
+        // Get the token balance of the smart account after claiming
+        const tokenContract = getContract({
+          address: tokenContractAddress as Address,
+          abi: erc20ABI,
+          client: publicClient!,
+        });
+
+        // Get balance of smart account
+        const balance = (await tokenContract.read.balanceOf([
+          smartAccountAddress,
+        ])) as bigint;
+
+        if (balance > BigInt(0)) {
+          // Transfer all tokens to user's regular wallet
+          const transferContract = getContract({
+            address: tokenContractAddress as Address,
+            abi: erc20ABI,
+            client: kernelClient,
+          });
+
+          const transferTx = await transferContract.write.transfer([
+            userWalletAddress as Address,
+            balance,
+          ]);
+
+          // Wait for transfer transaction confirmation
+          await publicClient!.waitForTransactionReceipt({
+            hash: transferTx,
+          });
+
+          return { claimTx, transferTx, tokensTransferred: balance };
+        }
+      }
+
+      return { claimTx, transferTx: null, tokensTransferred: BigInt(0) };
     },
     onSuccess,
     onError,

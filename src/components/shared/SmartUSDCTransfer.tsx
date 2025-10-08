@@ -19,7 +19,7 @@ interface SmartUSDCTransferProps {
 
 // USDC on Polygon Amoy testnet
 const DEFAULT_USDC_ADDRESS: Address =
-  '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582';
+  '0x3c499c542cef5e3811e1192ce70d8cc03d5c3359';
 
 export function SmartUSDCTransfer({
   className = '',
@@ -33,7 +33,7 @@ export function SmartUSDCTransfer({
   const [balance, setBalance] = useState<number | null>(null);
 
   const userAddress = user?.wallet?.address as Address;
-  const POLYGON_AMOY_CHAIN_ID = 80002;
+  const POLYGON_CHAIN_ID = 137;
 
   // Fetch user USDC balance when smart account is ready
   useEffect(() => {
@@ -41,7 +41,7 @@ export function SmartUSDCTransfer({
       fetchBalanceWithDecimals(
         usdcAddress,
         smartAccountAddress as Address,
-        POLYGON_AMOY_CHAIN_ID
+        POLYGON_CHAIN_ID
       )
         .then(result => {
           if (result) {
@@ -109,7 +109,7 @@ export function SmartUSDCTransfer({
         const result = await fetchBalanceWithDecimals(
           usdcAddress,
           userAddress as Address,
-          POLYGON_AMOY_CHAIN_ID
+          POLYGON_CHAIN_ID
         );
         if (result) {
           setBalance(parseFloat(result.formattedBalance));

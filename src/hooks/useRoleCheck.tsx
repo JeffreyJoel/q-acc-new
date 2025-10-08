@@ -1,4 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
+import { createPublicClient, http } from 'viem';
+import { polygon } from 'viem/chains';
 import { usePublicClient } from 'wagmi';
 
 import {
@@ -6,8 +8,12 @@ import {
   RoleCheckResult,
 } from '@/services/roleCheck.service';
 
+const publicClient = createPublicClient({
+  chain: polygon,
+  transport: http(polygon.rpcUrls.default.http[0]),
+});
+
 export const useRoleCheck = (bondingCurveAddress: string, address: string) => {
-  const publicClient = usePublicClient();
 
   return useQuery<RoleCheckResult>({
     queryKey: ['roleCheck', bondingCurveAddress, address],

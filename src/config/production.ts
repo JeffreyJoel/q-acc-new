@@ -50,8 +50,7 @@ const config: EnvConfig = {
     polygonZkEvm,
     gnosis,
     zksync,
-    bsc,
-    polygonAmoy,
+    bsc
   ] as const,
   SCAN_URL: 'https://polygonscan.com/',
   ERC_TOKEN_ADDRESS: '0x0000000000000000000000000000000000001010',

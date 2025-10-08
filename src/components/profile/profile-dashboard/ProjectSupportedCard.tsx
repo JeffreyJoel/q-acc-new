@@ -73,6 +73,7 @@ export default function ProjectSupportedCard({
   const { claim, isSmartAccountReady } = useClaimRewards({
     paymentProcessorAddress: proccessorAddress || '',
     paymentRouterAddress: router || '',
+    tokenContractAddress: project.abc?.issuanceTokenAddress,
     onSuccess: () => {
       // Immediately show unlock date
       setRecentlyClaimed(true);
