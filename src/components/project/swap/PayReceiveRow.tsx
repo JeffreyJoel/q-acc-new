@@ -145,7 +145,7 @@ export default function PayReceiveRow({
               Balance: {balance || '0.00'}
             </div>
             <div className='text-xl font-bold'>
-              {Number(formattedReceiveAmount).toFixed(6) || '0'}
+              {Number(formattedReceiveAmount).toFixed(1) || '0'}
             </div>
           </>
         )}

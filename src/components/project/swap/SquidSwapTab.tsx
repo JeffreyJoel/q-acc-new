@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, memo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 import Image from 'next/image';
 
@@ -168,6 +169,7 @@ export default function SquidSwapTab({
   });
 
   const { switchChain } = useChainManager();
+  const queryClient = useQueryClient();
 
   const { user: privyUser, authenticated } = usePrivy();
   const userAddress = privyUser?.wallet?.address;
@@ -175,7 +177,6 @@ export default function SquidSwapTab({
   const {
     data: fromBalanceData,
     isLoading: isFromBalanceLoading,
-    refetch: refetchFromBalance,
   } = useTokenBalanceWithDecimals(
     selectedFrom.tokenAddress.toLowerCase() as Address,
     userAddress as Address,
@@ -226,7 +227,6 @@ export default function SquidSwapTab({
   const {
     data: receiveTokenBalance,
     isLoading: isReceiveTokenLoading,
-    refetch: refetchReceiveBalance,
   } = useTokenBalanceWithDecimals(
     receiveTokenAddress as Address,
     userAddress as Address,
@@ -353,10 +353,15 @@ export default function SquidSwapTab({
       if (txHash) {
         reset({ swapAmount: '' });
         setIsQuoteValid(false);
+        resetStatus();
 
         // Refresh balances
-        refetchFromBalance();
-        refetchReceiveBalance();
+        queryClient.invalidateQueries({
+          queryKey: ['tokenBalance', selectedFrom.tokenAddress.toLowerCase(), userAddress]
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['tokenBalance', receiveTokenAddress, userAddress]
+        });
         toast.success('Swap successful!', {
           action: {
             label: 'View on Explorer',

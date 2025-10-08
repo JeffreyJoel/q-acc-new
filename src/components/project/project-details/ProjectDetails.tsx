@@ -34,7 +34,6 @@ export default function ProjectDetails() {
 
   const { projectData: project, isLoading, error } = useProjectContext();
 
-  console.log(project);
 
   useEffect(() => {
     const fetchPoolAddress = async () => {
@@ -56,8 +55,6 @@ export default function ProjectDetails() {
 
     fetchPoolAddress();
   }, [project?.abc?.issuanceTokenAddress]);
-
-  // console.log(project);
 
   return (
     <div className='mt-32 mb-12 max-w-7xl min-h-screen  mx-auto px-6'>

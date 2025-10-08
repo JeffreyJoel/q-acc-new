@@ -1,7 +1,8 @@
 'use client';
 import { useState, useCallback } from 'react';
-import { Address, createPublicClient, http, parseEther } from 'viem';
-import { useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
+import { useQueryClient } from '@tanstack/react-query';
+import { Address, createPublicClient, http } from 'viem';
+import { useWalletClient } from 'wagmi';
 import { ArrowDownUp, ArrowUpRight } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -20,7 +21,6 @@ import {
   executeBuyFlow,
   executeSellFlow,
 } from '@/services/bondingCurveProxy.service';
-import { useZeroDev } from '@/contexts/ZeroDevContext';
 import { polygon } from 'viem/chains';
 
 
@@ -62,9 +62,8 @@ export default function TradeMode(props: TradeModeProps) {
   const [processingStatus, setProcessingStatus] = useState<string | null>(null);
   const { control, handleSubmit, reset, errors, payAmount } = useSwapForm();
 
-  const {kernelClient, smartAccountAddress, isInitializing} = useZeroDev();
-  const { sendTransactionAsync } = useSendTransaction();
-  const { isLoading: isTransferring } = useWaitForTransactionReceipt();
+  const { data: walletClient } = useWalletClient();
+  const queryClient = useQueryClient();
 
   const publicClient = createPublicClient({
     chain: polygon,
@@ -136,7 +135,7 @@ export default function TradeMode(props: TradeModeProps) {
   // submit handler
   const onSubmit = useCallback(
     async (data: { payAmount: string }) => {
-      if (!userAddress || !publicClient || !kernelClient || isInitializing || balanceError)
+      if (!userAddress || !publicClient || !walletClient || balanceError)
         return;
       if (
         (isBuy && !bondingCurveData?.buyIsOpen) ||
@@ -149,21 +148,10 @@ export default function TradeMode(props: TradeModeProps) {
 
       setProcessingStatus(`Starting ${isBuy ? 'buy' : 'sell'} transaction...`);
       try {
-        // For buy transactions with POL (not WPOL), first transfer POL to smart account
-        if (isBuy && selectedPayToken !== 'WPOL' && smartAccountAddress) {
-          setProcessingStatus('Transferring POL to smart account...');
-          await sendTransactionAsync({
-            to: smartAccountAddress as `0x${string}`,
-            value: parseEther(data.payAmount),
-          });
-          setProcessingStatus('POL transfer complete');
-        }
-
         const res = isBuy
           ? await executeBuyFlow(
               publicClient,
-              kernelClient,
-              smartAccountAddress || '',
+              walletClient,
               userAddress,
               contractAddress,
               data.payAmount,
@@ -173,8 +161,7 @@ export default function TradeMode(props: TradeModeProps) {
             )
           : await executeSellFlow(
               publicClient,
-              kernelClient,
-              smartAccountAddress || '',
+              walletClient,
               userAddress,
               contractAddress,
               receiveTokenAddress,
@@ -197,6 +184,15 @@ export default function TradeMode(props: TradeModeProps) {
             </a>
           </div>
         );
+
+        // Refresh balances after successful swap
+        queryClient.invalidateQueries({
+          queryKey: ['tokenBalance', payTokenAddress, userAddress]
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['tokenBalance', receiveTokenForBalance, userAddress]
+        });
+
         reset({ payAmount: '' });
       } catch {
         toast.error(`${isBuy ? 'Buy' : 'Sell'} failed`);
@@ -207,7 +203,7 @@ export default function TradeMode(props: TradeModeProps) {
     [
       userAddress,
       publicClient,
-      kernelClient,
+      walletClient,
       balanceError,
       isBuy,
       bondingCurveData,

@@ -1,10 +1,8 @@
-import { Address, parseEther, parseUnits, encodeFunctionData } from 'viem';
+import { Address, parseEther, parseUnits } from 'viem';
 import { waitForTransactionReceipt } from 'viem/actions';
-import { KernelAccountClient } from '@zerodev/sdk';
 
 import config from '@/config/configuration';
 import proxyContractABI from '@/lib/abi/proxyContract';
-import WRAPPED_POL_ABI from '@/lib/abi/wrappedPol';
 import {
   executePOLWrappingFlow,
   unwrapWPOL,
@@ -43,79 +41,6 @@ export interface BuyParams {
 }
 
 
-/**
- * Execute bundled POL operations: wrap + approve + buy in single transaction
- */
-export async function executeBundledPOLFlow(
-  kernelClient: KernelAccountClient,
-  publicClient: any,
-  smartAccountAddress: string,
-  proxyAddress: string,
-  collateralToken: string,
-  bondingCurveAddress: string,
-  depositAmount: string,
-  minAmountOut: string,
-  onStatusUpdate?: (status: string) => void
-): Promise<{ wrapHash: string; approvalHash: string; buyHash: string }> {
-  try {
-    // Create all the calls for the bundled transaction
-    const calls = [];
-
-    // 1. Wrap POL to WPOL
-    const wrapData = encodeFunctionData({
-      abi: WRAPPED_POL_ABI,
-      functionName: 'deposit',
-      args: [],
-    });
-
-    calls.push({
-      to: collateralToken as Address,
-      data: wrapData,
-      value: parseEther(depositAmount),
-    });
-
-    // 2. Approve proxy to spend WPOL
-    const approveData = encodeFunctionData({
-      abi: ERC20_ABI,
-      functionName: 'approve',
-      args: [proxyAddress as Address, parseEther(depositAmount)],
-    });
-
-    calls.push({
-      to: collateralToken as Address,
-      data: approveData,
-      value: BigInt(0),
-    });
-
-    // 3. Execute buy through proxy
-    const buyData = encodeFunctionData({
-      abi: proxyContractABI,
-      functionName: 'buy',
-      args: [
-        bondingCurveAddress as Address,
-        collateralToken as Address,
-        parseEther(depositAmount),
-        parseEther(minAmountOut),
-      ],
-    });
-
-    calls.push({
-      to: proxyAddress as Address,
-      data: buyData,
-      value: BigInt(0),
-    });
-
-    // Execute all calls in single sponsored transaction
-    const hash = await kernelClient.sendTransaction({
-      calls,
-    } as any);
-
-    return { wrapHash: hash, approvalHash: hash, buyHash: hash };
-  } catch (error) {
-    console.error('Error in bundled POL flow:', error);
-    throw error;
-  }
-}
 
 /**
  * Check if the proxy contract has sufficient allowance to spend tokens
@@ -147,31 +72,22 @@ export async function checkAllowance(
  * Approve the proxy contract to spend tokens
  */
 export async function approveProxy(
-  kernelClient: KernelAccountClient,
+  walletClient: any,
   tokenAddress: string,
   spenderAddress: string,
-  amount: string
+  amount: string,
+  userAddress: string
 ): Promise<string> {
   try {
     const amountWei = parseUnits(amount, 18);
 
-    // Encode the approve function call
-    const approveData = encodeFunctionData({
+    const hash = await walletClient.writeContract({
+      address: tokenAddress as Address,
       abi: ERC20_ABI,
       functionName: 'approve',
       args: [spenderAddress as Address, amountWei],
+      account: userAddress as Address,
     });
-
-    // Send transaction using smart account
-    const hash = await kernelClient.sendTransaction({
-      calls: [
-        {
-          to: tokenAddress as Address,
-          data: approveData,
-          value: BigInt(0),
-        },
-      ],
-    } as any);
 
     return hash;
   } catch (error) {
@@ -184,18 +100,20 @@ export async function approveProxy(
  * Buy tokens through the proxy contract
  */
 export async function buyThroughProxy(
-  kernelClient: KernelAccountClient,
+  walletClient: any,
   proxyAddress: string,
   buyParams: {
     targetContract: string;
     collateralToken: string;
     depositAmount: string;
     minAmountOut: string;
-  }
+  },
+  userAddress: string
 ): Promise<string> {
   try {
-    // Encode the buy function call
-    const buyData = encodeFunctionData({
+    const hash = await walletClient.writeContract({
+      account: userAddress as Address,
+      address: proxyAddress as Address,
       abi: proxyContractABI,
       functionName: 'buy',
       args: [
@@ -205,17 +123,6 @@ export async function buyThroughProxy(
         parseEther(buyParams.minAmountOut),
       ],
     });
-
-    // Send transaction using smart account
-    const hash = await kernelClient.sendTransaction({
-      calls: [
-        {
-          to: proxyAddress as Address,
-          data: buyData,
-          value: BigInt(0),
-        },
-      ],
-    } as any);
 
     return hash;
   } catch (error) {
@@ -228,18 +135,20 @@ export async function buyThroughProxy(
  * Sell tokens through the proxy contract
  */
 export async function sellThroughProxy(
-  kernelClient: KernelAccountClient,
+  walletClient: any,
   proxyAddress: string,
   sellParams: {
     targetContract: string;
     tokenToSell: string;
     depositAmount: string;
     minAmountOut: string;
-  }
+  },
+  userAddress: string
 ): Promise<string> {
   try {
-    // Encode the sell function call
-    const sellData = encodeFunctionData({
+    const hash = await walletClient.writeContract({
+      account: userAddress as Address,
+      address: proxyAddress as Address,
       abi: proxyContractABI,
       functionName: 'sell',
       args: [
@@ -249,17 +158,6 @@ export async function sellThroughProxy(
         parseEther(sellParams.minAmountOut),
       ],
     });
-
-    // Send transaction using smart account
-    const hash = await kernelClient.sendTransaction({
-      calls: [
-        {
-          to: proxyAddress as Address,
-          data: sellData,
-          value: BigInt(0),
-        },
-      ],
-    } as any);
 
     return hash;
   } catch (error) {
@@ -273,8 +171,7 @@ export async function sellThroughProxy(
  */
 export async function executeBuyFlow(
   publicClient: any,
-  kernelClient: KernelAccountClient,
-  smartAccountAddress: string,
+  walletClient: any,
   userAddress: string,
   bondingCurveAddress: string,
   depositAmount: string,
@@ -292,7 +189,7 @@ export async function executeBuyFlow(
 
     if (payWithWPOL) {
       onStatusUpdate?.('Checking WPOL balance...');
-      const wpolBalance = await checkWPOLBalance(publicClient, smartAccountAddress);
+      const wpolBalance = await checkWPOLBalance(publicClient, userAddress);
       if (parseFloat(wpolBalance) < parseFloat(depositAmount)) {
         throw new Error(
           `Insufficient WPOL balance. Available: ${wpolBalance} WPOL`
@@ -303,17 +200,18 @@ export async function executeBuyFlow(
         publicClient,
         collateralToken,
         proxyAddress,
-        smartAccountAddress,
+        userAddress,
         depositAmount
       );
 
       if (!hasAllowance) {
         onStatusUpdate?.('Approving WPOL spend...');
         approvalHash = await approveProxy(
-          kernelClient,
+          walletClient,
           collateralToken,
           proxyAddress,
-          depositAmount
+          depositAmount,
+          userAddress
         );
 
         const approvalReceipt = await waitForTransactionReceipt(publicClient, {
@@ -331,14 +229,15 @@ export async function executeBuyFlow(
 
       onStatusUpdate?.('Executing buy...');
       buyHash = await buyThroughProxy(
-        kernelClient,
+        walletClient,
         proxyAddress,
         {
           targetContract: bondingCurveAddress,
           collateralToken,
           depositAmount,
           minAmountOut,
-        }
+        },
+        userAddress
       );
 
       onStatusUpdate?.('Waiting for buy confirmation...');
@@ -350,24 +249,83 @@ export async function executeBuyFlow(
         throw new Error('Buy transaction failed');
       }
     } else {
-      // Execute bundled transaction: wrap + approve + buy (sponsored)
-      // Assumes POL has already been transferred to smart account
-      onStatusUpdate?.('Executing bundled operations...');
-      const bundledResult = await executeBundledPOLFlow(
-        kernelClient,
+      onStatusUpdate?.('Wrapping POL to WPOL...');
+      const wrapResult = await executePOLWrappingFlow(
         publicClient,
-        smartAccountAddress,
-        proxyAddress,
-        collateralToken,
-        bondingCurveAddress,
+        walletClient,
+        userAddress,
         depositAmount,
-        minAmountOut,
         onStatusUpdate
       );
 
-      wrapHash = bundledResult.wrapHash;
-      approvalHash = bundledResult.approvalHash;
-      buyHash = bundledResult.buyHash;
+      if (wrapResult.wrapHash) {
+        onStatusUpdate?.('Waiting for wrap confirmation...');
+        const wrapReceipt = await waitForTransactionReceipt(publicClient, {
+          hash: wrapResult.wrapHash as Address,
+        });
+
+        if (wrapReceipt.status === 'reverted') {
+          throw new Error('Wrap transaction failed');
+        }
+
+        wrapHash = wrapResult.wrapHash;
+        onStatusUpdate?.('Wrap complete');
+      } else {
+        throw new Error('Wrap failed');
+      }
+
+      const hasAllowance = await checkAllowance(
+        publicClient,
+        collateralToken,
+        proxyAddress,
+        userAddress,
+        depositAmount
+      );
+
+      if (!hasAllowance) {
+        onStatusUpdate?.('Approving WPOL spend...');
+        approvalHash = await approveProxy(
+          walletClient,
+          collateralToken,
+          proxyAddress,
+          depositAmount,
+          userAddress
+        );
+
+        const approvalReceipt = await waitForTransactionReceipt(publicClient, {
+          hash: approvalHash as Address,
+        });
+
+        if (approvalReceipt.status === 'reverted') {
+          throw new Error('Approval transaction failed');
+        }
+
+        onStatusUpdate?.('Approval confirmed');
+      } else {
+        onStatusUpdate?.('Sufficient allowance exists');
+      }
+
+      onStatusUpdate?.('Executing buy...');
+      buyHash = await buyThroughProxy(
+        walletClient,
+        proxyAddress,
+        {
+          targetContract: bondingCurveAddress,
+          collateralToken,
+          depositAmount,
+          minAmountOut,
+        },
+        userAddress
+      );
+
+      onStatusUpdate?.('Waiting for buy confirmation...');
+      const buyReceipt = await waitForTransactionReceipt(publicClient, {
+        hash: buyHash as Address,
+      });
+
+      if (buyReceipt.status === 'reverted') {
+        throw new Error('Buy transaction failed');
+      }
     }
 
     onStatusUpdate?.('Buy complete!');
@@ -385,8 +343,7 @@ export async function executeBuyFlow(
  */
 export async function executeSellFlow(
   publicClient: any,
-  kernelClient: KernelAccountClient,
-  smartAccountAddress: string,
+  walletClient: any,
   userAddress: string,
   bondingCurveAddress: string,
   tokenToSell: string,
@@ -404,7 +361,7 @@ export async function executeSellFlow(
       publicClient,
       tokenToSell,
       proxyAddress,
-      smartAccountAddress,
+      userAddress,
       depositAmount
     );
 
@@ -413,10 +370,11 @@ export async function executeSellFlow(
     if (!hasAllowance) {
       onStatusUpdate?.('Approving token spend...');
       approvalHash = await approveProxy(
-        kernelClient,
+        walletClient,
         tokenToSell,
         proxyAddress,
-        depositAmount
+        depositAmount,
+        userAddress
       );
 
       onStatusUpdate?.('Waiting for approval confirmation...');
@@ -435,14 +393,15 @@ export async function executeSellFlow(
 
     onStatusUpdate?.('Executing sell...');
     const sellHash = await sellThroughProxy(
-      kernelClient,
+      walletClient,
       proxyAddress,
       {
         targetContract: bondingCurveAddress,
         tokenToSell,
         depositAmount,
         minAmountOut,
-      }
+      },
+      userAddress
     );
 
     onStatusUpdate?.('Waiting for sell confirmation...');
@@ -487,7 +446,8 @@ export async function executeSellFlow(
 
       if (parseFloat(wpolAmount) > 0) {
         unwrapHash = await unwrapWPOL(
-          kernelClient,
+          walletClient,
+          userAddress,
           wpolAmount,
           onStatusUpdate
         );
