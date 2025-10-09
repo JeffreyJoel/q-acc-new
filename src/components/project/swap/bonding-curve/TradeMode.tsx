@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 
 import { POLYGON_POS_CHAIN_IMAGE } from '@/components/project/project-details/ProjectDonationTable';
 import ConnectWalletButton from '@/components/shared/wallet/SwapConnectWalletButton';
-import PayReceiveRow from '@/components/project/swap/PayReceiveRow';
+import PayReceiveRow from '@/components/project/swap/bonding-curve/PayReceiveRow';
 import config from '@/config/configuration';
 import { formatBalance } from '@/helpers/token';
 import {
@@ -22,8 +22,8 @@ import {
   executeSellFlow,
 } from '@/services/bondingCurveProxy.service';
 import { polygon } from 'viem/chains';
-
-
+import { useChainManager } from '@/contexts/chainManager.context';
+import { useWallets } from '@privy-io/react-auth';
 
 interface TradeModeProps {
   mode: 'buy' | 'sell';
@@ -70,11 +70,16 @@ export default function TradeMode(props: TradeModeProps) {
     transport: http('https://polygon-rpc.com'),
   });
 
+  const { wallets } = useWallets();
+
+  const activeWallet = wallets?.[0];
+
+  const walletChainId = activeWallet.chainId
+    ? Number(activeWallet.chainId.split(':')[1])
+    : NaN;
+
   // amounts
-  const {
-    data: receiveAmount = '0',
-    isFetching: receiveLoading,
-  } = isBuy
+  const { data: receiveAmount = '0', isFetching: receiveLoading } = isBuy
     ? useCalculatePurchaseReturn(contractAddress, payAmount)
     : useCalculateSaleReturn(contractAddress, payAmount);
 
@@ -137,6 +142,12 @@ export default function TradeMode(props: TradeModeProps) {
     async (data: { payAmount: string }) => {
       if (!userAddress || !publicClient || !walletClient || balanceError)
         return;
+
+      if (walletChainId !== polygon.id) {
+        toast.error('Please switch your wallet to Polygon mainnet');
+        return;
+      }
+
       if (
         (isBuy && !bondingCurveData?.buyIsOpen) ||
         (!isBuy && !bondingCurveData?.sellIsOpen) ||
@@ -187,10 +198,10 @@ export default function TradeMode(props: TradeModeProps) {
 
         // Refresh balances after successful swap
         queryClient.invalidateQueries({
-          queryKey: ['tokenBalance', payTokenAddress, userAddress]
+          queryKey: ['tokenBalance', payTokenAddress, userAddress],
         });
         queryClient.invalidateQueries({
-          queryKey: ['tokenBalance', receiveTokenForBalance, userAddress]
+          queryKey: ['tokenBalance', receiveTokenForBalance, userAddress],
         });
 
         reset({ payAmount: '' });

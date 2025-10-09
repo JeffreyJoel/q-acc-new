@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import BondingCurveSwap from './BondingCurveSwap';
+import BondingCurveSwap from './bonding-curve/BondingCurveSwap';
 import SquidSwapTab from './SquidSwapTab';
 
 export default function SwapWidget({

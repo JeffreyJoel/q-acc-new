@@ -12,7 +12,7 @@ import { useBondingCurve } from '@/hooks/useBondingCurve';
 import { useGetCurrentTokenPrice } from '@/hooks/useGetCurrentTokenPrice';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { useFetchPOLPriceSquid } from '@/hooks/useTokens';
-import TradeMode from '@/components/project/swap/TradeMode';
+import TradeMode from '@/components/project/swap/bonding-curve/TradeMode';
 
 interface BondingCurveSwapProps {
   contractAddress: string;

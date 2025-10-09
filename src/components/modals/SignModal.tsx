@@ -3,13 +3,15 @@
 import type { FC } from 'react';
 import { useState, useEffect } from 'react';
 
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { motion } from 'framer-motion';
-import { Loader2, ArrowRight, X, AlertCircle } from 'lucide-react';
+import { ArrowRight, X, AlertCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { useSignUser } from '@/hooks/useSignUser';
 import { IUser } from '@/types/user.type';
+import { toast } from 'sonner';
+import { polygon } from 'viem/chains';
 
 interface SignModalProps {
   isOpen: boolean;
@@ -22,6 +24,14 @@ export const SignModal: FC<SignModalProps> = props => {
   const { refetch, isFetching, error } = useSignUser(props.onSign);
   const [retryCount, setRetryCount] = useState(0);
   const [showRetry, setShowRetry] = useState(false);
+
+  const { wallets } = useWallets();
+
+  const activeWallet = wallets?.[0];
+
+  const walletChainId = activeWallet.chainId
+    ? Number(activeWallet.chainId.split(':')[1])
+    : NaN;
 
   // Reset retry state when modal opens
   useEffect(() => {
@@ -39,6 +49,11 @@ export const SignModal: FC<SignModalProps> = props => {
   }, [error]);
 
   const handleSign = async () => {
+    if (walletChainId !== polygon.id) {
+      toast.error('Please switch your wallet to Polygon mainnet');
+      return;
+    }
+
     try {
       setShowRetry(false);
       const result = await refetch();

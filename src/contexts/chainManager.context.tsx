@@ -39,7 +39,9 @@ export const ChainProvider: React.FC<{ children: React.ReactNode }> = ({
     let chainId: number;
 
     if (activeWallet && isConnected && activeWallet.chainId) {
-      const walletChainId = Number(activeWallet.chainId);
+      const walletChainId = activeWallet.chainId
+        ? Number(activeWallet.chainId.split(':')[1])
+        : NaN;
       chainId = !isNaN(walletChainId) ? walletChainId : polygon.id;
     } else if (wagmiChainId && !isNaN(wagmiChainId)) {
       chainId = wagmiChainId;
