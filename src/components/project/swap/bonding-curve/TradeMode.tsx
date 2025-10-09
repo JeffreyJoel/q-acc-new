@@ -74,7 +74,7 @@ export default function TradeMode(props: TradeModeProps) {
 
   const activeWallet = wallets?.[0];
 
-  const walletChainId = activeWallet.chainId
+  const walletChainId = activeWallet?.chainId
     ? Number(activeWallet.chainId.split(':')[1])
     : NaN;
 
