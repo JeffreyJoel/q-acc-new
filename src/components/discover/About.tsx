@@ -3,12 +3,13 @@ import React from 'react';
 import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
+import FAQs from './FAQs';
 
 const About = () => {
   return (
-    <div className='flex flex-col lg:flex-row gap-12 p-4 sm:p-8 pb-20 md:pb-28 max-w-7xl mx-auto'>
+    <div className='flex flex-col lg:flex-row items-top gap-12 p-4 sm:p-8 pb-20 md:pb-28 max-w-7xl mx-auto'>
       {/* Left Dark Card */}
-      <div className='flex-1 bg-black rounded-3xl p-6 sm:p-8 md:p-[60px] text-white relative overflow-hidden'>
+      <div className=' lg:w-1/2 max-h-[620px] bg-black rounded-3xl p-6 sm:p-8 md:p-[60px] text-white relative overflow-hidden'>
         <div className='mb-8 flex items-center gap-6 justify-between'>
           <Image
             src='/images/landing/about-vector.svg'
@@ -59,78 +60,7 @@ const About = () => {
       </div>
 
       {/* Right Light Card */}
-      <div className='flex-1 bg-qacc-gray-light rounded-3xl p-8 md:p-[60px] text-black'>
-        {/* Title */}
-        <div className='mb-8'>
-          <h2 className='font-anton text-5xl lg:text-[64px] font-normal text-white leading-none tracking-wide'>
-            ACCELERATION <br />
-            FLOW
-          </h2>
-        </div>
-
-        {/* Steps */}
-        <div className='space-y-4 md:space-y-6 mb-6'>
-          {/* Step 1 */}
-          <div className='flex items-center space-x-4'>
-            <div className='font-anton text-[32px] md:text-[40px] font-bold text-black'>
-              1
-            </div>
-            <div>
-              <h3 className='text-base md:text-xl font-semibold text-black'>
-                Apply
-              </h3>
-              <p className='text-gray-600 text-sm md:text-base font-medium'>
-                Send a 2-minute application
-              </p>
-            </div>
-          </div>
-
-          {/* Step 2 */}
-          <div className='flex items-start space-x-4'>
-            <div className='font-anton text-[32px] md:text-[40px] font-bold text-black'>
-              2
-            </div>
-            <div>
-              <h3 className='text-base md:text-xl font-semibold text-black'>
-                Fund
-              </h3>
-              <p className='text-gray-600 text-sm md:text-base font-medium'>
-                Shape tokenomics and campaign
-              </p>
-            </div>
-          </div>
-
-          {/* Step 3 */}
-          <div className='flex items-start space-x-4'>
-            <div className='font-anton text-[32px] md:text-[40px] font-bold text-black'>
-              3
-            </div>
-            <div>
-              <h3 className='text-base md:text-xl font-semibold text-black'>
-                Launch
-              </h3>
-              <p className='text-gray-600 text-sm md:text-base font-medium'>
-                Launch project token bonded to an ABC
-              </p>
-            </div>
-          </div>
-
-          {/* Step 4 */}
-          <div className='flex items-start space-x-4'>
-            <div className='font-anton text-[32px] md:text-[40px] font-bold text-black'>
-              4
-            </div>
-            <div>
-              <h3 className='text-base md:text-xl font-semibold text-black'>
-                Graduate
-              </h3>
-              <p className='text-gray-600 text-sm md:text-base font-medium'>
-                Leave with liquid token and solid community
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <FAQs />
     </div>
   );
 };

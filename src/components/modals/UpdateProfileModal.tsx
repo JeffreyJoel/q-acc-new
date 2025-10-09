@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { useAccount } from 'wagmi';
 
 import { Button } from '@/components/ui/button';
+import { checkProfanity } from '../../helpers/checkProfanity';
 import {
   Dialog,
   DialogContent,
@@ -28,11 +29,10 @@ import {
   InputOTPSlot,
   InputOTPSeparator,
 } from '@/components/ui/input-otp';
+import { Dropzone } from '@/components/ui/dropzone';
 import { handleImageUrl } from '@/helpers/image';
 import { useUpdateUser } from '@/hooks/useUpdateUser';
 import { INewUer, IUser } from '@/types/user.type';
-
-import { Dropzone } from '../ui/dropzone';
 
 interface UpdateProfileModalProps {
   isOpen: boolean;
@@ -42,6 +42,36 @@ interface UpdateProfileModalProps {
 }
 
 type DialogStep = 'details' | 'otp';
+
+const validateUsername = (username: string): { isValid: boolean; error?: string } => {
+  if (!username || !username.trim()) {
+    return { isValid: false, error: 'Username is required' };
+  }
+
+  const trimmedUsername = username.trim();
+
+  // Check length
+  if (trimmedUsername.length < 3) {
+    return { isValid: false, error: 'Username must be at least 3 characters long' };
+  }
+
+  if (trimmedUsername.length > 30) {
+    return { isValid: false, error: 'Username must be less than 30 characters long' };
+  }
+
+  // Check for valid characters (alphanumeric, underscore, hyphen)
+  const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+  if (!usernameRegex.test(trimmedUsername)) {
+    return { isValid: false, error: 'Username can only contain letters, numbers, underscores, and hyphens' };
+  }
+
+  // Check for profanity
+  if (checkProfanity(trimmedUsername)) {
+    return { isValid: false, error: 'Username contains inappropriate content. Please choose a different username.' };
+  }
+
+  return { isValid: true };
+};
 
 export const UpdateProfileModal = ({
   isOpen,
@@ -57,6 +87,7 @@ export const UpdateProfileModal = ({
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarHash, setAvatarHash] = useState<string>('');
   const [isUpdatingUser, setIsUpdatingUser] = useState(false);
+  const [usernameError, setUsernameError] = useState<string>('');
 
   const { mutateAsync: updateUser } = useUpdateUser();
   const queryClient = useQueryClient();
@@ -146,6 +177,13 @@ export const UpdateProfileModal = ({
   };
 
   const handleSendVerificationCode = async () => {
+    // Validate username
+    const usernameValidation = validateUsername(username);
+    if (!usernameValidation.isValid) {
+      setUsernameError(usernameValidation.error || '');
+      return;
+    }
+
     if (name.trim() && email.trim() && email.includes('@')) {
       try {
         setIsUpdatingUser(true);
@@ -219,6 +257,7 @@ export const UpdateProfileModal = ({
     setStep('details');
     setAvatarFile(null);
     setAvatarHash('');
+    setUsernameError('');
     sendOtp = false;
     methods.reset();
     onClose();
@@ -261,10 +300,19 @@ export const UpdateProfileModal = ({
                     id='username'
                     placeholder='Your Username'
                     value={username}
-                    onChange={e => setUsername(e.target.value)}
-                    className='col-span-4  rounded-xl border border-neutral-700 focus:ring-peach-400 focus:border-peach-400 outline-none'
+                    onChange={e => {
+                      setUsername(e.target.value);
+                      const validation = validateUsername(e.target.value);
+                      setUsernameError(validation.error || '');
+                    }}
+                    className={`col-span-4 rounded-xl border focus:ring-peach-400 focus:border-peach-400 outline-none ${
+                      usernameError ? 'border-red-500' : 'border-neutral-700'
+                    }`}
                     disabled={isLoading}
                   />
+                  {usernameError && (
+                    <p className='text-red-500 text-sm mt-1'>{usernameError}</p>
+                  )}
                 </div>
                 <div className='grid gap-2'>
                   <label htmlFor='name'>Name</label>
@@ -370,7 +418,7 @@ export const UpdateProfileModal = ({
                 <Button
                   type='button'
                   onClick={handleSendVerificationCode}
-                  disabled={isLoading || !name.trim() || !email.includes('@')}
+                  disabled={isLoading || !name.trim() || !email.includes('@') || !!usernameError || !username.trim()}
                   loading={isLoading || isUpdatingUser}
                   loadingText={isUpdatingUser ? 'Updating...' : 'Processing...'}
                   className='bg-peach-400 hover:bg-peach-300 text-black rounded-full'

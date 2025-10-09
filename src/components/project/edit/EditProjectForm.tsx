@@ -27,8 +27,7 @@ import { uploadToIPFS } from '@/services/ipfs';
 import { EProjectSocialMediaType, ProjectFormData } from '@/types/project.type';
 import { IProjectCreation } from '@/types/project.type';
 import { TeamMember } from '@/types/project.type';
-
-// import { SimpleEditor } from "@/components/tiptap/tiptap-templates/simple/simple-editor";
+import Link from 'next/link';
 
 const socialMediaLinks = [
   {
@@ -279,13 +278,10 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
     setSelectedLinks(prev => [...prev, type]);
   };
 
-  // ================= TEAM MEMBERS HANDLING =================
-  // Watch the current list of team members in the form state
   const teamMembers =
     (useWatch({ control: methods.control, name: 'team' }) as TeamMember[]) ||
     [];
 
-  // Ensure at least one empty team member exists when the form is first loaded
   useEffect(() => {
     if (!teamMembers?.length) {
       setValue('team', [{ name: '', image: null }]);
@@ -359,9 +355,12 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
             </h1>
 
             <div className='flex flex-row items-center gap-2 md:gap-6'>
-              <button className='border border-white/30 text-[13px] md:text-lg py-2 px-3 md:py-[10px] md:px-[20px] rounded-xl text-white/30 uppercase font-medium'>
+              <Link
+                href={`/profile`}
+                className='border border-white/30 text-[13px] md:text-lg py-2 px-3 md:py-[10px] md:px-[20px] rounded-xl text-white/30 uppercase font-medium'
+              >
                 Cancel
-              </button>
+              </Link>
               <button
                 className='bg-peach-400 text-black py-2 px-3 md:py-[10px] md:px-[20px] rounded-xl text-[13px] md:text-lg uppercase font-medium hover:bg-peach-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2'
                 type='submit'
@@ -711,9 +710,12 @@ const EditProjectForm: FC<EditProjectFormProps> = ({ projectId }) => {
           </main>
 
           <div className='flex flex-row items-center gap-6 justify-between'>
-            <button className='border border-white/30 py-2 px-3 md:py-[10px] md:px-[20px] rounded-xl text-white/30 text-[13px] md:text-lg uppercase font-medium'>
+            <Link
+              href={`/profile`}
+              className='border border-white/30 text-[13px] md:text-lg py-2 px-3 md:py-[10px] md:px-[20px] rounded-xl text-white/30 uppercase font-medium'
+            >
               Cancel
-            </button>
+            </Link>
             <button
               className='bg-peach-400 text-black py-2 px-3 md:py-[10px] md:px-[20px] rounded-xl text-[13px] md:text-lg uppercase font-medium hover:bg-peach-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2'
               type='submit'

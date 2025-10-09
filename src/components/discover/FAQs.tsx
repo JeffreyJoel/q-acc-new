@@ -2,12 +2,10 @@
 
 import React, { useState } from 'react';
 
-import Image from 'next/image';
 import Link from 'next/link';
 
-import { ChevronDown, ChevronUp, Play } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
-import { VideoModal } from '@/components/modals/VideoModal';
 
 interface FAQItem {
   question: string;
@@ -16,7 +14,6 @@ interface FAQItem {
 
 const FAQs = () => {
   const [openQuestion, setOpenQuestion] = useState<number | null>(0);
-  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
   const faqData: FAQItem[] = [
     {
@@ -182,72 +179,47 @@ const FAQs = () => {
   };
 
   return (
-    <div className='bg-qacc-black text-white py-32 px-8'>
-      <div className='max-w-7xl mx-auto'>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-16 items-stretch'>
-          <div className='space-y-8'>
-            <h2 className='font-anton text-[42px] lg:text-[64px] tracking-wider mb-8 md:mb-12'>
-              FREQUENTLY ASKED
-            </h2>
+    <div className='space-y-8 text-white flex-1'>
+      <h2 className='font-anton text-[42px] lg:text-[64px] tracking-wider mb-8 md:mb-12'>
+        FREQUENTLY ASKED
+      </h2>
 
-            <div className='mt-16'>
-              {faqData.map((faq, index) => (
-                <div
-                  key={index}
-                  className={`border-b border-white/10 ${
-                    index === 0 ? 'border-t border-white/10' : ''
-                  }`}
-                >
-                  <button
-                    onClick={() => toggleQuestion(index)}
-                    className='w-full flex justify-between items-center text-left py-[22px] hover:text-peach-400 transition-colors'
-                  >
-                    <span className='text-lg md:text-2xl font-bold pr-4'>
-                      {faq.question}
-                    </span>
-                    {openQuestion === index ? (
-                      <ChevronUp className='w-6 h-6 text-white/20 flex-shrink-0' />
-                    ) : (
-                      <ChevronDown className='w-6 h-6 text-white/20 flex-shrink-0' />
-                    )}
-                  </button>
+      <div className='mt-16'>
+        {faqData.map((faq, index) => (
+          <div
+            key={index}
+            className={`border-b border-white/10 ${
+              index === 0 ? 'border-t border-white/10' : ''
+            }`}
+          >
+            <button
+              onClick={() => toggleQuestion(index)}
+              className='w-full flex justify-between items-center text-left py-[22px] hover:text-peach-400 transition-colors'
+            >
+              <span className='text-lg md:text-2xl font-bold pr-4'>
+                {faq.question}
+              </span>
+              {openQuestion === index ? (
+                <ChevronUp className='w-6 h-6 text-white/20 flex-shrink-0' />
+              ) : (
+                <ChevronDown className='w-6 h-6 text-white/20 flex-shrink-0' />
+              )}
+            </button>
 
-                  {openQuestion === index && (
-                    <div className='pb-4 pr-8'>
-                      <div className='text-white/50 leading-relaxed'>
-                        {typeof faq.answer === 'string' ? (
-                          <p>{faq.answer}</p>
-                        ) : (
-                          faq.answer
-                        )}
-                      </div>
-                    </div>
+            {openQuestion === index && (
+              <div className='pb-4 pr-8'>
+                <div className='text-white/50 leading-relaxed'>
+                  {typeof faq.answer === 'string' ? (
+                    <p>{faq.answer}</p>
+                  ) : (
+                    faq.answer
                   )}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
-
-          {/* Right Side - Video Section */}
-          <div
-            className='relative w-full h-[614px]  md:h-full lg:h-[614px] xl:h-full mx-auto lg:mx-0 cursor-pointer'
-            onClick={() => setIsVideoModalOpen(true)}
-          >
-            <Image
-              src='/images/landing/how-qacc-works.svg'
-              alt='How Q-ACC works'
-              fill
-              className='w-full h-full mx-auto object-cover sm:object-contain rounded-2xl'
-            />
-          </div>
-        </div>
+        ))}
       </div>
-
-      {/* Video Modal */}
-      <VideoModal
-        isOpen={isVideoModalOpen}
-        onClose={() => setIsVideoModalOpen(false)}
-      />
     </div>
   );
 };
