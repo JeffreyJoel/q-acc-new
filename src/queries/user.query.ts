@@ -100,6 +100,7 @@ export const GET_USER_DONATIONS = /* GraphQL */ `
             type
             link
           }
+          seasonNumber
           abc {
             tokenName
             tokenTicker
