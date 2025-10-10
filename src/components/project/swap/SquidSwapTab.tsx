@@ -12,7 +12,6 @@ import { toast } from 'sonner';
 import { Address } from 'viem';
 
 import SelectChainDialog from '@/components/modals/SelectChainDialog';
-import { POLYGON_POS_CHAIN_IMAGE } from '@/components/project/project-details/ProjectDonationTable';
 import ConnectWalletButton from '@/components/shared/wallet/SwapConnectWalletButton';
 import config from '@/config/configuration';
 import { useChainManager } from '@/contexts/chainManager.context';
@@ -39,6 +38,9 @@ interface PayReceiveRowProps {
   onOpenModal?: () => void;
   hasError?: boolean;
 }
+
+const POLYGON_POS_CHAIN_IMAGE =
+  'https://raw.githubusercontent.com/0xsquid/assets/main/images/chains/polygon.svg';
 
 const PayReceiveRow = memo(
   ({
@@ -140,7 +142,7 @@ interface QuickSwapTabProps {
 }
 
 export default function SquidSwapTab({
-  receiveTokenAddress, 
+  receiveTokenAddress,
   receiveTokenSymbol,
   receiveTokenIcon,
 }: QuickSwapTabProps) {
@@ -174,14 +176,12 @@ export default function SquidSwapTab({
   const { user: privyUser, authenticated } = usePrivy();
   const userAddress = privyUser?.wallet?.address;
 
-  const {
-    data: fromBalanceData,
-    isLoading: isFromBalanceLoading,
-  } = useTokenBalanceWithDecimals(
-    selectedFrom.tokenAddress.toLowerCase() as Address,
-    userAddress as Address,
-    Number(selectedFrom.chainId)
-  );
+  const { data: fromBalanceData, isLoading: isFromBalanceLoading } =
+    useTokenBalanceWithDecimals(
+      selectedFrom.tokenAddress.toLowerCase() as Address,
+      userAddress as Address,
+      Number(selectedFrom.chainId)
+    );
 
   const fromBalanceRaw = fromBalanceData?.formattedBalance ?? '0';
   const formattedFromBalance = isChainChanging
@@ -224,14 +224,12 @@ export default function SquidSwapTab({
   }, [fromBalanceData]);
 
   // Receive token balance (on Polygon)
-  const {
-    data: receiveTokenBalance,
-    isLoading: isReceiveTokenLoading,
-  } = useTokenBalanceWithDecimals(
-    receiveTokenAddress as Address,
-    userAddress as Address,
-    Number(selectedFrom.chainId)
-  );
+  const { data: receiveTokenBalance, isLoading: isReceiveTokenLoading } =
+    useTokenBalanceWithDecimals(
+      receiveTokenAddress as Address,
+      userAddress as Address,
+      Number(selectedFrom.chainId)
+    );
 
   const { currentTokenPrice: receiveTokenPriceInPOL } =
     useGetCurrentTokenPrice(receiveTokenAddress);
@@ -357,10 +355,14 @@ export default function SquidSwapTab({
 
         // Refresh balances
         queryClient.invalidateQueries({
-          queryKey: ['tokenBalance', selectedFrom.tokenAddress.toLowerCase(), userAddress]
+          queryKey: [
+            'tokenBalance',
+            selectedFrom.tokenAddress.toLowerCase(),
+            userAddress,
+          ],
         });
         queryClient.invalidateQueries({
-          queryKey: ['tokenBalance', receiveTokenAddress, userAddress]
+          queryKey: ['tokenBalance', receiveTokenAddress, userAddress],
         });
         toast.success('Swap successful!', {
           action: {

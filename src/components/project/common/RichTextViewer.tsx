@@ -131,7 +131,8 @@ export const TailwindStyledContent = ({ content }: { content: string }) => {
                 alt={el.attribs.alt || ''}
                 width={500}
                 height={500}
-                className='rounded-lg my-4 max-h-[700px] w-full'             
+                className='rounded-lg my-4 max-h-[700px] w-full'        
+                unoptimized={el.attribs.src?.includes('gateway.pinata.cloud')}     
               />
             );
 

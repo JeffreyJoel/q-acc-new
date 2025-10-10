@@ -61,7 +61,7 @@ export const ProjectProvider = ({
   useEffect(() => {
     if (projectData?.id) {
       const fetchDonations = async () => {
-        const data = await fetchProjectDonationsById(projectData.id, 1000, 0);
+        const data = await fetchProjectDonationsById(Number(projectData.id), 1000, 0);
         setDonations(data?.donations || []);
         setTotalDonationsCount(data?.totalCount || 0);
       };

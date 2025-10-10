@@ -13,12 +13,10 @@ import { formatNumber } from '@/helpers/donations';
 import { useGetCurrentTokenPrice } from '@/hooks/useGetCurrentTokenPrice';
 import {
   useFetchActiveRoundDetails,
-  useFetchMostRecentEndRound,
 } from '@/hooks/useRounds';
 import { useTokenHolders } from '@/hooks/useTokenHolders';
-import { useFetchPOLPriceSquid } from '@/hooks/useTokens';
-import { useTokenSupplyDetails } from '@/hooks/useTokens';
-import { fetchProjectDonationsById } from '@/services/donation.service';
+import { useFetchPOLPriceSquid , useTokenSupplyDetails} from '@/hooks/useTokens';
+import { useProjectContext } from '@/contexts/project.context';
 import {
   calculateMarketCapChange,
   getMarketCap,
@@ -31,9 +29,7 @@ interface ProjectStatsProps {
 }
 
 export default function ProjectStats({ project }: ProjectStatsProps) {
-  const [donationData, setDonationData] = useState<{ donations: any[] } | null>(
-    null
-  );
+  const { donations, totalDonationsCount } = useProjectContext();
 
   const { data: POLPrice } = useFetchPOLPriceSquid();
   const { data: activeRoundDetails } = useFetchActiveRoundDetails();
@@ -52,10 +48,8 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
 
   const [marketCap, setMarketCap] = useState(0);
   const [marketCapChange24h, setMarketCapChange24h] = useState(0);
-  const [marketCapChange7d, setMarketCapChange7d] = useState(0);
   const [marketCapLoading, setMarketCapLoading] = useState(false);
 
-  const isQaccRoundEnded = useFetchMostRecentEndRound(activeRoundDetails);
 
   const polPriceNumber = Number(POLPrice);
 
@@ -79,40 +73,25 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
 
   const tokenPriceUSD = tokenPricePOL * polPriceNumber;
 
-  useEffect(() => {
-    if (!project?.id) return;
-    (async () => {
-      try {
-        const data = await fetchProjectDonationsById(
-          parseInt(project.id),
-          1000,
-          0
-        );
-        setDonationData(data || null);
-      } catch (error) {
-        console.error('Error fetching donation data:', error);
-      }
-    })();
-  }, [project?.id]);
 
   useEffect(() => {
-    if (!donationData) return;
+    if (!donations || donations.length === 0) return;
     setIsLoading(true);
-    setTotalDonationsPOL(calculateTotalDonations(donationData.donations));
-    setTransactionCount(donationData.donations.length);
+    setTotalDonationsPOL(calculateTotalDonations(donations));
+    setTransactionCount(totalDonationsCount);
     setIsLoading(false);
-  }, [donationData]);
+  }, [donations, totalDonationsCount]);
 
   useEffect(() => {
-    if (!donationData || !project?.abc?.fundingManagerAddress) return;
+    if (!donations || donations.length === 0 || !project?.abc?.fundingManagerAddress) return;
     const fundingManagerAddress = project.abc.fundingManagerAddress;
     setMarketCapLoading(true);
     (async () => {
       try {
-        if (donationData.donations.length && activeRoundDetails) {
+        if (donations.length && activeRoundDetails) {
           // 24-hour change
           const res24 = await calculateMarketCapChange(
-            donationData.donations,
+            donations,
             fundingManagerAddress,
             24,
             activeRoundDetails.startDate
@@ -120,7 +99,7 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
 
           // 7-day change
           const res7d = await calculateMarketCapChange(
-            donationData.donations,
+            donations,
             fundingManagerAddress,
             24 * 7,
             activeRoundDetails.startDate
@@ -128,7 +107,6 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
 
           setMarketCap(res24.marketCap * polPriceNumber);
           setMarketCapChange24h(res24.pctChange);
-          setMarketCapChange7d(res7d.pctChange);
         } else if (isTokenListed && project.abc?.issuanceTokenAddress) {
           const issuanceTokenAddress = project.abc.issuanceTokenAddress;
           const [marketCapData, gecko] = await Promise.all([
@@ -142,7 +120,6 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
 
           setMarketCap(marketCapData);
           setMarketCapChange24h(gecko?.pctChange24h ?? 0);
-          setMarketCapChange7d(gecko?.pctChange7d ?? 0);
         } else if (!isTokenListed && project.abc?.issuanceTokenAddress) {
           // For tokens not listed, derive market cap from bonding curve parameters
           const issuanceTokenAddress = project.abc.issuanceTokenAddress;
@@ -150,12 +127,11 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
             false,
             issuanceTokenAddress,
             fundingManagerAddress,
-            donationData.donations
+            donations
           );
 
           setMarketCap(marketCapData * polPriceNumber);
           setMarketCapChange24h(0);
-          setMarketCapChange7d(0);
         }
       } catch (error) {
         console.error('Error fetching market cap data:', error);
@@ -164,7 +140,7 @@ export default function ProjectStats({ project }: ProjectStatsProps) {
       }
     })();
   }, [
-    donationData,
+    donations,
     project?.abc?.fundingManagerAddress,
     activeRoundDetails,
     isTokenListed,

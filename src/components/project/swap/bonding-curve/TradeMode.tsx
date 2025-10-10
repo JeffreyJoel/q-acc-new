@@ -6,7 +6,6 @@ import { useWalletClient } from 'wagmi';
 import { ArrowDownUp, ArrowUpRight } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { POLYGON_POS_CHAIN_IMAGE } from '@/components/project/project-details/ProjectDonationTable';
 import ConnectWalletButton from '@/components/shared/wallet/SwapConnectWalletButton';
 import PayReceiveRow from '@/components/project/swap/bonding-curve/PayReceiveRow';
 import config from '@/config/configuration';
@@ -56,6 +55,9 @@ export default function TradeMode(props: TradeModeProps) {
     roleCheckData,
     calculateUsdValue,
   } = props;
+
+  const POLYGON_POS_CHAIN_IMAGE =
+  'https://raw.githubusercontent.com/0xsquid/assets/main/images/chains/polygon.svg';
 
   const isBuy = mode === 'buy';
   const [slippage] = useState(0.5);
