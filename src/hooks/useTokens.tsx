@@ -1,7 +1,7 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Address } from 'viem';
-import { getTokenSupplyDetails } from '@/services/tokenPrice.service';
 
+import { SquidTokenType } from '@/helpers/squidTransactions';
 import {
   fetchBalanceWithDecimals,
   fetchTokenDetails,
@@ -16,14 +16,18 @@ import {
   convertToPOLAmount,
   fetchSquidPOLUSDPrice,
   truncateToSignificantDigits,
-  AddressZero
+  AddressZero,
 } from '@/helpers/token';
-import { SquidTokenType } from '@/helpers/squidTransactions';
+import { getTokenSupplyDetails } from '@/services/tokenPrice.service';
 
 /**
  * Hook to fetch balance and decimals for a token
  */
-export const useTokenBalanceWithDecimals = (tokenAddress?: Address, userAddress?: Address, chainId?: number) => {
+export const useTokenBalanceWithDecimals = (
+  tokenAddress?: Address,
+  userAddress?: Address,
+  chainId?: number
+) => {
   return useQuery({
     queryKey: ['tokenBalance', tokenAddress, userAddress],
     queryFn: () => {
@@ -37,7 +41,11 @@ export const useTokenBalanceWithDecimals = (tokenAddress?: Address, userAddress?
 /**
  * Hook to fetch token details (balance, symbol, decimals)
  */
-export const useTokenDetails = (tokenAddress?: Address, userAddress?: Address, client?: any) => {
+export const useTokenDetails = (
+  tokenAddress?: Address,
+  userAddress?: Address,
+  client?: any
+) => {
   return useQuery({
     queryKey: ['tokenDetails', tokenAddress, userAddress],
     queryFn: () => {
@@ -90,7 +98,10 @@ export const useTokenPrice = (coingeckoId = 'polygon-ecosystem-token') => {
 /**
  * Hook to check if a user owns an NFT
  */
-export const useNFTOwnership = (nftContractAddress?: string, userAddress?: string) => {
+export const useNFTOwnership = (
+  nftContractAddress?: string,
+  userAddress?: string
+) => {
   return useQuery({
     queryKey: ['nftOwnership', nftContractAddress, userAddress],
     queryFn: () => {
@@ -150,12 +161,12 @@ export const useFetchPOLPriceSquid = () => {
  */
 export const useConvertDonationAmount = () => {
   return useMutation({
-    mutationFn: ({ 
-      token, 
-      polAmount
-    }: { 
-      token: SquidTokenType, 
-      polAmount?: number 
+    mutationFn: ({
+      token,
+      polAmount,
+    }: {
+      token: SquidTokenType;
+      polAmount?: number;
     }) => {
       return convertDonationAmount(token, polAmount);
     },
@@ -184,10 +195,12 @@ export const useConvertToPOLAmount = () => {
  */
 export const useTokenUtils = () => {
   return {
-    truncateToDecimalPlaces: (strNum: string, decimals: number) => truncateToDecimalPlaces(strNum, decimals),
+    truncateToDecimalPlaces: (strNum: string, decimals: number) =>
+      truncateToDecimalPlaces(strNum, decimals),
     formatBalance: (balance?: number) => formatBalance(balance),
-    truncateToSignificantDigits: (num: number, digits: number) => truncateToSignificantDigits(num, digits),
-    AddressZero
+    truncateToSignificantDigits: (num: number, digits: number) =>
+      truncateToSignificantDigits(num, digits),
+    AddressZero,
   };
 };
 

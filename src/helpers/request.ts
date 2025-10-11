@@ -1,10 +1,11 @@
 import config from '@/config/configuration';
+
 import { getCurrentUserToken } from './generateJWT';
 
 export const requestGraphQL = async <T>(
   query: string,
   variables: Record<string, any> = {},
-  options: { auth?: boolean; url?: string } = {},
+  options: { auth?: boolean; url?: string } = {}
 ): Promise<T> => {
   let headers: HeadersInit = {
     'Content-Type': 'application/json',

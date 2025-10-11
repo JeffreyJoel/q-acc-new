@@ -31,7 +31,7 @@ export interface ILeaderBoardInfo {
 export const fetchLeaderBoard = async (
   take: number,
   skip: number,
-  orderBy: IOrderBy,
+  orderBy: IOrderBy
 ) => {
   try {
     const res = await requestGraphQL<ILeaderBoardInfo>(FETCH_LEADERBOARD, {
@@ -66,7 +66,7 @@ export const fetchPointsHistoryOfUser = async () => {
       {},
       {
         auth: true,
-      },
+      }
     );
     return res?.getQaccPointsHistory;
   } catch (error) {

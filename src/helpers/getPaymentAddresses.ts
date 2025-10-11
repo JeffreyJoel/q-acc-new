@@ -1,5 +1,6 @@
-import { ethers } from "ethers";
-import { MODULE_ABI, ORCHESTRATOR_LIST_MODULES_ABI } from "../lib/abi/inverter";
+import { ethers } from 'ethers';
+
+import { MODULE_ABI, ORCHESTRATOR_LIST_MODULES_ABI } from '../lib/abi/inverter';
 
 interface PaymentAddresses {
   paymentRouterAddress: string | null;
@@ -14,7 +15,7 @@ interface PaymentAddresses {
  */
 export async function getPaymentAddresses(
   orchestratorAddress: string,
-  rpcUrl: string = "https://polygon-rpc.com"
+  rpcUrl: string = 'https://polygon-rpc.com'
 ): Promise<PaymentAddresses> {
   try {
     const provider = new ethers.JsonRpcProvider(rpcUrl);
@@ -39,15 +40,15 @@ export async function getPaymentAddresses(
         const moduleName = await moduleContract.title();
         // console.log(`Module ${module} has title: ${moduleName}`);
 
-        if (moduleName === "LM_PC_PaymentRouter_v1") {
-        //   console.log(`Found Payment Router at address: ${module}`);
+        if (moduleName === 'LM_PC_PaymentRouter_v1') {
+          //   console.log(`Found Payment Router at address: ${module}`);
           paymentRouterAddress = module;
         } else if (
-          moduleName === "PP_Streaming_v1" ||
-          moduleName === "PP_Simple_v1" ||
-          moduleName.startsWith("PP_")
+          moduleName === 'PP_Streaming_v1' ||
+          moduleName === 'PP_Simple_v1' ||
+          moduleName.startsWith('PP_')
         ) {
-        //   console.log(`Found Payment Processor at address: ${module}`);
+          //   console.log(`Found Payment Processor at address: ${module}`);
           paymentProcessorAddress = module;
         }
 
@@ -77,7 +78,7 @@ export async function getPaymentAddresses(
       paymentProcessorAddress,
     };
   } catch (error) {
-    console.error("Error getting payment addresses:", error);
+    console.error('Error getting payment addresses:', error);
     throw error;
   }
 }

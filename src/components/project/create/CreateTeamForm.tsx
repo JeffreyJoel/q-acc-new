@@ -1,23 +1,25 @@
-"use client";
+'use client';
 
-import { useForm, FormProvider } from "react-hook-form";
-import { useEffect, useState, type FC } from "react";
-import { useRouter } from "next/navigation";
-import { TeamForm } from "@/components/project/create/TeamForm";
-import ProjectPreview from "@/components/project/create/ProjectPreview";
-// import { Button, ButtonColor } from '@/components/ui/button';
-import { useProjectCreationContext } from "@/contexts/projectCreation.context";
-import { useCreateProject } from "@/hooks/useCreateProject";
+import { useEffect, useState, type FC } from 'react';
+
+import { useRouter } from 'next/navigation';
+
+import { IconArrowRight } from '@tabler/icons-react';
+import { useForm, FormProvider } from 'react-hook-form';
+import { Address } from 'viem';
+import { useAccount } from 'wagmi';
+
+import ProjectPreview from '@/components/project/create/ProjectPreview';
+import { TeamForm } from '@/components/project/create/TeamForm';
+import { useProjectCreationContext } from '@/contexts/projectCreation.context';
+import { useCreateProject } from '@/hooks/useCreateProject';
+import { useFetchUser } from '@/hooks/useFetchUser';
 import {
   EProjectSocialMediaType,
   IProjectCreation,
   ProjectFormData,
-} from "@/types/project.type";
-import { useFetchUser } from "@/hooks/useFetchUser";
-import { useAccount } from "wagmi";
-import { Address } from "viem";
-import { IconArrowRight } from "@tabler/icons-react";
-// /import { CreateProjectModal } from '@/components/Modals/CreateProjectModal';
+} from '@/types/project.type';
+
 
 export interface TeamMember {
   name: string;
@@ -28,7 +30,7 @@ export interface TeamMember {
 }
 
 export interface TeamFormData {
-  team: TeamMember[]; // Array to store team member data
+  team: TeamMember[];
 }
 
 const CreateTeamForm: FC = () => {
@@ -40,9 +42,9 @@ const CreateTeamForm: FC = () => {
     defaultValues: {
       team: (formData as ProjectFormData).team?.length
         ? (formData as ProjectFormData).team
-        : [{ name: "", image: null }],
+        : [{ name: '', image: null }],
     }, // Initialize with existing team members or one empty member
-    mode: "onChange", // This enables validation on change
+    mode: 'onChange',
   });
   const router = useRouter();
 
@@ -51,30 +53,30 @@ const CreateTeamForm: FC = () => {
 
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
-  const [projectSlug, setProjectSlug] = useState("");
+  const [projectSlug, setProjectSlug] = useState('');
 
   const { handleSubmit, setValue, watch, reset, getValues } = methods;
 
-  const teamMembers = watch("team"); // Watch the team members array
+  const teamMembers = watch('team');
 
   const { mutateAsync: createProject, isPending, error } = useCreateProject();
 
   useEffect(() => {
     if ((formData as ProjectFormData).team?.length === 0) {
       // Ensure at least one empty team member is present
-      reset({ team: [{ name: "", image: null }] });
+      reset({ team: [{ name: '', image: null }] });
     } else {
       reset({ team: (formData as ProjectFormData).team || [] });
     }
   }, [(formData as ProjectFormData).team, reset]);
 
   const addTeamMember = () => {
-    setValue("team", [...teamMembers, { name: "", image: null }]); // Add a new team member
+    setValue('team', [...teamMembers, { name: '', image: null }]);
   };
 
   const removeTeamMember = (index: number) => {
     setValue(
-      "team",
+      'team',
       teamMembers.filter((_, i) => i !== index)
     );
   };
@@ -83,10 +85,10 @@ const CreateTeamForm: FC = () => {
     const teamMembers = data.team;
     setFormData({
       ...(formData as ProjectFormData),
-      team: teamMembers, // Update the team array within the project
+      team: teamMembers,
     });
 
-    console.log("TEAM", teamMembers);
+  
     const projectData = {
       ...(formData as ProjectFormData),
       team: teamMembers,
@@ -102,7 +104,7 @@ const CreateTeamForm: FC = () => {
       )
       .map(([key, value]) => ({
         type: key.toUpperCase() as EProjectSocialMediaType,
-        link: typeof value === "string" ? value : "",
+        link: typeof value === 'string' ? value : '',
       }));
 
     if (!user?.id) return;
@@ -119,7 +121,7 @@ const CreateTeamForm: FC = () => {
       socialMedia: socialMedia.length ? socialMedia : undefined, // Include only if there are social media entries
       teamMembers: teamMembers,
     };
-    console.log("Submitting project data:", project);
+    console.log('Submitting project data:', project);
 
     try {
       const res: any = await createProject(project);
@@ -128,7 +130,7 @@ const CreateTeamForm: FC = () => {
       // router.push(Routes.DashBoard);
     } catch (err: any) {
       setErrorMessage(
-        err.message || "Failed to create project. Please try again."
+        err.message || 'Failed to create project. Please try again.'
       );
       console.log(err);
     }
@@ -154,7 +156,7 @@ const CreateTeamForm: FC = () => {
 
   if (showPreview) {
     return (
-      <ProjectPreview 
+      <ProjectPreview
         formData={formData as ProjectFormData}
         onClose={handleClosePreview}
         onEdit={handleEditFromPreview}
@@ -164,28 +166,26 @@ const CreateTeamForm: FC = () => {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={handleSubmit(onSubmit)} className="container mt-28">
+      <form onSubmit={handleSubmit(onSubmit)} className='container mt-28'>
         {/* <CreateNavbar
           title='Add your team'
           onBack={() => router.push(Routes.CreateProject)}
           submitLabel='Save'
           disabled={isPending}
         /> */}
-        <div className="flex flex-row justify-between">
-          <h1 className="text-2xl font-bold text-white mb-7">
-            Create project
-          </h1>
-          <div className="flex flex-row items-center gap-6">
+        <div className='flex flex-row justify-between'>
+          <h1 className='text-2xl font-bold text-white mb-7'>Create project</h1>
+          <div className='flex flex-row items-center gap-6'>
             <button
-              type="button"
+              type='button'
               onClick={handlePreview}
-              className="px-6 py-3 font-bold items-center justify-center flex gap-2 text-peach-400 bg-transparent border-peach-400 border-2 rounded-full text-xs md:text-md min-w-[150px] hover:bg-peach-400 hover:text-black transition-colors"
+              className='px-6 py-3 font-bold items-center justify-center flex gap-2 text-peach-400 bg-transparent border-peach-400 border-2 rounded-full text-xs md:text-md min-w-[150px] hover:bg-peach-400 hover:text-black transition-colors'
             >
               Preview
             </button>
             <button
-              className="bg-peach-400 text-black p-3  shadow-2xl rounded-full  text-xs md:text-md min-w-[150px] flex items-center justify-center gap-2 hover:bg-peach-300"
-              type="submit"
+              className='bg-peach-400 text-black p-3  shadow-2xl rounded-full  text-xs md:text-md min-w-[150px] flex items-center justify-center gap-2 hover:bg-peach-300'
+              type='submit'
               disabled={isPending}
             >
               Create project
@@ -195,13 +195,13 @@ const CreateTeamForm: FC = () => {
         </div>
 
         {errorMessage && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>
             <strong>Error:</strong> {errorMessage}
           </div>
         )}
 
         {teamMembers?.map((_, index) => (
-          <div key={index} className="mb-4">
+          <div key={index} className='mb-4'>
             <TeamForm
               teamMember={teamMembers[index]}
               index={index}
@@ -209,10 +209,10 @@ const CreateTeamForm: FC = () => {
             />
           </div>
         ))}
-        <div className="bg-neutral-800 p-6 rounded-xl flex justify-between items-center">
+        <div className='bg-neutral-800 p-6 rounded-xl flex justify-between items-center'>
           <b>More team members?</b>
           <button
-            className="bg-peach-400 text-black p-3  shadow-2xl rounded-full  text-xs md:text-md min-w-[150px] flex items-center justify-center gap-2 hover:bg-peach-300"
+            className='bg-peach-400 text-black p-3  shadow-2xl rounded-full  text-xs md:text-md min-w-[150px] flex items-center justify-center gap-2 hover:bg-peach-300'
             onClick={addTeamMember}
           >
             Add a new team member

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 
 const useCountdown = (targetDate: string | number | Date) => {
@@ -31,6 +30,3 @@ const getReturnValues = (countDown: number) => {
 };
 
 export { useCountdown };
-
-
-

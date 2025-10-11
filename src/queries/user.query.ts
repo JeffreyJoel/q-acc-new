@@ -39,8 +39,18 @@ export const GET_GIVETH_USER_BY_ADDRESS = /* GraphQL */ `
 `;
 
 export const UPDATE_USER = /* GraphQL */ `
-  mutation ($email: String, $fullName: String, $avatar: String, $username: String) {
-    updateUser(email: $email, fullName: $fullName, avatar: $avatar, username: $username)
+  mutation (
+    $email: String
+    $fullName: String
+    $avatar: String
+    $username: String
+  ) {
+    updateUser(
+      email: $email
+      fullName: $fullName
+      avatar: $avatar
+      username: $username
+    )
   }
 `;
 
@@ -90,6 +100,7 @@ export const GET_USER_DONATIONS = /* GraphQL */ `
             type
             link
           }
+          seasonNumber
           abc {
             tokenName
             tokenTicker

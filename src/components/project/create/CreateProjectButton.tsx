@@ -1,31 +1,33 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useAccount } from "wagmi";
-import { Button } from "@/components/ui/button";
-import { useAddressWhitelist } from "@/hooks/useAddressWhitelist";
-import { Plus } from "lucide-react";
-import { toast } from "sonner";
+import { useRouter } from 'next/navigation';
+
+import { Plus } from 'lucide-react';
+import { toast } from 'sonner';
+import { useAccount } from 'wagmi';
+
+import { Button } from '@/components/ui/button';
+import { useAddressWhitelist } from '@/hooks/useAddressWhitelist';
 
 interface CreateProjectButtonProps {
   variant?:
-    | "default"
-    | "outline"
-    | "secondary"
-    | "ghost"
-    | "link"
-    | "destructive";
-  size?: "default" | "sm" | "lg" | "icon";
+    | 'default'
+    | 'outline'
+    | 'secondary'
+    | 'ghost'
+    | 'link'
+    | 'destructive';
+  size?: 'default' | 'sm' | 'lg' | 'icon';
   className?: string;
   children?: React.ReactNode;
   showIcon?: boolean;
 }
 
 export const CreateProjectButton: React.FC<CreateProjectButtonProps> = ({
-  variant = "default",
-  size = "default",
-  className = "",
-  children = "Create Project",
+  variant = 'default',
+  size = 'default',
+  className = '',
+  children = 'Create Project',
   showIcon = false,
 }) => {
   const router = useRouter();
@@ -34,16 +36,16 @@ export const CreateProjectButton: React.FC<CreateProjectButtonProps> = ({
 
   const handleClick = () => {
     if (!isConnected) {
-      toast.error("Please connect your wallet to create a project");
+      toast.error('Please connect your wallet to create a project');
       return;
     }
 
     if (!addrWhitelist) {
-      toast.error("You need to be whitelisted to create a project");
+      toast.error('You need to be whitelisted to create a project');
       return;
     }
 
-    router.push("/project/create");
+    router.push('/project/create');
   };
 
   if (!isConnected || !addrWhitelist) {
@@ -57,7 +59,7 @@ export const CreateProjectButton: React.FC<CreateProjectButtonProps> = ({
       className={className}
       onClick={handleClick}
     >
-      {showIcon && <Plus size={16} className="mr-2" />}
+      {showIcon && <Plus size={16} className='mr-2' />}
       {children}
     </Button>
   );

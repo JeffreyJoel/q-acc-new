@@ -1,9 +1,11 @@
 'use client';
 
 import { FC } from 'react';
+
 import { ProjectProvider } from '@/contexts/project.context';
-import ProjectDetails from './ProjectDetails';
 import { IProject } from '@/types/project.type';
+
+import ProjectDetails from './ProjectDetails';
 
 interface IProjectViewProps {
   slug: string;
@@ -13,7 +15,7 @@ interface IProjectViewProps {
 export const ProjectView: FC<IProjectViewProps> = ({ slug, initialData }) => {
   return (
     <ProjectProvider slug={slug} initialData={initialData}>
-      <ProjectDetails/>
+      <ProjectDetails />
     </ProjectProvider>
   );
 };

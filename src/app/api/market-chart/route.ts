@@ -17,7 +17,10 @@ export async function GET(request: NextRequest) {
     const res = await fetch(url, { next: { revalidate: 60 } });
 
     if (!res.ok) {
-      return Response.json({ error: 'Upstream error', status: res.status }, { status: res.status });
+      return Response.json(
+        { error: 'Upstream error', status: res.status },
+        { status: res.status }
+      );
     }
 
     const data = await res.json();

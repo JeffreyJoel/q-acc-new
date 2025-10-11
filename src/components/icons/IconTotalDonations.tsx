@@ -1,4 +1,5 @@
 import { FC } from 'react';
+
 import { IIcon } from './type';
 
 export const IconTotalDonations: FC<IIcon> = ({

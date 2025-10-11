@@ -1,19 +1,22 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Button } from '../ui/button';
+
 import { IconArrowRight } from '@tabler/icons-react';
-import { usePrivado } from '@/hooks/usePrivado';
+import { Address } from 'viem';
+import { useAccount } from 'wagmi';
+
 import { PrivadoModal } from '@/components/modals/PrivadoModal';
 import {
   EligibilityBadge,
   EligibilityBadgeStatus,
 } from '@/components/verification-badges/EligibilityBadge';
+import { usePrivado } from '@/hooks/usePrivado';
+import { usePrivadoUrl } from '@/hooks/usePrivado';
 import { useFetchAllRoundDetails } from '@/hooks/useRounds';
 import { IQfRound } from '@/types/round.type';
-import { usePrivadoUrl } from '@/hooks/usePrivado';
-import { useAccount } from 'wagmi';
-import { Address } from 'viem';
+
+import { Button } from '../ui/button';
 
 export const ZkidVerifySection = () => {
   const [showPrivadoModal, setShowPrivadoModal] = useState(false);
@@ -24,7 +27,7 @@ export const ZkidVerifySection = () => {
   const { url, isLoading: isPrivadoLoading } = usePrivadoUrl();
 
   const qaccRound: IQfRound | undefined = allRounds?.filter(
-    round => round.__typename === 'QfRound',
+    round => round.__typename === 'QfRound'
   )[0];
 
   let high_cap;

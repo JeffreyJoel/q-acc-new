@@ -1,16 +1,23 @@
 import React from 'react';
+
 import { useRouter } from 'next/navigation';
+
+import { Address } from 'viem';
+import { useAccount } from 'wagmi';
+
 import { useFetchUser } from '@/hooks/useFetchUser';
-import { useUpdateSkipVerification } from '@/hooks/useUpdateSkipVerification';
-import { Button } from '../ui/button';
-import { EligibilityBadge, EligibilityBadgeStatus } from '../verification-badges/EligibilityBadge';
-import { usePrivado } from '@/hooks/usePrivado';
 import {
   GitcoinVerificationStatus,
   useGitcoinScore,
 } from '@/hooks/useGitcoinScore';
-import { useAccount } from 'wagmi';
-import { Address } from 'viem';
+import { usePrivado } from '@/hooks/usePrivado';
+import { useUpdateSkipVerification } from '@/hooks/useUpdateSkipVerification';
+
+import { Button } from '../ui/button';
+import {
+  EligibilityBadge,
+  EligibilityBadgeStatus,
+} from '../verification-badges/EligibilityBadge';
 
 const SkipVerification = () => {
   const { address } = useAccount();

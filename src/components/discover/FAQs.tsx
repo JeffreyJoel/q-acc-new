@@ -1,10 +1,11 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { ChevronDown, ChevronUp, Play } from "lucide-react";
-import Image from "next/image";
-import { VideoModal } from "@/components/modals/VideoModal";
-import Link from "next/link";
+import React, { useState } from 'react';
+
+import Link from 'next/link';
+
+import { ChevronDown, ChevronUp } from 'lucide-react';
+
 
 interface FAQItem {
   question: string;
@@ -13,13 +14,12 @@ interface FAQItem {
 
 const FAQs = () => {
   const [openQuestion, setOpenQuestion] = useState<number | null>(0);
-  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
   const faqData: FAQItem[] = [
     {
-      question: "What is the q/acc protocol?",
+      question: 'What is the q/acc protocol?',
       answer: (
-        <div className="space-y-4">
+        <div className='space-y-4'>
           <p>
             The Quadratic Accelerator (q/acc) continues to redefine fair launch
             mechanics by combining Quadratic Funding with chain-sponsored
@@ -31,9 +31,9 @@ const FAQs = () => {
       ),
     },
     {
-      question: "How will q/acc work in practice?",
+      question: 'How will q/acc work in practice?',
       answer: (
-        <div className="space-y-4">
+        <div className='space-y-4'>
           <p>
             Each season accepts a group of web3 startup founders into our 8-week
             program. During that time they will launch an Augmented Bonding
@@ -49,9 +49,9 @@ const FAQs = () => {
       ),
     },
     {
-      question: "What are Augmented Bonding Curves (ABC)?",
+      question: 'What are Augmented Bonding Curves (ABC)?',
       answer: (
-        <div className="space-y-4">
+        <div className='space-y-4'>
           <p>
             A bonding curve is a smart contract that algorithmically determines
             a token's price, typically increasing as more tokens are minted,
@@ -65,12 +65,12 @@ const FAQs = () => {
             subsequent token mints and redemptions.
           </p>
           <p>
-            Find out more on{" "}
+            Find out more on{' '}
             <Link
-              href="https://www.commonsstack.org/augmented-bonding-curve"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-qacc-gray-light hover:text-white underline"
+              href='https://www.commonsstack.org/augmented-bonding-curve'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='text-qacc-gray-light hover:text-white underline'
             >
               Commons Stack's ABC page
             </Link>
@@ -80,9 +80,9 @@ const FAQs = () => {
       ),
     },
     {
-      question: "What is Quadratic Funding (QF)?",
+      question: 'What is Quadratic Funding (QF)?',
       answer: (
-        <div className="space-y-4">
+        <div className='space-y-4'>
           <p>
             Quadratic Funding is a mechanism that amplifies smaller
             contributions more than larger ones, creating a more democratic
@@ -101,21 +101,21 @@ const FAQs = () => {
             The q/acc protocol used the same quadratic matching formula as QF.
           </p>
           <p>
-            Find out more on the{" "}
+            Find out more on the{' '}
             <Link
-              href="https://www.wtfisqf.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-qacc-gray-light hover:text-white underline"
+              href='https://www.wtfisqf.com/'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='text-qacc-gray-light hover:text-white underline'
             >
               WTF is QF
-            </Link>{" "}
-            site or on{" "}
+            </Link>{' '}
+            site or on{' '}
             <Link
-              href="https://qf.gitcoin.co/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-qacc-gray-light hover:text-white underline"
+              href='https://qf.gitcoin.co/'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='text-qacc-gray-light hover:text-white underline'
             >
               Gitcoin's QF site
             </Link>
@@ -125,45 +125,45 @@ const FAQs = () => {
       ),
     },
     {
-      question: "Where can I find out more?",
+      question: 'Where can I find out more?',
       answer: (
-        <div className="space-y-4">
+        <div className='space-y-4'>
           <p>
             You still have questions? That's normal, this is just getting
-            started. Visit our{" "}
+            started. Visit our{' '}
             <Link
-              href="https://giveth.notion.site/Quadratic-Acceleration-q-acc-Knowledge-Hub-4752f35fee2a47fe9e29556dbcfe6883"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-qacc-gray-light hover:text-white underline"
+              href='https://giveth.notion.site/Quadratic-Acceleration-q-acc-Knowledge-Hub-4752f35fee2a47fe9e29556dbcfe6883'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='text-qacc-gray-light hover:text-white underline'
             >
               Knowledge Hub
-            </Link>{" "}
-            for more information. We'll also share updates on{" "}
+            </Link>{' '}
+            for more information. We'll also share updates on{' '}
             <Link
-              href="https://x.com/theqacc"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-qacc-gray-light hover:text-white underline"
+              href='https://x.com/theqacc'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='text-qacc-gray-light hover:text-white underline'
             >
               X
-            </Link>{" "}
-            and{" "}
+            </Link>{' '}
+            and{' '}
             <Link
-              href="https://farcaster.xyz/theqacc"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-qacc-gray-light hover:text-white underline"
+              href='https://farcaster.xyz/theqacc'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='text-qacc-gray-light hover:text-white underline'
             >
               Farcaster
             </Link>
             .
           </p>
           <p>
-            If you need to get in touch with us, email{" "}
+            If you need to get in touch with us, email{' '}
             <Link
-              href="mailto:qacc@giveth.io"
-              className="text-qacc-gray-light hover:text-white underline"
+              href='mailto:qacc@giveth.io'
+              className='text-qacc-gray-light hover:text-white underline'
             >
               qacc@giveth.io
             </Link>
@@ -179,72 +179,47 @@ const FAQs = () => {
   };
 
   return (
-    <div className="bg-qacc-black text-white py-32 px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-stretch">
-          <div className="space-y-8">
-            <h2 className="font-anton text-[42px] lg:text-[64px] tracking-wider mb-8 md:mb-12">
-              FREQUENTLY ASKED
-            </h2>
+    <div className='space-y-8 text-white flex-1'>
+      <h2 className='font-anton text-[42px] lg:text-[64px] tracking-wider mb-8 md:mb-12'>
+        FREQUENTLY ASKED
+      </h2>
 
-            <div className="mt-16">
-              {faqData.map((faq, index) => (
-                <div
-                  key={index}
-                  className={`border-b border-white/10 ${
-                    index === 0 ? "border-t border-white/10" : ""
-                  }`}
-                >
-                  <button
-                    onClick={() => toggleQuestion(index)}
-                    className="w-full flex justify-between items-center text-left py-[22px] hover:text-peach-400 transition-colors"
-                  >
-                    <span className="text-lg md:text-2xl font-bold pr-4">
-                      {faq.question}
-                    </span>
-                    {openQuestion === index ? (
-                      <ChevronUp className="w-6 h-6 text-white/20 flex-shrink-0" />
-                    ) : (
-                      <ChevronDown className="w-6 h-6 text-white/20 flex-shrink-0" />
-                    )}
-                  </button>
+      <div className='mt-16'>
+        {faqData.map((faq, index) => (
+          <div
+            key={index}
+            className={`border-b border-white/10 ${
+              index === 0 ? 'border-t border-white/10' : ''
+            }`}
+          >
+            <button
+              onClick={() => toggleQuestion(index)}
+              className='w-full flex justify-between items-center text-left py-[22px] hover:text-peach-400 transition-colors'
+            >
+              <span className='text-lg md:text-2xl font-bold pr-4'>
+                {faq.question}
+              </span>
+              {openQuestion === index ? (
+                <ChevronUp className='w-6 h-6 text-white/20 flex-shrink-0' />
+              ) : (
+                <ChevronDown className='w-6 h-6 text-white/20 flex-shrink-0' />
+              )}
+            </button>
 
-                  {openQuestion === index && (
-                    <div className="pb-4 pr-8">
-                      <div className="text-white/50 leading-relaxed">
-                        {typeof faq.answer === "string" ? (
-                          <p>{faq.answer}</p>
-                        ) : (
-                          faq.answer
-                        )}
-                      </div>
-                    </div>
+            {openQuestion === index && (
+              <div className='pb-4 pr-8'>
+                <div className='text-white/50 leading-relaxed'>
+                  {typeof faq.answer === 'string' ? (
+                    <p>{faq.answer}</p>
+                  ) : (
+                    faq.answer
                   )}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
-
-          {/* Right Side - Video Section */}
-          <div
-            className="relative w-full h-[614px]  md:h-full lg:h-[614px] xl:h-full mx-auto lg:mx-0 cursor-pointer"
-            onClick={() => setIsVideoModalOpen(true)}
-          >
-            <Image
-              src="/images/landing/how-qacc-works.svg"
-              alt="How Q-ACC works"
-              fill
-              className="w-full h-full mx-auto object-cover sm:object-contain rounded-2xl"
-            />
-          </div>
-        </div>
+        ))}
       </div>
-
-      {/* Video Modal */}
-      <VideoModal
-        isOpen={isVideoModalOpen}
-        onClose={() => setIsVideoModalOpen(false)}
-      />
     </div>
   );
 };

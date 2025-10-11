@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
+
 import { useQuery } from '@tanstack/react-query';
+
+import { getMostRecentEndRound } from '@/helpers/round';
 import {
   fetchActiveRoundDetails,
   fetchAllRoundDetails,
   fetchProjectRoundRecords,
-  fetchQaccRoundStats
+  fetchQaccRoundStats,
 } from '@/services/round.services';
 import { IQfRound } from '@/types/round.type';
-import { getMostRecentEndRound } from '@/helpers/round';
 import { IEarlyAccessRound } from '@/types/round.type';
 
 /**
@@ -50,16 +52,24 @@ export const useFetchProjectRoundRecords = (
   earlyAccessRoundNumber?: number
 ) => {
   return useQuery({
-    queryKey: ['projectRoundRecords', projectId, qfRoundNumber, earlyAccessRoundNumber],
+    queryKey: [
+      'projectRoundRecords',
+      projectId,
+      qfRoundNumber,
+      earlyAccessRoundNumber,
+    ],
     queryFn: async () => {
-      return await fetchProjectRoundRecords(projectId, qfRoundNumber, earlyAccessRoundNumber);
+      return await fetchProjectRoundRecords(
+        projectId,
+        qfRoundNumber,
+        earlyAccessRoundNumber
+      );
     },
     staleTime: Infinity,
     gcTime: Infinity,
     enabled: !!projectId,
   });
 };
-
 
 export const useFetchQaccRoundStats = () => {
   return useQuery({
@@ -72,9 +82,8 @@ export const useFetchQaccRoundStats = () => {
   });
 };
 
-
 export const useFetchMostRecentEndRound = (
-  activeRoundDetails: IEarlyAccessRound | IQfRound | undefined,
+  activeRoundDetails: IEarlyAccessRound | IQfRound | undefined
 ) => {
   const [isRoundEnded, setIsRoundEnded] = useState(false);
   useEffect(() => {

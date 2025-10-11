@@ -4,12 +4,12 @@ export enum ChainType {
 }
 
 export interface TeamMember {
-    name: string;
-    image?: { file: File; ipfsHash: string } | null;
-    twitter?: string;
-    linkedin?: string;
-    farcaster?: string;
-  }
+  name: string;
+  image?: { file: File; ipfsHash: string } | null;
+  twitter?: string;
+  linkedin?: string;
+  farcaster?: string;
+}
 
 export interface IWalletAddress {
   address?: string;
@@ -161,7 +161,6 @@ export interface IProject {
   seasonNumber: number;
   teamMembers?: TeamMember[];
 }
-
 
 export interface ProjectFormData {
   projectName: string;

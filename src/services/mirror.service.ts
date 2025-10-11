@@ -1,6 +1,6 @@
-import axios from "axios";
+import axios from 'axios';
 
-const ARWEAVE_URL = "https://arweave.net";
+const ARWEAVE_URL = 'https://arweave.net';
 
 export interface MirrorArticle {
   description: string;
@@ -49,7 +49,7 @@ interface ArweaveTransactions {
   }>;
 }
 
-const address = "0x0C49031B01eB1c41cBB127501E4E317F7e739D7E";
+const address = '0x0C49031B01eB1c41cBB127501E4E317F7e739D7E';
 
 export const fetchMirrorTransactions =
   async (): Promise<ArweaveTransactions> => {
@@ -107,24 +107,24 @@ export const fetchMirrorTransactions =
         },
         {
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );
 
       return result.data.data.transactions;
     } catch (error) {
-      console.error("Error fetching transactions:", error);
+      console.error('Error fetching transactions:', error);
       throw error;
     }
   };
 
 export const getArweaveTransactions = (transactions: ArweaveTransactions) => {
   const map = new Map();
-  transactions.edges.forEach((edge) => {
+  transactions.edges.forEach(edge => {
     const { id, tags, block } = edge.node;
     const originContentDigest = tags.find(
-      (tag) => tag.name === "Original-Content-Digest"
+      tag => tag.name === 'Original-Content-Digest'
     )?.value;
 
     if (!originContentDigest) {
@@ -173,19 +173,19 @@ export const fetchArticleContent = async (transactionId: string) => {
 
 // Utility: strip markdown syntax to plain text
 const stripMarkdown = (md: string): string => {
-  if (!md) return "";
+  if (!md) return '';
   // Remove code fences
-  let text = md.replace(/```[\s\S]*?```/g, " ");
+  let text = md.replace(/```[\s\S]*?```/g, ' ');
   // Remove inline code
-  text = text.replace(/`[^`]*`/g, " ");
+  text = text.replace(/`[^`]*`/g, ' ');
   // Remove images and links markup but keep alt text
-  text = text.replace(/!\[[^\]]*\]\([^)]*\)/g, " ");
-  text = text.replace(/\[[^\]]*\]\([^)]*\)/g, " ");
+  text = text.replace(/!\[[^\]]*\]\([^)]*\)/g, ' ');
+  text = text.replace(/\[[^\]]*\]\([^)]*\)/g, ' ');
   // Remove headings and emphasis characters
-  text = text.replace(/^#+\s+/gm, "");
-  text = text.replace(/[>*_~`#-]/g, "");
+  text = text.replace(/^#+\s+/gm, '');
+  text = text.replace(/[>*_~`#-]/g, '');
   // Collapse whitespace
-  text = text.replace(/\s+/g, " ").trim();
+  text = text.replace(/\s+/g, ' ').trim();
   return text;
 };
 
@@ -202,7 +202,6 @@ export const fetchMirrorArticles = async (
   try {
     const transactions = await fetchMirrorTransactions();
     const transactionList = getArweaveTransactions(transactions);
-
 
     const limitedList = limit
       ? transactionList.slice(0, limit)
@@ -222,15 +221,16 @@ export const fetchMirrorArticles = async (
     );
 
     const articles = list
-      .map((article) => {
-        const rawBody = article.body || article.content?.body || article.content || "";
+      .map(article => {
+        const rawBody =
+          article.body || article.content?.body || article.content || '';
         const cleanBody = stripMarkdown(rawBody);
         const generatedDescription = cleanBody.substring(0, 200);
         const imageFromBody = extractFirstMarkdownImage(rawBody);
 
         return {
           id: article.id || article.mirrorXyzContentDigest,
-          title: article.title || article.content?.title || "Untitled Article",
+          title: article.title || article.content?.title || 'Untitled Article',
           description:
             article.description ||
             article.content?.description ||
@@ -254,7 +254,7 @@ export const fetchMirrorArticles = async (
 
     return articles;
   } catch (error) {
-    console.error("Error fetching mirror articles:", error);
+    console.error('Error fetching mirror articles:', error);
     return [];
   }
 };

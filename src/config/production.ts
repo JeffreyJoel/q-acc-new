@@ -20,12 +20,13 @@ import {
   gnosis,
   zksync,
   bsc,
+  polygonAmoy,
 } from '@reown/appkit/networks';
 import { polygon as viemPolygon } from 'wagmi/chains';
 // import { polygon, polygonZkEvm } from 'wagmi/chains';
 
-import { EnvConfig } from '@/types/config.type';
 import { PrivadoContractMethodV2 } from '@/lib/constants/privado';
+import { EnvConfig } from '@/types/config.type';
 
 const config: EnvConfig = {
   SUPPORTED_CHAINS: [
@@ -49,7 +50,7 @@ const config: EnvConfig = {
     polygonZkEvm,
     gnosis,
     zksync,
-    bsc,
+    bsc
   ] as const,
   SCAN_URL: 'https://polygonscan.com/',
   ERC_TOKEN_ADDRESS: '0x0000000000000000000000000000000000001010',

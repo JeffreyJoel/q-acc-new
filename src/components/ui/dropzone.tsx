@@ -1,12 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useState, useRef, FC } from 'react';
+
+import axios from 'axios';
 import { useDropzone } from 'react-dropzone';
 import { useFormContext, RegisterOptions } from 'react-hook-form';
-import axios from 'axios';
+
 import { IconX } from '@/components/icons/IconX';
-import { uploadToIPFS } from '@/services/ipfs';
 import { handleImageUrl } from '@/helpers/image';
+import { uploadToIPFS } from '@/services/ipfs';
 
 interface DropzoneProps {
   onDrop: (name: string, acceptedFile: File, ipfsHash: string) => void;
@@ -39,12 +41,12 @@ export const Dropzone: FC<DropzoneProps> = ({ name, rules, onDrop }) => {
         progressEvent => {
           if (progressEvent.total) {
             const progress = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total,
+              (progressEvent.loaded * 100) / progressEvent.total
             );
             setUploadProgress(progress);
           }
         },
-        controller.signal, // Pass the AbortController signal for cancellation
+        controller.signal // Pass the AbortController signal for cancellation
       );
 
       setIsLoading(false);
@@ -56,7 +58,7 @@ export const Dropzone: FC<DropzoneProps> = ({ name, rules, onDrop }) => {
         setValue(name, handleImageUrl(ipfsHash), { shouldValidate: false }); // Set value without triggering validation immediately
       }
     },
-    [onDrop, setValue, name],
+    [onDrop, setValue, name]
   );
 
   const cancelUpload = () => {
@@ -149,7 +151,7 @@ export const Dropzone: FC<DropzoneProps> = ({ name, rules, onDrop }) => {
               return true;
             },
           })}
-          type="hidden"
+          type='hidden'
           value={ipfsHash || ''}
           className='hidden'
           readOnly

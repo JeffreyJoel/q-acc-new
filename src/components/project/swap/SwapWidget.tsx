@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import BondingCurveSwap from "./BondingCurveSwap";
-import SquidSwapTab from "./SquidSwapTab";
+import { useState } from 'react';
+
+import BondingCurveSwap from './bonding-curve/BondingCurveSwap';
+import SquidSwapTab from './SquidSwapTab';
 
 export default function SwapWidget({
   contractAddress,
@@ -15,13 +16,13 @@ export default function SwapWidget({
   receiveTokenSymbol: string;
   receiveTokenIcon: string;
 }) {
-  const [tab, setTab] = useState<"squidswap" | "direct">("squidswap");
+  const [tab, setTab] = useState<'squidswap' | 'direct'>('squidswap');
 
   const TabButton = ({
     id,
     label,
   }: {
-    id: "squidswap" | "direct";
+    id: 'squidswap' | 'direct';
     label: string;
   }) => (
     <button
@@ -29,10 +30,10 @@ export default function SwapWidget({
       className={`flex-1  text-center py-2 h-9 items-center rounded-full font-bold text-sm transition-colors
         ${
           tab === id
-            ? id === "squidswap"
-              ? "bg-blue-600"
-              : "bg-peach-400 text-black"
-            : "bg-black/30"
+            ? id === 'squidswap'
+              ? 'bg-blue-600'
+              : 'bg-peach-400 text-black'
+            : 'bg-black/30'
         }
       `}
     >
@@ -41,23 +42,24 @@ export default function SwapWidget({
   );
 
   return (
-    <div className="h-full lg:max-h-[550px] lg:min-w-[400px] bg-white/5 backdrop-blur-lg rounded-3xl  p-6 text-white flex flex-col gap-3">
-      <h2 className="font-anton text-peach-400 text-center text-2xl uppercase mb-3">
+    <div className='h-full lg:max-h-[550px] lg:min-w-[400px] bg-white/5 backdrop-blur-lg rounded-3xl  p-6 text-white flex flex-col gap-3'>
+      <h2 className='font-anton text-peach-400 text-center text-2xl uppercase mb-3'>
         Shut Up And Take My $POL
       </h2>
 
       {/* Tabs */}
-      <div className="flex bg-black/75 h-11 px-1 items-center rounded-full">
-        <TabButton id="squidswap" label="SQUIDSWAP" />
-        <TabButton id="direct" label="SWAP DIRECTLY" />
+      <div className='flex bg-black/75 h-11 px-1 items-center rounded-full'>
+        <TabButton id='squidswap' label='SQUIDSWAP' />
+        <TabButton id='direct' label='SWAP DIRECTLY' />
       </div>
 
       {/* Content */}
-      {tab === "squidswap" ? (
+      {tab === 'squidswap' ? (
         <SquidSwapTab
-          // receiveTokenAddress={receiveTokenAddress}
-          // receiveTokenSymbol={receiveTokenSymbol}
-          // receiveTokenIcon={receiveTokenIcon}
+          receiveTokenAddress={receiveTokenAddress}
+          receiveTokenSymbol={receiveTokenSymbol}
+          receiveTokenIcon={receiveTokenIcon}
+        // receiveTokenIcon={receiveTokenIcon}
         />
       ) : (
         <BondingCurveSwap

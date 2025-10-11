@@ -1,44 +1,50 @@
-"use client";
+'use client';
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useState } from 'react';
+
+import { PrivyClientConfig, PrivyProvider } from '@privy-io/react-auth';
+import { WagmiProvider, createConfig } from '@privy-io/wagmi';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { polygon } from 'viem/chains';
 import {
   cookieStorage,
   createStorage,
   http,
   cookieToInitialState,
-} from "wagmi";
+} from 'wagmi';
 
-import { PrivyClientConfig, PrivyProvider } from "@privy-io/react-auth";
-import { polygon } from "viem/chains";
-import { WagmiProvider, createConfig } from "@privy-io/wagmi";
-import { ChainProvider } from "@/contexts/chainManager.context";
-import config from "@/config/configuration";
+import config from '@/config/configuration';
+import { ChainProvider } from '@/contexts/chainManager.context';
+import { ZeroDevProvider } from '@/contexts/ZeroDevContext';
 
 const privyConfig: PrivyClientConfig = {
   embeddedWallets: {
-    createOnLogin: "users-without-wallets",
+    createOnLogin: 'users-without-wallets',
     showWalletUIs: true,
     priceDisplay: {
-      primary: "fiat-currency",
-      secondary: "native-token",
+      primary: 'fiat-currency',
+      secondary: 'native-token',
     },
   },
-  loginMethods: ["wallet", "email", "google", "twitter"],
+  loginMethods: ['wallet', 'email', 'google', 'twitter'],
   appearance: {
     showWalletLoginFirst: false,
-    theme: "dark",
-    logo: "/images/logos/logo-light.png",
-    accentColor: "#FBBA80",
+    theme: 'dark',
+    logo: '/images/logos/logo-light.png',
+    accentColor: '#FBBA80',
   },
   defaultChain: polygon,
   supportedChains: config.SUPPORTED_CHAINS,
-  
 };
 
 const transports = Object.fromEntries(
-  config.SUPPORTED_CHAINS.map((chain) => [chain.id, http()])
-)
+ config.SUPPORTED_CHAINS.map(chain => [
+    chain.id,
+    chain.id === polygon.id
+      ? http('https://polygon-rpc.com')
+      : http()
+  ])
+);
 
 export const wagmiConfig = createConfig({
   chains: config.SUPPORTED_CHAINS,
@@ -50,9 +56,7 @@ export const wagmiConfig = createConfig({
   transports,
 });
 
-export default function Providers(props: {
-  children: ReactNode
-}) {
+export default function Providers(props: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
 
   // Get initial state from cookies with Polygon as default fallback
@@ -60,13 +64,13 @@ export default function Providers(props: {
 
   return (
     <PrivyProvider
-      appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
+      appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
       config={privyConfig}
     >
       <QueryClientProvider client={queryClient}>
         <WagmiProvider config={wagmiConfig} initialState={initialState}>
           <ChainProvider>
-            {props.children}
+            <ZeroDevProvider>{props.children}</ZeroDevProvider>
           </ChainProvider>
         </WagmiProvider>
       </QueryClientProvider>

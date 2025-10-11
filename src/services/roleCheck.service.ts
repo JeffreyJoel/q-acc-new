@@ -1,7 +1,8 @@
-import { Address } from 'viem';
 import { ethers } from 'ethers';
-import ORCHESTRATOR_ABI from '@/lib/abi/orchestrator';
+import { Address } from 'viem';
+
 import AUTHORIZER_ABI from '@/lib/abi/authorizer';
+import ORCHESTRATOR_ABI from '@/lib/abi/orchestrator';
 
 // Role name for bonding curve interactions
 const CURVE_INTERACTION_ROLE = 'CURVE_USER';
@@ -15,7 +16,7 @@ export interface RoleCheckResult {
  */
 async function getAuthorizerAddress(
   publicClient: any,
-  orchestratorAddress: string,
+  orchestratorAddress: string
 ): Promise<string> {
   try {
     return await publicClient.readContract({
@@ -35,7 +36,7 @@ async function getAuthorizerAddress(
 async function generateRoleId(
   publicClient: any,
   authorizerAddress: string,
-  bondingCurveAddress: string,
+  bondingCurveAddress: string
 ): Promise<string> {
   try {
     const roleBytes = ethers.encodeBytes32String(CURVE_INTERACTION_ROLE);
@@ -59,7 +60,7 @@ async function checkRole(
   publicClient: any,
   authorizerAddress: string,
   roleId: string,
-  userAddress: string,
+  userAddress: string
 ): Promise<boolean> {
   try {
     return await publicClient.readContract({
@@ -103,7 +104,7 @@ export async function checkBondingCurvePermissions(
       }),
     ]);
 
-    console.log('orchestratorAddress:', orchestratorAddress);
+    // console.log('orchestratorAddress:', orchestratorAddress);
 
     // Get authorizer address
     const authorizerAddress = await getAuthorizerAddress(
@@ -111,7 +112,7 @@ export async function checkBondingCurvePermissions(
       orchestratorAddress,
     );
 
-    console.log('authorizerAddress:', authorizerAddress);
+    // console.log('authorizerAddress:', authorizerAddress);
 
     // Generate role ID
     const roleId = await generateRoleId(
@@ -120,7 +121,7 @@ export async function checkBondingCurvePermissions(
       bondingCurveAddress,
     );
 
-    console.log('roleId:', roleId);
+    // console.log('roleId:', roleId);
 
     // Check if user has the role
     const hasRole = await checkRole(

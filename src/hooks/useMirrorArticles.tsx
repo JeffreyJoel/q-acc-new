@@ -1,5 +1,6 @@
-import { MirrorArticle } from '@/services/mirror.service';
 import { useState, useEffect } from 'react';
+
+import { MirrorArticle } from '@/services/mirror.service';
 
 export const useMirrorArticles = () => {
   const [articles, setArticles] = useState<MirrorArticle[]>([]);
@@ -7,14 +8,13 @@ export const useMirrorArticles = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-
     const loadArticles = async () => {
       setLoading(true);
       setError(null);
 
       try {
         const response = await fetch(`/api/mirror`);
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch articles');
         }

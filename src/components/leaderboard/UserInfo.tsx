@@ -1,26 +1,32 @@
-"use client";
+'use client';
 
-import { useAccount } from "wagmi";
-import { useFetchUser } from "@/hooks/useFetchUser";
-import { useFetchLeaderBoard } from "@/hooks/useFetchLeaderBoard";
-import { Address } from "viem";
-import { LeaderboardItem } from "./LeaderboardItem";
-import { useMemo } from "react";
-import { usePrivy } from "@privy-io/react-auth";
-import { LeaderboardUser } from "@/types/leaderboard";
+import { useMemo } from 'react';
+
+import { usePrivy } from '@privy-io/react-auth';
+import { Address } from 'viem';
+import { useAccount } from 'wagmi';
+
+import { useFetchLeaderBoard } from '@/hooks/useFetchLeaderBoard';
+import { useFetchUser } from '@/hooks/useFetchUser';
+import { LeaderboardUser } from '@/types/leaderboard';
+
+import { LeaderboardItem } from './LeaderboardItem';
 
 export const UserInfo = () => {
   const { address: wagmiAddress } = useAccount();
   const { authenticated, user: privyUser } = usePrivy();
 
   const ConnectedUserAddress = privyUser?.wallet?.address || wagmiAddress;
-  const { data: user } = useFetchUser(!!ConnectedUserAddress, ConnectedUserAddress as Address);
+  const { data: user } = useFetchUser(
+    !!ConnectedUserAddress,
+    ConnectedUserAddress as Address
+  );
 
   const { data: leaderboardInfo, isLoading } = useFetchLeaderBoard(2000, 0, {
-    field: "Rank",
-    direction: "ASC",
+    field: 'Rank',
+    direction: 'ASC',
   });
-  
+
   const shouldShowUserInfo = useMemo(() => {
     return authenticated && ConnectedUserAddress && user;
   }, [authenticated, ConnectedUserAddress, user]);
@@ -29,7 +35,7 @@ export const UserInfo = () => {
     if (!shouldShowUserInfo || !user) return null;
 
     const leaderboardUser = leaderboardInfo?.users.find(
-      (lbUser) => lbUser.id === user.id
+      lbUser => lbUser.id === user.id
     );
 
     if (leaderboardUser) {
@@ -52,8 +58,8 @@ export const UserInfo = () => {
 
   if (shouldShowUserInfo && userInfo) {
     return (
-      <div className="mb-6">
-        <h2 className="text-[22px] mb-3 font-anton uppercase text-white/40 tracking-wide">
+      <div className='mb-6'>
+        <h2 className='text-[22px] mb-3 font-anton uppercase text-white/40 tracking-wide'>
           Your Rank
         </h2>
         <LeaderboardItem user={userInfo as LeaderboardUser} />

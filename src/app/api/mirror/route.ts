@@ -1,5 +1,6 @@
-import { fetchMirrorArticles } from '@/services/mirror.service';
 import { NextRequest, NextResponse } from 'next/server';
+
+import { fetchMirrorArticles } from '@/services/mirror.service';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,8 +16,5 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  return NextResponse.json(
-    { error: 'Method not allowed' },
-    { status: 405 }
-  );
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
 }

@@ -1,12 +1,15 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useDonorContext } from "@/contexts/donor.context";
-import { usePrivy } from "@privy-io/react-auth";
-import { fetchEVMTokenBalances } from "@/helpers/token";
-import { PortfolioTable } from "./PortfolioTable";
-import ProjectSupportedCard from "./ProjectSupportedCard";
-import type { IProject } from "@/types/project.type";
+import { useState, useEffect } from 'react';
+
+import { usePrivy } from '@privy-io/react-auth';
+
+import { useDonorContext } from '@/contexts/donor.context';
+import { fetchEVMTokenBalances } from '@/helpers/token';
+import type { IProject } from '@/types/project.type';
+
+import { PortfolioTable } from './PortfolioTable';
+import ProjectSupportedCard from './ProjectSupportedCard';
 
 export default function Portfolio() {
   const { donationsGroupedByProject } = useDonorContext();
@@ -16,7 +19,7 @@ export default function Portfolio() {
 
   useEffect(() => {
     if (!userAddress) return;
-    const tokens = Object.values(donationsGroupedByProject).map((donations) => {
+    const tokens = Object.values(donationsGroupedByProject).map(donations => {
       const project = donations[0].project as IProject;
       return {
         address: project.abc?.issuanceTokenAddress as string,
@@ -37,8 +40,8 @@ export default function Portfolio() {
   const portfolioData = Object.entries(donationsGroupedByProject).map(
     ([projectId, donations]) => {
       const project = donations[0].project as IProject;
-          const inWallet =
-            balances[project.abc!.issuanceTokenAddress as string] || 0;
+      const inWallet =
+        balances[project.abc!.issuanceTokenAddress as string] || 0;
       return {
         project: project,
         inWallet: inWallet,
@@ -47,12 +50,11 @@ export default function Portfolio() {
   );
 
   return (
-    <div className="space-y-12">
- 
-      <PortfolioTable rows={portfolioData}  />
+    <div className='space-y-12'>
+      <PortfolioTable rows={portfolioData} />
 
-      <div className="">
-        {portfolioData.map((card) => (
+      <div className=''>
+        {portfolioData.map(card => (
           <ProjectSupportedCard
             key={card.project.id}
             project={card.project}

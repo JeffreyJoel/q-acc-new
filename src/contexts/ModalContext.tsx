@@ -1,9 +1,10 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+
+import { InfoModal } from '@/components/modals/InfoModal';
 import { SignModal } from '@/components/modals/SignModal';
 import { UpdateProfileModal } from '@/components/modals/UpdateProfileModal';
-import { InfoModal } from '@/components/modals/InfoModal';
 import ProfileIncompleteBanner from '@/components/shared/ProfileIncompleteBanner';
 import { IUser } from '@/types/user.type';
 
@@ -47,15 +48,20 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
   const [showIncompleteBanner, setShowIncompleteBanner] = useState(true);
   const [currentUser, setCurrentUser] = useState<IUser | null>(null);
   const [sendOtp, setSendOtp] = useState(false);
-  const [onSign, setOnSign] = useState<((signedInUser: IUser) => void) | undefined>();
-  const [infoModalData, setInfoModalData] = useState({ title: '', description: '' });
+  const [onSign, setOnSign] = useState<
+    ((signedInUser: IUser) => void) | undefined
+  >();
+  const [infoModalData, setInfoModalData] = useState({
+    title: '',
+    description: '',
+  });
 
   const openUpdateProfileModal = (user?: IUser, sendOtp?: boolean) => {
     if (user) setCurrentUser(user);
     setSendOtp(sendOtp || false);
     setShowUpdateProfileModal(true);
   };
-  
+
   const openSignModal = () => setShowSignModal(true);
 
   const openInfoModal = (title: string, description: string) => {
@@ -79,7 +85,7 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
     setCurrentUser,
     onSign,
     setOnSign,
-    infoModalData
+    infoModalData,
   };
 
   return (
@@ -91,16 +97,16 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
           onClose={() => setShowIncompleteBanner(false)}
         />
       )}
-      
+
       {children}
-      
+
       {/* Global Modals */}
       <SignModal
         isOpen={showSignModal}
         onClose={() => setShowSignModal(false)}
         onSign={onSign || (() => {})}
       />
-      
+
       <UpdateProfileModal
         isOpen={showUpdateProfileModal}
         onClose={() => setShowUpdateProfileModal(false)}
@@ -116,4 +122,4 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
       />
     </ModalContext.Provider>
   );
-}; 
+};
