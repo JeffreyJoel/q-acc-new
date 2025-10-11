@@ -16,6 +16,14 @@ export const TailwindStyledContent = ({ content }: { content: string }) => {
           delete props.style;
         }
 
+        // Remove contentEditable since this is a viewer, not an editor
+        if (props.contenteditable !== undefined) {
+          delete props.contenteditable;
+        }
+        if (props.contentEditable !== undefined) {
+          delete props.contentEditable;
+        }
+
         const isEmptyElement = () => {
           if (
             el.name !== 'p' &&
@@ -125,13 +133,17 @@ export const TailwindStyledContent = ({ content }: { content: string }) => {
               </strong>
             );
           case 'img':
+            const imgSrc = el.attribs.src?.replace(
+              'https://gateway.pinata.cloud/ipfs/',
+              'https://ipfs.io/ipfs/'
+            );
             return (
-              <img
-                src={el.attribs.src}
+              <Image
+                src={imgSrc}
                 alt={el.attribs.alt || ''}
                 width={500}
                 height={500}
-                className='rounded-lg my-4 max-h-[700px] w-full'  
+                className='rounded-lg my-4 max-h-[700px] w-full'
               />
             );
 

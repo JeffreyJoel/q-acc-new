@@ -1,5 +1,5 @@
 export function getIpfsAddress(hash: string) {
-  return `https://gateway.pinata.cloud/ipfs/${hash}`;
+  return `https://ipfs.io/ipfs/${hash}`;
 }
 
 export function handleImageUrl(url: string) {
