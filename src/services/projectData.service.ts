@@ -39,7 +39,6 @@ export interface EnrichedProjectData {
   tokenAddress?: string;
   // Price changes
   priceChange24h?: number;
-  priceChange7d?: number;
 }
 
 /**
@@ -96,7 +95,6 @@ export async function fetchTokenData(project: IProject): Promise<{
   marketCapUSD: number;
   isTokenListed: boolean;
   change24h: number;
-  change7d: number;
 }> {
   try {
     if (!project.abc?.issuanceTokenAddress) {
@@ -106,7 +104,6 @@ export async function fetchTokenData(project: IProject): Promise<{
         marketCapUSD: 0,
         isTokenListed: false,
         change24h: 0,
-        change7d: 0,
       };
     }
 
@@ -151,7 +148,6 @@ export async function fetchTokenData(project: IProject): Promise<{
     // Get market cap
     let marketCapUSD = 0;
     let change24h = 0;
-    let change7d = 0;
     if (project.abc.fundingManagerAddress) {
       try {
         // For market cap calculation, we might need donations data
@@ -175,7 +171,6 @@ export async function fetchTokenData(project: IProject): Promise<{
           // Pull percentage deltas from GeckoTerminal result (price proxy)
           const gecko = await fetchGeckoMarketCap(tokenAddress);
           change24h = gecko?.pctChange24h ?? 0;
-          change7d = gecko?.pctChange7d ?? 0;
         } else {
           marketCapUSD = marketCap * (polPriceUSD || 0);
           // compute deltas only for curve-based tokens
@@ -185,13 +180,6 @@ export async function fetchTokenData(project: IProject): Promise<{
             24
           );
           change24h = res24.pctChange;
-
-          const res7d = await calculateMarketCapChange(
-            donations,
-            project.abc.fundingManagerAddress,
-            24 * 7
-          );
-          change7d = res7d.pctChange;
         }
       } catch (error) {
         console.error(
@@ -207,7 +195,6 @@ export async function fetchTokenData(project: IProject): Promise<{
       marketCapUSD,
       isTokenListed: isListed,
       change24h,
-      change7d,
     };
   } catch (error) {
     console.error(
@@ -220,7 +207,6 @@ export async function fetchTokenData(project: IProject): Promise<{
       marketCapUSD: 0,
       isTokenListed: false,
       change24h: 0,
-      change7d: 0,
     };
   }
 }
@@ -258,7 +244,6 @@ export async function fetchAndAggregateProjectData(
       tokenAddress: project.abc?.issuanceTokenAddress,
       // Placeholder for future price change implementation
       priceChange24h: tokenData.change24h,
-      priceChange7d: tokenData.change7d,
     };
   } catch (error) {
     console.error(`Error aggregating data for project ${project.id}:`, error);
@@ -282,7 +267,6 @@ export async function fetchAndAggregateProjectData(
       tokenTicker: project.abc?.tokenTicker,
       tokenAddress: project.abc?.issuanceTokenAddress,
       priceChange24h: 0,
-      priceChange7d: 0,
     };
   }
 }
