@@ -380,9 +380,6 @@ export async function fetchGeckoMarketCap(tokenAddress: string) {
       poolAttributes.price_change_percentage?.h24 ?? '0'
     );
 
-    const chart = await fetchCoinGeckoMarketChart(tokenAddress, 7);
-    const pct7d = chart?.pctChange7d ?? 0;
-
     let pricePOL = 0;
     try {
       const wpolUrl = `${GECKO_TERMINAL_BASE_URL}/${config.WPOL_TOKEN_ADDRESS.toLowerCase()}`;
@@ -401,7 +398,6 @@ export async function fetchGeckoMarketCap(tokenAddress: string) {
       priceUSD,
       marketCap,
       pctChange24h: isNaN(pct24) ? 0 : pct24,
-      pctChange7d: isNaN(pct7d) ? 0 : pct7d,
     };
   } catch (error: any) {
     console.error('Error fetching token data from GeckoTerminal', {

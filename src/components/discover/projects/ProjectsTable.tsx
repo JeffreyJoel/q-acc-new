@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 import { SearchIcon } from 'lucide-react';
 
@@ -44,7 +43,6 @@ interface ProjectsTableProps {
 }
 
 export default function ProjectsTable({ projects }: ProjectsTableProps) {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'all' | 'season1' | 'season2'>(
     'all'
   );
@@ -64,7 +62,6 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
         pricePOL: project.pricePOL || 0,
         priceUSD: project.priceUSD || 0,
         priceChange24h: project.priceChange24h ?? 0,
-        priceChange7d: project.priceChange7d ?? 0,
         tokenAddress: project.tokenAddress,
         marketCap: project.marketCapUSD || 0,
       })),
