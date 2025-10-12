@@ -157,7 +157,6 @@ export const DonorProvider: React.FC<{ children: React.ReactNode }> = ({
       (sum, data) => sum + data.userProjectContributionSumUsd,
       0
     );
-    console.log(totalSumUsd);
     setTotalUserContributionsUsd(totalSumUsd);
   }, [projectDonorData]);
 

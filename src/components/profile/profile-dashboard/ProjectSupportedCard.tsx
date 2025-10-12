@@ -34,25 +34,21 @@ import { IEarlyAccessRound, IQfRound } from '@/types/round.type';
 interface ProjectSupportedCardProps {
   project: IProject;
   inWallet: number;
-  key: string;
 }
 
 export default function ProjectSupportedCard({
   project,
-  inWallet,
-  key,
+  inWallet
 }: ProjectSupportedCardProps) {
   const { user: privyUser } = usePrivy();
   const { donationsGroupedByProject } = useDonorContext();
 
   const address = privyUser?.wallet?.address as Address;
 
-  const proccessorAddress = project.abc?.paymentProcessorAddress || '';
-  const router = project.abc?.paymentRouterAddress || '';
 
   const releasable = useReleasableForStream({
-    paymentProcessorAddress: proccessorAddress || '',
-    client: router || '',
+    paymentProcessorAddress: project?.abc?.paymentProcessorAddress!,
+    client: project?.abc?.paymentRouterAddress!,
     receiver: address,
     streamIds: [
       BigInt(1),
@@ -65,14 +61,14 @@ export default function ProjectSupportedCard({
   });
 
   const isActivePaymentReceiver = useIsActivePaymentReceiver({
-    paymentProcessorAddress: proccessorAddress || '',
-    client: router || '',
+    paymentProcessorAddress: project?.abc?.paymentProcessorAddress!,
+    client: project?.abc?.paymentRouterAddress!,
     receiver: address,
   });
 
   const { claim, isSmartAccountReady } = useClaimRewards({
-    paymentProcessorAddress: proccessorAddress || '',
-    paymentRouterAddress: router || '',
+    paymentProcessorAddress: project?.abc?.paymentProcessorAddress!,
+    paymentRouterAddress: project?.abc?.paymentRouterAddress!,
     tokenContractAddress: project.abc?.issuanceTokenAddress,
     onSuccess: () => {
       // Immediately show unlock date
@@ -187,8 +183,8 @@ export default function ProjectSupportedCard({
   }
 
   const released = useReleasedForStream({
-    paymentProcessorAddress: proccessorAddress || '',
-    client: router || '',
+    paymentProcessorAddress: project?.abc?.paymentProcessorAddress!,
+    client: project?.abc?.paymentRouterAddress!,
     receiver: address,
     streamIds: [
       BigInt(1),

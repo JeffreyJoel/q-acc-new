@@ -49,8 +49,8 @@ function PortfolioTableRow({
   const [lockedTokens, setLockedTokens] = useState(0);
   const [recentlyClaimed, setRecentlyClaimed] = useState(false);
 
-  const proccessorAddress = project.abc?.paymentProcessorAddress || '';
-  const router = project.abc?.paymentRouterAddress || '';
+  const proccessorAddress = project.abc?.paymentProcessorAddress!;
+  const router = project.abc?.paymentRouterAddress!;
 
   const projectDonations = donationsGroupedByProject[Number(project.id)] || [];
 
@@ -295,7 +295,7 @@ function PortfolioTableRow({
       </td>
       {/* Available to Claim */}
       <td className='py-4 px-4 text-xs md:text-sm text-white/30 font-ibm-mono font-bold text-end'>
-        {isActive.data && isTokenClaimable && !recentlyClaimed ? (
+        {isTokenClaimable && !recentlyClaimed ? (
           <>
             <span className='mr-2'>{availableToClaim.toFixed(2)}</span>
             <button
