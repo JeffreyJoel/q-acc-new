@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 
 import Image from 'next/image';
 
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { ethers } from 'ethers';
 import { Address } from 'viem';
 import { getContract } from 'viem';
@@ -132,10 +133,13 @@ function PortfolioTableRow({
     client: router,
     receiver: address,
   });
-  const { claim, isSmartAccountReady } = useClaimRewards({
+
+
+  
+
+  const { claim } = useClaimRewards({
     paymentProcessorAddress: proccessorAddress,
     paymentRouterAddress: router,
-    tokenContractAddress: project.abc?.issuanceTokenAddress,
     onSuccess: () => {
       // Immediately show unlock
       setRecentlyClaimed(true);
@@ -147,6 +151,21 @@ function PortfolioTableRow({
       }, 60000);
     },
   });
+
+  const handleClaim = async () => {
+    const { wallets } = useWallets();
+    const activeWallet = wallets?.[0];
+    const walletChainId = activeWallet?.chainId
+      ? Number(activeWallet.chainId.split(':')[1])
+      : NaN;
+
+    if (walletChainId !== 137) {
+      toast.error('Please switch your wallet to Polygon mainnet');
+      return;
+    }
+
+    await claim.mutateAsync();
+  };
 
   const { data: schedules } = useVestingSchedules();
   const { data: allRoundData } = useFetchAllRoundDetails();
@@ -300,8 +319,8 @@ function PortfolioTableRow({
             <span className='mr-2'>{availableToClaim.toFixed(2)}</span>
             <button
               className='px-2 py-1 rounded-lg text-[10px] uppercase font-bold border border-peach-400 text-peach-400 hover:bg-peach-400 hover:text-black disabled:opacity-80 disabled:cursor-not-allowed'
-              onClick={() => claim.mutateAsync()}
-              disabled={!isSmartAccountReady || claim.isPending}
+              onClick={handleClaim}
+              disabled={claim.isPending}
             >
               {claim.isPending ? 'Claiming...' : 'Claim'}
             </button>

@@ -7,6 +7,7 @@ import Link from 'next/link';
 
 import { Eye, Loader2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
+import { useWallets } from '@privy-io/react-auth';
 import { formatUnits } from 'viem';
 
 import { Spinner } from '@/components/loaders/Spinner';
@@ -317,14 +318,6 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
             activeRoundDetails.startDate
           );
 
-          // 7-day change
-          const res7d = await calculateMarketCapChange(
-            donations,
-            fundingManagerAddress,
-            24 * 7,
-            activeRoundDetails.startDate
-          );
-
           setMarketCap(res24.marketCap * polPriceNumber);
           setMarketCapChange24h(res24.pctChange);
         } else if (isTokenListed && projectData.abc?.issuanceTokenAddress) {
@@ -394,7 +387,7 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
       mintedTokenAmounts: 0,
     };
 
-  const { claim, isSmartAccountReady } = useClaimCollectedFee({
+  const { claim } = useClaimCollectedFee({
     fundingManagerAddress: projectData?.abc?.fundingManagerAddress!,
     tributeModule:
       projectData?.tributeClaimModuleAddress ||
@@ -411,6 +404,21 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
       toast.success('Successfully Claimed Tributes');
     },
   });
+
+  const handleClaim = async () => {
+    const { wallets } = useWallets();
+    const activeWallet = wallets?.[0];
+    const walletChainId = activeWallet?.chainId
+      ? Number(activeWallet.chainId.split(':')[1])
+      : NaN;
+
+    if (walletChainId !== 137) {
+      toast.error('Please switch your wallet to Polygon mainnet');
+      return;
+    }
+
+    await claim.mutateAsync();
+  };
 
   if (!projectData) {
     return (
@@ -513,12 +521,8 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
               {enableClaimButton && (
                 <button
                   className={`bg-peach-400 text-black uppercase inline-flex items-center gap-2 px-3 py-2 rounded-xl text-base font-medium disabled:opacity-80 disabled:cursor-not-allowed`}
-                  disabled={
-                    !enableClaimButton ||
-                    claim.isPending ||
-                    !isSmartAccountReady
-                  }
-                  onClick={() => claim.mutateAsync()}
+                  disabled={!enableClaimButton || claim.isPending}
+                  onClick={handleClaim}
                 >
                   {claim.isPending ? (
                     <>
@@ -833,7 +837,7 @@ const MyProjects = ({ projectData }: { projectData: IProject }) => {
                         <button
                           className={` text-black uppercase px-2 py-0.5 rounded-xl text-xs font-medium ${claim.isPending ? 'bg-peach-400/30' : 'bg-peach-400'}`}
                           disabled={claim.isPending}
-                          onClick={() => claim.mutateAsync()}
+                          onClick={handleClaim}
                         >
                           {claim.isPending ? <>Claiming...</> : 'Claim'}
                         </button>

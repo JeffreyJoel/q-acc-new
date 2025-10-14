@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { ethers } from 'ethers';
 import { ArrowUpRight } from 'lucide-react';
 import { toast } from 'sonner';
@@ -66,10 +66,9 @@ export default function ProjectSupportedCard({
     receiver: address,
   });
 
-  const { claim, isSmartAccountReady } = useClaimRewards({
+  const { claim } = useClaimRewards({
     paymentProcessorAddress: project?.abc?.paymentProcessorAddress!,
     paymentRouterAddress: project?.abc?.paymentRouterAddress!,
-    tokenContractAddress: project.abc?.issuanceTokenAddress,
     onSuccess: () => {
       // Immediately show unlock date
       setRecentlyClaimed(true);
@@ -85,6 +84,21 @@ export default function ProjectSupportedCard({
       toast.error(error.message);
     },
   });
+
+  const handleClaim = async () => {
+    const { wallets } = useWallets();
+    const activeWallet = wallets?.[0];
+    const walletChainId = activeWallet?.chainId
+      ? Number(activeWallet.chainId.split(':')[1])
+      : NaN;
+
+    if (walletChainId !== 137) {
+      toast.error('Please switch your wallet to Polygon mainnet');
+      return;
+    }
+
+    await claim.mutateAsync();
+  };
 
   const { data: vestingSchedules } = useVestingSchedules();
   const { data: allRoundData } = useFetchAllRoundDetails();
@@ -306,10 +320,9 @@ export default function ProjectSupportedCard({
               className='flex justify-center rounded-xl bg-peach-400 font-semibold text-black px-4 py-2 disabled:opacity-80 disabled:cursor-not-allowed'
               disabled={
                 !isTokenClaimable ||
-                claim.isPending ||
-                !isSmartAccountReady
+                claim.isPending
               }
-              onClick={() => claim.mutateAsync()}
+              onClick={handleClaim}
             >
               {isActivePaymentReceiver.isPending
                 ? 'Checking for tokens...'
