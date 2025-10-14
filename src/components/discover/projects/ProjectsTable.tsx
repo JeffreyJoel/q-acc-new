@@ -28,9 +28,6 @@ function HoldersCount({
   return <>{count.toLocaleString()}</>;
 }
 
-const formatPercent = (value: number) =>
-  `${value > 0 ? '↑' : '↓'}${value.toFixed(2)}%`;
-
 const formatCurrency = (value: number) =>
   value.toLocaleString('en-US', {
     style: 'currency',
@@ -68,25 +65,27 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
     [projects]
   );
 
-  const tableProjects = allTableProjects.filter(project => {
-    //tab filter
-    let passesTabFilter = true;
-    if (activeTab === 'season1') passesTabFilter = project.seasonNumber === 1;
-    if (activeTab === 'season2') passesTabFilter = project.seasonNumber === 2;
+  const tableProjects = allTableProjects
+    .filter(project => {
+      //tab filter
+      let passesTabFilter = true;
+      if (activeTab === 'season1') passesTabFilter = project.seasonNumber === 1;
+      if (activeTab === 'season2') passesTabFilter = project.seasonNumber === 2;
 
-    //search filter
-    let passesSearchFilter = true;
-    if (searchTerm.trim()) {
-      const searchLower = searchTerm.toLowerCase().trim();
-      passesSearchFilter =
-        project.name.toLowerCase().includes(searchLower) ||
-        (project.ticker &&
-          project.ticker.toLowerCase().includes(searchLower)) ||
-        project.season.toLowerCase().includes(searchLower);
-    }
+      //search filter
+      let passesSearchFilter = true;
+      if (searchTerm.trim()) {
+        const searchLower = searchTerm.toLowerCase().trim();
+        passesSearchFilter =
+          project.name.toLowerCase().includes(searchLower) ||
+          (project.ticker &&
+            project.ticker.toLowerCase().includes(searchLower)) ||
+          project.season.toLowerCase().includes(searchLower);
+      }
 
-    return passesTabFilter && passesSearchFilter;
-  });
+      return passesTabFilter && passesSearchFilter;
+    })
+    .sort((a, b) => b.marketCap - a.marketCap);
 
   return (
     <div className='w-full max-w-7xl mx-auto lg:px-8 py-12 mt-20'>

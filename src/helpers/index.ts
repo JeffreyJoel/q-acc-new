@@ -42,7 +42,7 @@ export const formatPercentageChange = (change: number) => {
   return {
     color,
     sign,
-    formatted: `${sign}${formatNumber(change)}%`,
+    formatted: `${sign}${formatNumber(Math.abs(change))}%`,
   };
 };
 
