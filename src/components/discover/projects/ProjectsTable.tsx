@@ -11,7 +11,6 @@ import { formatPercentageChange } from '@/helpers';
 import { useTokenHolders } from '@/hooks/useTokenHolders';
 import { EnrichedProjectData } from '@/services/projectData.service';
 
-// Lazy cell component that fetches token-holders count on-demand
 function HoldersCount({
   tokenAddress,
   fallback,
@@ -148,12 +147,12 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
 
       <div className='overflow-x-auto scrollbar-hide'>
         <div className='flex gap-4 min-w-[1000px]'>
-          {/* PROJECT, TOKEN Section */}
+          {/* PROJECT Section */}
           <div className='flex-1 min-w-[250px]'>
             <div className='h-[80px]'></div>
             <div className='px-6 py-1'>
               <div className='text-qacc-gray-light/60 font-bold text-[10px] uppercase tracking-wider py-0'>
-                PROJECT, TOKEN
+                PROJECT
               </div>
             </div>
             {tableProjects.map((project, idx) => (

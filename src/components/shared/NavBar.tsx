@@ -10,6 +10,7 @@ import {
   SheetTrigger,
   SheetContent,
   SheetClose,
+  SheetTitle,
 } from '@/components/ui/sheet';
 
 import WalletConnect from './wallet/WalletConnect';
@@ -110,10 +111,12 @@ export function NavBar() {
                 </svg>
               </button>
             </SheetTrigger>
+
             <SheetContent
               side='right'
               className='bg-[#141414] border-r border-neutral-800 flex flex-col h-full w-[300px] lg:hidden'
             >
+              <SheetTitle>{" "} </SheetTitle>
               <div className='flex flex-col justify-between h-full pb-3'>
                 <div className='space-y-6'>
                   {navItems.map((item, idx) => (

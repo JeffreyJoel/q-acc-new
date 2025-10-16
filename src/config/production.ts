@@ -20,10 +20,8 @@ import {
   gnosis,
   zksync,
   bsc,
-  polygonAmoy,
 } from '@reown/appkit/networks';
 import { polygon as viemPolygon } from 'wagmi/chains';
-// import { polygon, polygonZkEvm } from 'wagmi/chains';
 
 import { PrivadoContractMethodV2 } from '@/lib/constants/privado';
 import { EnvConfig } from '@/types/config.type';

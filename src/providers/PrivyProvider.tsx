@@ -70,7 +70,9 @@ export default function Providers(props: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <WagmiProvider config={wagmiConfig} initialState={initialState}>
           <ChainProvider>
-            <ZeroDevProvider>{props.children}</ZeroDevProvider>
+            {/* <ZeroDevProvider> */}
+              {props.children}
+              {/* </ZeroDevProvider> */}
           </ChainProvider>
         </WagmiProvider>
       </QueryClientProvider>

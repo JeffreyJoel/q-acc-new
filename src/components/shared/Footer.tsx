@@ -50,8 +50,7 @@ export const Footer: React.FC = () => {
               Privacy Policy
             </Link>
             <Link
-              href='https://qacc.giveth.io/terms-and-conditions'
-              target='_blank'
+              href='/tos'
               className='font-inter font-medium text-sm text-qacc-gray-light opacity-40 hover:underline'
             >
               Terms and Conditions
