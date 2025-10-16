@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -15,6 +15,7 @@ import { useAddressWhitelist } from '@/hooks/useAddressWhitelist';
 import { useFetchUser } from '@/hooks/useFetchUser';
 import { useUpdateUser } from '@/hooks/useUpdateUser';
 import { fetchGivethUserInfo } from '@/services/user.service';
+import { TermsOfServiceModal } from '@/components/modals/TermsOfServiceModal';
 // import { SanctionModal } from '../Modals/SanctionModal';
 import { IUser, INewUer } from '@/types/user.type';
 
@@ -34,8 +35,8 @@ export const UserController = () => {
     setOnSign,
     setCurrentUser,
     setShowIncompleteBanner,
+    setShowTermsModal,
   } = useModal();
-
   const { data: useWhitelist } = useAddressWhitelist();
   const pathname = usePathname();
 
@@ -151,9 +152,9 @@ export const UserController = () => {
         }
 
         // Check if user has accepted ToS after refetching user data
-        // if (user && !user.acceptedToS && pathname !== '/tos') {
-        //   setShowTermsModal(true);
-        // }
+        if (user && !user.acceptedToS && pathname !== '/tos') {
+          setShowTermsModal(true);
+        }
         return;
       }
       openSignModal();

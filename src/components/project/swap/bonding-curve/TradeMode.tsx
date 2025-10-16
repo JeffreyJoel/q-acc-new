@@ -21,7 +21,6 @@ import {
   executeSellFlow,
 } from '@/services/bondingCurveProxy.service';
 import { polygon } from 'viem/chains';
-import { useChainManager } from '@/contexts/chainManager.context';
 import { useWallets } from '@privy-io/react-auth';
 
 interface TradeModeProps {

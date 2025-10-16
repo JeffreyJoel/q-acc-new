@@ -1,138 +1,48 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { Address, getContract } from 'viem';
-import { usePublicClient } from 'wagmi';
-import { usePrivy } from '@privy-io/react-auth';
-
-import { useZeroDev } from '@/contexts/ZeroDevContext';
-import { claimTokensABI } from '@/lib/abi/inverter';
-
-const erc20ABI = [
-  {
-    inputs: [
-      { name: 'dst', type: 'address' },
-      { name: 'wad', type: 'uint256' },
-    ],
-    name: 'transfer',
-    outputs: [{ name: '', type: 'bool' }],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [{ name: 'account', type: 'address' }],
-    name: 'balanceOf',
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-];
+import { usePublicClient, useWalletClient } from "wagmi";
+import { Address, createPublicClient, getContract, http } from "viem";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { claimTokensABI } from "@/lib/abi/inverter";
+import { polygon } from "viem/chains";
 
 export const useClaimRewards = ({
   paymentProcessorAddress,
   paymentRouterAddress,
-  tokenContractAddress,
   onSuccess = () => {},
   onError = () => {},
 }: {
   paymentProcessorAddress: string;
   paymentRouterAddress: string;
-  tokenContractAddress?: string;
   onSuccess?: () => void;
   onError?: (error: Error) => void;
 }) => {
-  const { kernelClient, isInitializing } = useZeroDev();
-  const publicClient = usePublicClient();
-  const { user: privyUser } = usePrivy();
+  const { data: walletClient } = useWalletClient();
+
+  const publicClient = createPublicClient({
+    chain: polygon,
+    transport: http(polygon.rpcUrls.default.http[0]),
+  });
 
   const claim = useMutation({
     mutationFn: async () => {
-      if (!kernelClient) {
-        throw new Error('Smart account not initialized');
-      }
+      if (!walletClient) throw new Error("Wallet not connected");
 
-      if (isInitializing) {
-        throw new Error('Smart account is still initializing');
-      }
-
-      const userWalletAddress = privyUser?.wallet?.address;
-      if (!userWalletAddress) {
-        throw new Error('User wallet address not available for auto-transfer');
-      }
-
-      if (!tokenContractAddress) {
-        throw new Error('Token contract address required for auto-transfer');
-      }
-
-      if (!kernelClient.account) {
-        throw new Error(
-          'Smart account not properly initialized for auto-transfer'
-        );
-      }
-
-      const smartAccountAddress = kernelClient.account!.address;
-
-      // Use the kernel client directly for gasless transactions
-      const paymentProcessorContract = getContract({
+      const contract = getContract({
         address: paymentProcessorAddress as Address,
         abi: claimTokensABI,
-        client: kernelClient,
+        client: walletClient,
       });
 
-      // Execute claim
-      const claimTx = await paymentProcessorContract.write.claimAll([
-        paymentRouterAddress,
-      ]);
+      const tx = await contract.write.claimAll([paymentRouterAddress]);
 
-      // Wait for claim transaction confirmation
       await publicClient!.waitForTransactionReceipt({
-        hash: claimTx,
+        hash: tx,
       });
-
-      // Transfer tokens to user's regular wallet
-      if (tokenContractAddress && userWalletAddress) {
-        // Get the token balance of the smart account after claiming
-        const tokenContract = getContract({
-          address: tokenContractAddress as Address,
-          abi: erc20ABI,
-          client: publicClient!,
-        });
-
-        // Get balance of smart account
-        const balance = (await tokenContract.read.balanceOf([
-          smartAccountAddress,
-        ])) as bigint;
-
-        if (balance > BigInt(0)) {
-          // Transfer all tokens to user's regular wallet
-          const transferContract = getContract({
-            address: tokenContractAddress as Address,
-            abi: erc20ABI,
-            client: kernelClient,
-          });
-
-          const transferTx = await transferContract.write.transfer([
-            userWalletAddress as Address,
-            balance,
-          ]);
-
-          // Wait for transfer transaction confirmation
-          await publicClient!.waitForTransactionReceipt({
-            hash: transferTx,
-          });
-
-          return { claimTx, transferTx, tokensTransferred: balance };
-        }
-      }
-
-      return { claimTx, transferTx: null, tokensTransferred: BigInt(0) };
     },
     onSuccess,
     onError,
   });
 
-  return {
-    claim,
-    isSmartAccountReady: !!kernelClient && !isInitializing,
-  };
+  return { claim };
 };
 
 export const useReleasableForStream = ({
@@ -177,7 +87,7 @@ export const useReleasableForStream = ({
       // Sum all releasable amounts
       const totalReleasable = releasableAmounts.reduce(
         (sum, amount) => sum + amount,
-        BigInt(0)
+        BigInt(0),
       );
 
       return totalReleasable;
@@ -230,7 +140,7 @@ export const useReleasedForStream = ({
       // Sum all released amounts
       const totalReleased = releasedAmounts.reduce(
         (sum, amount) => sum + amount,
-        BigInt(0)
+        BigInt(0),
       );
 
       return totalReleased;
@@ -252,7 +162,7 @@ export const useIsActivePaymentReceiver = ({
 }) => {
   const publicClient = usePublicClient();
   return useQuery({
-    queryKey: ['isActivePaymentReceiver', paymentProcessorAddress],
+    queryKey: ["isActivePaymentReceiver", paymentProcessorAddress],
     queryFn: async (): Promise<boolean> => {
       const contract = getContract({
         address: paymentProcessorAddress as Address,
@@ -272,3 +182,5 @@ export const useIsActivePaymentReceiver = ({
     enabled: !!receiver && !!client,
   });
 };
+
+

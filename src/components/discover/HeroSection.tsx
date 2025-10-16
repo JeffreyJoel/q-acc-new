@@ -161,15 +161,6 @@ const HeroSection = () => {
                     Peak Market Cap
                   </div>
                 </div>
-
-                <div className='space-y-0.1'>
-                  <div className='text-white text-2xl xl:text-3xl font-bold'>
-                    $1.4M
-                  </div>
-                  <div className='text-white/30 font-medium text-[13px] leading-normal'>
-                    7d Total Volume
-                  </div>
-                </div>
               </div>
             </div>
           </div>

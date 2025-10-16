@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 const BLOCKSCOUT_BASE_URL = 'https://polygon.blockscout.com/api/v2/tokens';
 const TOP_HOLDERS_LIMIT = 20;
 

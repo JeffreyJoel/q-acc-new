@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { ethers } from 'ethers';
 import { ArrowUpRight } from 'lucide-react';
 import { toast } from 'sonner';
@@ -34,25 +34,21 @@ import { IEarlyAccessRound, IQfRound } from '@/types/round.type';
 interface ProjectSupportedCardProps {
   project: IProject;
   inWallet: number;
-  key: string;
 }
 
 export default function ProjectSupportedCard({
   project,
-  inWallet,
-  key,
+  inWallet
 }: ProjectSupportedCardProps) {
   const { user: privyUser } = usePrivy();
   const { donationsGroupedByProject } = useDonorContext();
 
   const address = privyUser?.wallet?.address as Address;
 
-  const proccessorAddress = project.abc?.paymentProcessorAddress || '';
-  const router = project.abc?.paymentRouterAddress || '';
 
   const releasable = useReleasableForStream({
-    paymentProcessorAddress: proccessorAddress || '',
-    client: router || '',
+    paymentProcessorAddress: project?.abc?.paymentProcessorAddress!,
+    client: project?.abc?.paymentRouterAddress!,
     receiver: address,
     streamIds: [
       BigInt(1),
@@ -65,15 +61,14 @@ export default function ProjectSupportedCard({
   });
 
   const isActivePaymentReceiver = useIsActivePaymentReceiver({
-    paymentProcessorAddress: proccessorAddress || '',
-    client: router || '',
+    paymentProcessorAddress: project?.abc?.paymentProcessorAddress!,
+    client: project?.abc?.paymentRouterAddress!,
     receiver: address,
   });
 
-  const { claim, isSmartAccountReady } = useClaimRewards({
-    paymentProcessorAddress: proccessorAddress || '',
-    paymentRouterAddress: router || '',
-    tokenContractAddress: project.abc?.issuanceTokenAddress,
+  const { claim } = useClaimRewards({
+    paymentProcessorAddress: project?.abc?.paymentProcessorAddress!,
+    paymentRouterAddress: project?.abc?.paymentRouterAddress!,
     onSuccess: () => {
       // Immediately show unlock date
       setRecentlyClaimed(true);
@@ -89,6 +84,21 @@ export default function ProjectSupportedCard({
       toast.error(error.message);
     },
   });
+
+  const handleClaim = async () => {
+    const { wallets } = useWallets();
+    const activeWallet = wallets?.[0];
+    const walletChainId = activeWallet?.chainId
+      ? Number(activeWallet.chainId.split(':')[1])
+      : NaN;
+
+    if (walletChainId !== 137) {
+      toast.error('Please switch your wallet to Polygon mainnet');
+      return;
+    }
+
+    await claim.mutateAsync();
+  };
 
   const { data: vestingSchedules } = useVestingSchedules();
   const { data: allRoundData } = useFetchAllRoundDetails();
@@ -187,8 +197,8 @@ export default function ProjectSupportedCard({
   }
 
   const released = useReleasedForStream({
-    paymentProcessorAddress: proccessorAddress || '',
-    client: router || '',
+    paymentProcessorAddress: project?.abc?.paymentProcessorAddress!,
+    client: project?.abc?.paymentRouterAddress!,
     receiver: address,
     streamIds: [
       BigInt(1),
@@ -310,10 +320,9 @@ export default function ProjectSupportedCard({
               className='flex justify-center rounded-xl bg-peach-400 font-semibold text-black px-4 py-2 disabled:opacity-80 disabled:cursor-not-allowed'
               disabled={
                 !isTokenClaimable ||
-                claim.isPending ||
-                !isSmartAccountReady
+                claim.isPending
               }
-              onClick={() => claim.mutateAsync()}
+              onClick={handleClaim}
             >
               {isActivePaymentReceiver.isPending
                 ? 'Checking for tokens...'

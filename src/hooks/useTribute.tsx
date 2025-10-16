@@ -2,13 +2,19 @@ import { useMemo } from 'react';
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ethers, BigNumberish, Contract } from 'ethers';
-import { Address, createPublicClient, encodeFunctionData, getContract, http } from 'viem';
+import {
+  Address,
+  createPublicClient,
+  encodeFunctionData,
+  getContract,
+  http,
+} from 'viem';
+import { polygon } from 'viem/chains';
+import { useWalletClient } from 'wagmi';
 
 import config from '@/config/configuration';
-import { useZeroDev } from '@/contexts/ZeroDevContext';
 import { fundingManagerAbi, roleModuleAbi } from '@/lib/abi/inverter';
 import { getClaimedTributesAndMintedTokenAmounts } from '@/services/tributeCollected.service';
-import { polygon } from 'viem/chains';
 
 const provider = new ethers.JsonRpcProvider(config.NETWORK_RPC_ADDRESS);
 
@@ -77,7 +83,7 @@ export const useClaimCollectedFee = ({
   amount: BigNumberish;
   onSuccess?: () => void;
 }) => {
-  const { kernelClient, isInitializing } = useZeroDev();
+  const { data: walletClient } = useWalletClient();
   const publicClient = createPublicClient({
     chain: polygon,
     transport: http(polygon.rpcUrls.default.http[0]),
@@ -85,22 +91,19 @@ export const useClaimCollectedFee = ({
 
   const claim = useMutation({
     mutationFn: async () => {
-      if (!kernelClient) {
-        throw new Error('Smart account not initialized');
-      }
-
-      if (isInitializing) {
-        throw new Error('Smart account is still initializing');
+      if (!walletClient) {
+        throw new Error('Wallet not connected');
       }
 
       if (!publicClient) {
         throw new Error('Public client not available');
       }
 
+
       const rolesModuleInstance = getContract({
         address: tributeModule as Address,
         abi: roleModuleAbi,
-        client: kernelClient,
+        client: walletClient,
       });
 
       const encoded = encodeFunctionData({
@@ -125,6 +128,5 @@ export const useClaimCollectedFee = ({
 
   return {
     claim,
-    isSmartAccountReady: !!kernelClient && !isInitializing,
   };
 };

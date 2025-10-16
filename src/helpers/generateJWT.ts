@@ -183,13 +183,6 @@ export const getLocalStorageToken = (address: string) => {
         : null;
       const checkAddress = ethers.getAddress(address);
 
-      console.log(
-        'Token check - Stored:',
-        storedAddress,
-        'Current:',
-        checkAddress
-      );
-
       if (storedAddress && storedAddress === checkAddress) {
         if (tokenObj.expiration) {
           const currentTime = Math.floor(Date.now());

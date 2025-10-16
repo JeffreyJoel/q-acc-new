@@ -11,7 +11,6 @@ import { formatPercentageChange } from '@/helpers';
 import { useTokenHolders } from '@/hooks/useTokenHolders';
 import { EnrichedProjectData } from '@/services/projectData.service';
 
-// Lazy cell component that fetches token-holders count on-demand
 function HoldersCount({
   tokenAddress,
   fallback,
@@ -27,9 +26,6 @@ function HoldersCount({
   const count = data?.totalHolders ?? fallback;
   return <>{count.toLocaleString()}</>;
 }
-
-const formatPercent = (value: number) =>
-  `${value > 0 ? '↑' : '↓'}${value.toFixed(2)}%`;
 
 const formatCurrency = (value: number) =>
   value.toLocaleString('en-US', {
@@ -68,25 +64,27 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
     [projects]
   );
 
-  const tableProjects = allTableProjects.filter(project => {
-    //tab filter
-    let passesTabFilter = true;
-    if (activeTab === 'season1') passesTabFilter = project.seasonNumber === 1;
-    if (activeTab === 'season2') passesTabFilter = project.seasonNumber === 2;
+  const tableProjects = allTableProjects
+    .filter(project => {
+      //tab filter
+      let passesTabFilter = true;
+      if (activeTab === 'season1') passesTabFilter = project.seasonNumber === 1;
+      if (activeTab === 'season2') passesTabFilter = project.seasonNumber === 2;
 
-    //search filter
-    let passesSearchFilter = true;
-    if (searchTerm.trim()) {
-      const searchLower = searchTerm.toLowerCase().trim();
-      passesSearchFilter =
-        project.name.toLowerCase().includes(searchLower) ||
-        (project.ticker &&
-          project.ticker.toLowerCase().includes(searchLower)) ||
-        project.season.toLowerCase().includes(searchLower);
-    }
+      //search filter
+      let passesSearchFilter = true;
+      if (searchTerm.trim()) {
+        const searchLower = searchTerm.toLowerCase().trim();
+        passesSearchFilter =
+          project.name.toLowerCase().includes(searchLower) ||
+          (project.ticker &&
+            project.ticker.toLowerCase().includes(searchLower)) ||
+          project.season.toLowerCase().includes(searchLower);
+      }
 
-    return passesTabFilter && passesSearchFilter;
-  });
+      return passesTabFilter && passesSearchFilter;
+    })
+    .sort((a, b) => b.marketCap - a.marketCap);
 
   return (
     <div className='w-full max-w-7xl mx-auto lg:px-8 py-12 mt-20'>
@@ -149,12 +147,12 @@ export default function ProjectsTable({ projects }: ProjectsTableProps) {
 
       <div className='overflow-x-auto scrollbar-hide'>
         <div className='flex gap-4 min-w-[1000px]'>
-          {/* PROJECT, TOKEN Section */}
+          {/* PROJECT Section */}
           <div className='flex-1 min-w-[250px]'>
             <div className='h-[80px]'></div>
             <div className='px-6 py-1'>
               <div className='text-qacc-gray-light/60 font-bold text-[10px] uppercase tracking-wider py-0'>
-                PROJECT, TOKEN
+                PROJECT
               </div>
             </div>
             {tableProjects.map((project, idx) => (

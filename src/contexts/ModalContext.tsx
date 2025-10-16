@@ -7,6 +7,7 @@ import { SignModal } from '@/components/modals/SignModal';
 import { UpdateProfileModal } from '@/components/modals/UpdateProfileModal';
 import ProfileIncompleteBanner from '@/components/shared/ProfileIncompleteBanner';
 import { IUser } from '@/types/user.type';
+import { TermsOfServiceModal } from '@/components/modals/TermsOfServiceModal';
 
 interface ModalContextType {
   showSignModal: boolean;
@@ -25,6 +26,8 @@ interface ModalContextType {
   onSign?: (signedInUser: IUser) => void;
   setOnSign: (callback: (signedInUser: IUser) => void) => void;
   infoModalData: { title: string; description: string };
+  showTermsModal: boolean;
+  setShowTermsModal: (show: boolean) => void;
 }
 
 const ModalContext = createContext<ModalContextType | undefined>(undefined);
@@ -55,7 +58,7 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
     title: '',
     description: '',
   });
-
+  const [showTermsModal, setShowTermsModal] = useState<boolean>(false);
   const openUpdateProfileModal = (user?: IUser, sendOtp?: boolean) => {
     if (user) setCurrentUser(user);
     setSendOtp(sendOtp || false);
@@ -86,6 +89,8 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
     onSign,
     setOnSign,
     infoModalData,
+    showTermsModal,
+    setShowTermsModal,
   };
 
   return (
@@ -119,6 +124,11 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
         onClose={() => setShowInfoModal(false)}
         title={infoModalData.title}
         description={infoModalData.description}
+      />
+
+      <TermsOfServiceModal
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
       />
     </ModalContext.Provider>
   );
