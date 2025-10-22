@@ -15,7 +15,6 @@ import {
 
 import config from '@/config/configuration';
 import { ChainProvider } from '@/contexts/chainManager.context';
-import { ZeroDevProvider } from '@/contexts/ZeroDevContext';
 
 const privyConfig: PrivyClientConfig = {
   embeddedWallets: {
@@ -70,9 +69,7 @@ export default function Providers(props: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <WagmiProvider config={wagmiConfig} initialState={initialState}>
           <ChainProvider>
-            {/* <ZeroDevProvider> */}
               {props.children}
-              {/* </ZeroDevProvider> */}
           </ChainProvider>
         </WagmiProvider>
       </QueryClientProvider>

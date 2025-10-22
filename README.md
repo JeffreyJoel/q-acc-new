@@ -8,7 +8,6 @@ This Next.js application serves as a comprehensive frontend for the Q/ACC ecosys
 
 - **Frontend**: Next.js 14 with React 18, TypeScript
 - **Authentication**: Privy.io for wallet-based auth
-- **Smart Accounts**: ZeroDev for gasless transactions
 - **Cross-chain Swaps**: Squid Router for multi-chain liquidity
 - **Data Storage**: MongoDB for project metadata, IPFS for file storage
 - **Analytics**: Dune Analytics integration
@@ -44,20 +43,6 @@ const privyConfig: PrivyClientConfig = {
   loginMethods: ['wallet', 'email', 'google', 'twitter'],
   // ... more config
 };
-```
-
-#### ZeroDev SDK (`@zerodev/sdk`, `@zerodev/ecdsa-validator`)
-- **Purpose**: Provides smart account functionality with gas abstraction
-- **Usage**: Creates Kernel v3.1 accounts with ECDSA validation
-- **Features**: Gasless transactions, account abstraction, paymaster integration
-
-```typescript
-// Used in ZeroDevContext.tsx for smart account creation
-const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
-  signer: walletClient,
-  entryPoint: { address: entryPoint07Address, version: '0.7' },
-  kernelVersion: KERNEL_V3_1,
-});
 ```
 
 #### Squid Router (`@0xsquid/sdk`, `@0xsquid/squid-types`)
@@ -96,7 +81,6 @@ const squidInstance = new Squid({
 - **ChainProvider**: Multi-chain network management
 - **DonationContext**: Donation flow state management
 - **ProjectContext**: Project data and creation workflows
-- **ZeroDevContext**: Smart account management
 
 ## 🔌 API Routes
 
@@ -194,8 +178,6 @@ src/
 
 ### 1. User Authentication Flow
 1. User connects via Privy (wallet, email, social)
-2. ZeroDev creates smart account with gas abstraction
-3. User can perform gasless transactions
 
 ### 2. Project Discovery & Investment
 1. Browse projects via ProjectsTable component
