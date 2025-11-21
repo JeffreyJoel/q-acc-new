@@ -1,11 +1,12 @@
 import { Contract, formatUnits, JsonRpcProvider, ZeroAddress } from 'ethers';
-import ALGEBRA_POOL_ABI from '@/constants/abis/ALGEBRA_POOL_ABI';
-import ALGEBRA_CORE_FACTORY_ABI from '@/constants/abis/ALGEBRA_CORE_FACTORY_ABI';
+
 import config from '@/config/configuration';
+import ALGEBRA_CORE_FACTORY_ABI from '@/constants/abis/ALGEBRA_CORE_FACTORY_ABI';
+import ALGEBRA_POOL_ABI from '@/constants/abis/ALGEBRA_POOL_ABI';
 
 const provider = new JsonRpcProvider(config.NETWORK_RPC_ADDRESS);
 
-let poolAddressCache: { [key: string]: string } = {};
+const poolAddressCache: { [key: string]: string } = {};
 
 export const ALGEBRA_CONTRACTS = {
   core: '0x411b0fAcC3489691f28ad58c47006AF5E3Ab3A28',
@@ -45,14 +46,13 @@ export async function getCurrentTickByPoolAddress(poolAddress: string) {
 
 export async function getPoolAddressByPair(
   tokenABC: string,
-  tokenPOL: string,
+  tokenPOL: string
 ): Promise<{ price: string; isListed: boolean; poolAddress: string }> {
   try {
-
     const cacheKey = `${tokenABC}-${tokenPOL}`;
     if (poolAddressCache[cacheKey]) {
       const currentTick = await getCurrentTickByPoolAddress(
-        poolAddressCache[cacheKey],
+        poolAddressCache[cacheKey]
       );
       const currentPrice = calculatePriceFromTick(currentTick);
 
@@ -65,13 +65,13 @@ export async function getPoolAddressByPair(
     const coreFactoryContract = new Contract(
       ALGEBRA_CONTRACTS.core,
       ALGEBRA_CORE_FACTORY_ABI,
-      provider,
+      provider
     );
 
     // Fetch the pool address
     const poolAddress = await coreFactoryContract.poolByPair(
       tokenABC,
-      tokenPOL,
+      tokenPOL
     );
 
     // Validate if a pool exists

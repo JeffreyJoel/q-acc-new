@@ -1,170 +1,170 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useFetchProjectBySlug } from "@/hooks/useProjects";
-import {
-  useFetchActiveRoundDetails,
-  useFetchMostRecentEndRound,
-} from "@/hooks/useRounds";
-import GeneralInfo from "@/components/project/GeneralInfo";
-import { ChevronLeft, Globe } from "lucide-react";
-import { CopyButton } from "@/components/shared/CopyButton";
-import { Tabs, TabsTrigger, TabsList, TabsContent } from "@/components/ui/tabs";
-import TeamMember from "@/components/project/Team";
-import { GeckoTerminalChart } from "@/components/project/GeckoTerminal";
-import SocialLinks from "@/components/project/SocialLinks";
-import { IProject, TeamMember as TeamMemberType } from "@/types/project.type";
-import RichTextViewer from "@/components/project/RichTextViewer";
-import Image from "next/image";
-import ProjectDetailsLoader from "@/components/loaders/ProjectDetailsLoader";
-import ProjectDonationTable from "./ProjectDonationTable";
+import { useEffect, useState } from 'react';
 
-export default function ProjectDetails({ params }: { params: { id: string } }) {
-  const { data: project, isLoading, error } = useFetchProjectBySlug(params.id);
-  const { data: activeRoundDetails } = useFetchActiveRoundDetails();
+import Image from 'next/image';
+import Link from 'next/link';
 
-  const isRoundActive = !!activeRoundDetails;
-  const isQaccRoundEnded = useFetchMostRecentEndRound(activeRoundDetails);
+import { ArrowUpRight } from 'lucide-react';
 
-  // console.log(project);
+import ProjectDetailsLoader from '@/components/loaders/ProjectDetailsLoader';
+import { CopyButton } from '@/components/shared/CopyButton';
+import VestingSchedule from '@/components/vesting-schedule/VestingSchedule';
+import config from '@/config/configuration';
+import { useProjectContext } from '@/contexts/project.context';
+import { capitalizeFirstLetter } from '@/helpers';
+import { shortenAddressLarger } from '@/helpers/address';
+import { getPoolAddressByPair } from '@/helpers/getTokensListedData';
+import { handleImageUrl } from '@/helpers/image';
+
+import { TailwindStyledContent } from '../common/RichTextViewer';
+import SocialLinks from '../common/SocialLinks';
+import SwapWidget from '../swap/SwapWidget';
+
+import { GeckoTerminalChart } from './GeckoTerminal';
+import ProjectStats from './ProjectStats';
+import TeamSection from './TeamSection';
+import TokenHolders from './TokenHolders';
+
+export default function ProjectDetails() {
+  const [projectPoolAddress, setProjectPoolAddress] = useState<string | null>(
+    null
+  );
+  const [isTokenListed, setIsTokenListed] = useState<boolean>(false);
+
+  const { projectData: project, isLoading, error } = useProjectContext();
+
+
+  useEffect(() => {
+    const fetchPoolAddress = async () => {
+      if (project?.abc?.issuanceTokenAddress) {
+        try {
+          const { poolAddress, isListed } = await getPoolAddressByPair(
+            project?.abc?.issuanceTokenAddress,
+            config.WPOL_TOKEN_ADDRESS
+          );
+          setProjectPoolAddress(poolAddress);
+          setIsTokenListed(isListed);
+        } catch (error) {
+          console.error('Failed to fetch pool address:', error);
+          setProjectPoolAddress(null);
+          setIsTokenListed(false);
+        }
+      }
+    };
+
+    fetchPoolAddress();
+  }, [project?.abc?.issuanceTokenAddress]);
 
   return (
-    <div className="mt-24 max-w-7xl min-h-screen mx-auto">
-      <div className="px-4 sm:px-6 lg:px-8 pt-8">
-        <Link
-          href="/"
-          className="inline-flex items-center text-gray-400 hover:text-peach-300 transition-colors mb-4"
-        >
-          <ChevronLeft className="w-4 h-4 mr-2" />
-          Back to projects
-        </Link>
-      </div>
+    <div className='mt-32 mb-12 max-w-7xl min-h-screen  mx-auto px-6'>
       {isLoading || !project ? (
         <ProjectDetailsLoader />
       ) : (
         <>
-          <div className="w-full mt-4 relative rounded-xl overflow-hidden h-[300px] md:h-[500px] mb-8">
-            <div className="absolute inset-0">
+          <div
+            className={`${
+              isTokenListed ? 'flex flex-col lg:flex-row gap-4' : ''
+            }`}
+          >
+            <div
+              className={`${
+                isTokenListed ? 'w-full lg:w-[65%]' : ''
+              } relative w-full h-[550px]  overflow-hidden rounded-3xl`}
+            >
+              {/* Background Image */}
               <Image
-                src={project.image || ""}
-                alt={project.title || ""}
-                className="w-full h-full object-cover rounded-xl "
-                width={1000}
-                height={1000}
+                src={project.image || ''}
+                alt={project.title || 'Project Image'}
+                fill
+                className='object-cover'
                 priority
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 to-transparent" />
-            </div>
-          </div>
-
-          <div className="container mx-auto px-4 py-8 max-w-7xl -mt-32 relative z-10">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-3">
-                <div className="bg-[#111] rounded-xl p-4 flex-shrink-0">
-                  <Image
-                    src={project.icon || "/placeholder.svg"}
-                    alt={`${project.title} logo`}
-                    width={200}
-                    height={200}
-                    className="w-20 h-20 rounded-lg object-cover"
-                    priority
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center gap-3">
-                    <h1 className="text-2xl font-bold font-tusker-8">
+              {/* Overlay for better text readability */}
+              <div className='absolute inset-0 bg-gradient-to-r from-black/80 via-black/85 to-transparent' />
+              <div className='relative z-10 h-full flex flex-col justify-between p-8 md:px-16 md:py-11'>
+                <div className='flex-1 flex flex-col justify-center'>
+                  <div className='max-w-lg'>
+                    <h1 className='text-4xl md:text-[64px] font-anton text-white mb-6 leading-none'>
                       {project.title}
                     </h1>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 my-2 text-sm font-medium flex items-center">
-                      {project.abc?.projectAddress?.slice(0, 8)}...
-                      {project.abc?.projectAddress?.slice(
-                        project.abc?.projectAddress.length - 8,
-                        project.abc?.projectAddress.length
-                      )}
-                      <CopyButton text={project.abc?.projectAddress || ""} />
+
+                    <p className='text-white leading-relaxed mb-5'>
+                      {capitalizeFirstLetter(
+                        project?.descriptionSummary || ''
+                      ) || 'No description available'}
                     </p>
-                    <SocialLinks socialMedia={project.socialMedia} />
+
+                    <div className='bg-black/50 px-4 py-3 rounded-lg mb-5 flex items-center gap-2 w-fit'>
+                      <span className='text-white text-lg font-ibm-mono font-bold'>
+                        {shortenAddressLarger(
+                          project.abc?.projectAddress || ''
+                        )}
+                      </span>
+                      <CopyButton text={project.abc?.projectAddress || ''} />
+                      <Link
+                        href={`https://polygonscan.com/address/${project.abc?.projectAddress}`}
+                        target='_blank'
+                        className='hover:text-peach-400 transition-colors'
+                      >
+                        <ArrowUpRight className='w-6 h-6 cursor-pointer' />
+                      </Link>
+                    </div>
+                    <div className='flex gap-4'>
+                      <SocialLinks socialMedia={project.socialMedia} />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {project?.abc?.issuanceTokenAddress && (
-              <GeckoTerminalChart
-                tokenSymbol={project.abc.tokenTicker}
-                tokenAddress={project.abc.issuanceTokenAddress}
-              />
-            )}
+            {isTokenListed ? (
+              <div className='w-full lg:w-[30%] h-full'>
+                <SwapWidget
+                  contractAddress={project.abc?.fundingManagerAddress}
+                  receiveTokenAddress={project.abc?.issuanceTokenAddress || ''}
+                  receiveTokenSymbol={project.abc?.tokenTicker || ''}
+                  receiveTokenIcon={handleImageUrl(project.abc?.icon || '')}
+                />
+              </div>
+            ) : null}
+          </div>
+          {/* Project Stats Section */}
+          <div className='max-w-7xl mx-auto mt-8'>
+            <ProjectStats project={project} />
+          </div>
 
-            <GeneralInfo projectData={project as IProject} />
+          {project?.abc?.issuanceTokenAddress && (
+            <GeckoTerminalChart
+              tokenSymbol={project.abc.tokenTicker || ''}
+              tokenAddress={project.abc.issuanceTokenAddress}
+              projectPoolAddress={projectPoolAddress || ''}
+              isTokenListed={isTokenListed}
+            />
+          )}
+          <div className='max-w-7xl mx-auto mt-4 '>
+            <div className='flex flex-col lg:flex-row gap-4'>
+              <div className='lg:w-[70%] flex flex-col gap-4'>
+                {project.seasonNumber && (
+                  <VestingSchedule
+                    seasonNumber={project.seasonNumber}
+                    projectTicker={project.abc?.tokenTicker}
+                    projectIcon={handleImageUrl(project.abc?.icon || '')}
+                  />
+                )}
 
-            <div className="mt-8 rounded-2xl p-6 mb-8">
-              <Tabs defaultValue="about" className="w-full ">
-                <TabsList className="gap-6 mb-6 bg-transparent rounded-full py-6">
-                  <TabsTrigger
-                    value="about"
-                    className="px-4 py-2 w-fit rounded-full hover:bg-neutral-800 hover:text-peach-400 data-[state=active]:bg-peach-400 data-[state=active]:text-black data-[state=active]:shadow-none"
-                  >
-                    About
-                  </TabsTrigger>
-                  {(isRoundActive || isQaccRoundEnded) && (
-                    <TabsTrigger
-                      value="donations"
-                      className="px-4 py-2 w-fit rounded-full hover:bg-neutral-800 hover:text-peach-400 data-[state=active]:bg-peach-400 data-[state=active]:text-black data-[state=active]:shadow-none"
-                    >
-                      Transactions
-                    </TabsTrigger>
-                  )}
-
-                  <TabsTrigger
-                    value="team"
-                    className="px-4 py-2 w-fit rounded-full hover:bg-neutral-800 hover:text-peach-400 data-[state=active]:bg-peach-400 data-[state=active]:text-black text-base data-[state=active]:shadow-none"
-                  >
-                    Team
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="roadmap"
-                    className="px-4 py-2 w-fit rounded-full hover:bg-neutral-800 hover:text-peach-400 data-[state=active]:bg-peach-400 data-[state=active]:text-black data-[state=active]:shadow-none"
-                  >
-                    Roadmap
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="about" className="mt-0">
-                  <div className="max-w-6xl mx-auto">
-                    <RichTextViewer description={project.description} />
-                  </div>
-                </TabsContent>
-                <TabsContent value="donations" className="mt-0">
-                  <ProjectDonationTable />
-                </TabsContent>
-                <TabsContent value="team" className="mt-0">
-                  <div className="flex flex-wrap justify-center gap-4 py-4">
-                    {(project as any).teamMembers &&
-                      (project as any).teamMembers.map(
-                        (member: TeamMemberType, index: number) => (
-                          <TeamMember
-                            key={index}
-                            member={{
-                              name: member.name,
-                              image: member.image as unknown as string,
-                              // role: member.role || "N/A",
-                              twitter: member.twitter || "N/A",
-                            }}
-                          />
-                        )
-                      )}
-                  </div>
-                </TabsContent>
-                <TabsContent value="roadmap" className="mt-0">
-                  <div className="space-y-4 py-4">
-                    <p className="text-gray-400">
-                      Roadmap data is not available for this project.
-                    </p>
-                  </div>
-                </TabsContent>
-              </Tabs>
+                <div className='bg-black/50 px-6 lg:px-16 py-8 lg:py-12 rounded-3xl'>
+                  <TailwindStyledContent content={project.description || ''} />
+                </div>
+              </div>
+              <div className='lg:w-[30%] flex flex-col gap-4'>
+                <TeamSection teamMembers={project.teamMembers} />
+                <TokenHolders
+                  tokenAddress={project.abc?.issuanceTokenAddress || ''}
+                  paymentRouter={project.abc?.paymentRouterAddress || ''}
+                  projectName={project.abc?.tokenTicker || ''}
+                />
+              </div>
             </div>
           </div>
         </>

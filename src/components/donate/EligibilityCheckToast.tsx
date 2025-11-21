@@ -1,4 +1,4 @@
-import { useFetchActiveRoundDetails } from "@/hooks/useRounds";
+import { useFetchActiveRoundDetails } from '@/hooks/useRounds';
 
 export const EligibilityCheckToast = () => {
   const { data: activeRoundDetails } = useFetchActiveRoundDetails();
@@ -6,7 +6,7 @@ export const EligibilityCheckToast = () => {
 
   if (activeRoundDetails) {
     if (
-      "roundPOLCapPerUserPerProjectWithGitcoinScoreOnly" in activeRoundDetails
+      'roundPOLCapPerUserPerProjectWithGitcoinScoreOnly' in activeRoundDetails
     ) {
       low_cap =
         activeRoundDetails?.roundPOLCapPerUserPerProjectWithGitcoinScoreOnly ||
@@ -17,16 +17,16 @@ export const EligibilityCheckToast = () => {
   }
 
   return (
-    <div className="flex p-4 rounded-lg border-[1px] border-peach-400 bg-peach-100 gap-2 font-redHatText text-neutral-800 flex-col">
-      <h1 className="font-medium">Caps enable a fair launch!</h1>
-      <p className="pb-2 ">
+    <div className='flex p-4 rounded-lg border-[1px] border-peach-400 bg-peach-100 gap-2 font-redHatText text-neutral-800 flex-col'>
+      <h1 className='font-medium'>Caps enable a fair launch!</h1>
+      <p className='pb-2 '>
         Individual caps allow more people to participate in the important early
         stage of a project's token economy.
       </p>
-      <div className="pb-2 ">
-        <ul className="list-disc px-4">
+      <div className='pb-2 '>
+        <ul className='list-disc px-4'>
           <li>
-            {" "}
+            {' '}
             You can spend approximately $1,000 when unverified or verified with
             Human Passport.
           </li>

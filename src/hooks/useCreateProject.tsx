@@ -1,8 +1,9 @@
 import { useMutation } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
-import { IProjectCreation } from '@/types/project.type';
-import { CREATE_PROJECT } from '@/queries/project.query';
+
 import { requestGraphQL } from '@/helpers/request';
+import { CREATE_PROJECT } from '@/queries/project.query';
+import { IProjectCreation } from '@/types/project.type';
 
 export const useCreateProject = () => {
   const { address } = useAccount();
@@ -16,7 +17,7 @@ export const useCreateProject = () => {
         },
         {
           auth: true,
-        },
+        }
       );
     },
   });

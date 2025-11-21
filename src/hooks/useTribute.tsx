@@ -1,8 +1,17 @@
 import { useMemo } from 'react';
-import { ethers, BigNumberish, Contract } from 'ethers';
+
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { usePublicClient, useWalletClient } from 'wagmi';
-import { Address, encodeFunctionData, getContract } from 'viem';
+import { ethers, BigNumberish, Contract } from 'ethers';
+import {
+  Address,
+  createPublicClient,
+  encodeFunctionData,
+  getContract,
+  http,
+} from 'viem';
+import { polygon } from 'viem/chains';
+import { useWalletClient } from 'wagmi';
+
 import config from '@/config/configuration';
 import { fundingManagerAbi, roleModuleAbi } from '@/lib/abi/inverter';
 import { getClaimedTributesAndMintedTokenAmounts } from '@/services/tributeCollected.service';
@@ -11,7 +20,7 @@ const provider = new ethers.JsonRpcProvider(config.NETWORK_RPC_ADDRESS);
 
 export const useClaimedTributesAndMintedTokenAmounts = (
   orchestratorAddress?: string,
-  projectAddress?: string,
+  projectAddress?: string
 ) => {
   const query = useQuery<
     {
@@ -28,7 +37,7 @@ export const useClaimedTributesAndMintedTokenAmounts = (
     queryFn: () =>
       getClaimedTributesAndMintedTokenAmounts(
         orchestratorAddress,
-        projectAddress,
+        projectAddress
       ),
     gcTime: 1000 * 60, // 1 minute
     enabled: !!orchestratorAddress && !!projectAddress, // Run only if orchestratorAddress and projectAddress is provided
@@ -75,37 +84,49 @@ export const useClaimCollectedFee = ({
   onSuccess?: () => void;
 }) => {
   const { data: walletClient } = useWalletClient();
-  const publicClient = usePublicClient();
+  const publicClient = createPublicClient({
+    chain: polygon,
+    transport: http(polygon.rpcUrls.default.http[0]),
+  });
 
   const claim = useMutation({
     mutationFn: async () => {
       if (!walletClient) {
         throw new Error('Wallet not connected');
       }
+
       if (!publicClient) {
         throw new Error('Public client not available');
       }
+
+
       const rolesModuleInstance = getContract({
         address: tributeModule as Address,
         abi: roleModuleAbi,
         client: walletClient,
       });
+
       const encoded = encodeFunctionData({
         abi: fundingManagerAbi,
         functionName: 'withdrawProjectCollateralFee',
         args: [feeRecipient, amount],
       });
+
       const tx = await rolesModuleInstance.write.execTransactionFromModule(
         [fundingManagerAddress, 0, encoded, 0],
-        { gas: 1000000 },
+        { gas: 1000000 }
       );
 
       await publicClient.waitForTransactionReceipt({
         hash: tx,
       });
+
+      return tx;
     },
     onSuccess,
   });
 
-  return { claim };
+  return {
+    claim,
+  };
 };

@@ -1,10 +1,12 @@
 import { redirect } from 'next/navigation';
+
 import { Metadata } from 'next';
+
+import { ProjectView } from '@/components/project/project-details/ProjectView';
 import {
   fetchProjectBySlug,
   fetchProjectMetadata,
 } from '@/services/project.service';
-import {ProjectView} from '@/components/project/project-details/ProjectView';
 
 interface ProjectPageProps {
   params: {
@@ -15,9 +17,7 @@ interface ProjectPageProps {
 export async function generateMetadata({
   params,
 }: ProjectPageProps): Promise<Metadata> {
-  const slug = Array.isArray(params.id)
-    ? params.id[0]
-    : params.id;
+  const slug = Array.isArray(params.id) ? params.id[0] : params.id;
 
   const project = await fetchProjectMetadata(slug);
 
@@ -57,19 +57,15 @@ export async function generateMetadata({
 }
 
 const ProjectPage = async ({ params }: ProjectPageProps) => {
-  const slug = Array.isArray(params.id)
-    ? params.id[0]
-    : params.id;
-
+  const slug = Array.isArray(params.id) ? params.id[0] : params.id;
 
   const initialData = await fetchProjectBySlug(slug);
 
   if (!initialData) {
-    // Handle the case where the project is not found
     redirect('/404');
   }
 
-  return <ProjectView slug={slug} />;
+  return <ProjectView slug={slug} initialData={initialData} />;
 };
 
 export default ProjectPage;

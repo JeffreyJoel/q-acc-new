@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
+
+import { Address } from 'viem';
+
+import config from '@/config/configuration';
+
 import { useFetchUser } from './useFetchUser';
 import { useFetchUserGitcoinPassportScore } from './useFetchUserGitcoinScore';
-import config from '@/config/configuration';
-import { Address } from 'viem';
 
 export enum GitcoinVerificationStatus {
   NOT_CHECKED,
@@ -14,7 +17,11 @@ export enum GitcoinVerificationStatus {
 export const useGitcoinScore = (userAddress: Address) => {
   const [status, setStatus] = useState(GitcoinVerificationStatus.NOT_CHECKED);
   const [userGitcoinScore, setUserGitcoinScore] = useState(0);
-  const { data: user, isLoading: isUserLoading, isSuccess } = useFetchUser(!!userAddress, userAddress as Address);
+  const {
+    data: user,
+    isLoading: isUserLoading,
+    isSuccess,
+  } = useFetchUser(!!userAddress, userAddress as Address);
   const { refetch: refetchScore, isFetching: isScoreFetching } =
     useFetchUserGitcoinPassportScore();
 

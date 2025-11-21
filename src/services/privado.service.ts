@@ -1,8 +1,8 @@
-// eslint-disable-next-line import/named
 import { v4 as uuidv4 } from 'uuid';
+
+import { generatePrivadoUuid } from '@/app/actions/generate-privado-uuid';
 import config from '@/config/configuration';
 import { KYC_EXCLUDED_COUNTRIES } from '@/lib/constants/privado';
-import { generatePrivadoUuid } from '@/app/actions/generate-privado-uuid';
 
 const {
   chain,
@@ -18,7 +18,7 @@ export const generatePrivadoShortenedUrl = async () => {
     // Define the verification request
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
     const excludedCountryCodes = Object.values(KYC_EXCLUDED_COUNTRIES).sort(
-      (a, b) => a - b,
+      (a, b) => a - b
     );
 
     const generatedUuid = uuidv4(); // Generate a unique UUID
@@ -62,7 +62,7 @@ export const generatePrivadoShortenedUrl = async () => {
 
     const shortenedUrlUuid = await generatePrivadoUuid(verificationRequest);
     const shortenedUrl = encodeURIComponent(
-      `${baseUrl}/api/link-store?id=${shortenedUrlUuid}`,
+      `${baseUrl}/api/link-store?id=${shortenedUrlUuid}`
     );
 
     // console.log('verificationRequest', verificationRequest);

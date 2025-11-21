@@ -1,4 +1,5 @@
 import { FC } from 'react';
+
 import { IIcon } from './type';
 
 export const IconGitcoinPassport: FC<IIcon> = ({

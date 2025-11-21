@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { useAccount, useSwitchChain } from 'wagmi';
+
 import { IconX } from '@tabler/icons-react';
 import { IconArrowRight } from '@tabler/icons-react';
 import { IconSearch } from '@tabler/icons-react';
-import { fetchEVMTokenBalances } from '@/helpers/token';
-import { Spinner } from '@/components/loaders/Spinner';
 import { IconArrowLeft } from '@tabler/icons-react';
+import { useAccount, useSwitchChain } from 'wagmi';
+
+import { Spinner } from '@/components/loaders/Spinner';
 import config from '@/config/configuration';
 import { SquidTokenType } from '@/helpers/squidTransactions';
+import { fetchEVMTokenBalances } from '@/helpers/token';
 import { useFetchChainsFromSquid } from '@/hooks/useFetchChainsFromSquid';
 
 export const POLYGON_POS_CHAIN_ID = '137';
@@ -50,7 +52,7 @@ const SelectChainModal = ({
     try {
       const evmChains = chainsData.chains.filter(
         (chain: any) =>
-          chain.type === 'evm' && chain.chainId !== POLYGON_POS_CHAIN_ID,
+          chain.type === 'evm' && chain.chainId !== POLYGON_POS_CHAIN_ID
       );
       evmChains.sort((a: any, b: any) => {
         if (a.chainId === POLYGON_POS_CHAIN_ID) return -1;
@@ -61,7 +63,7 @@ const SelectChainModal = ({
 
       // Set Polygon PoS as the default selected chain
       const polygonChain = evmChains.find(
-        (chain: any) => chain.chainId === POLYGON_POS_CHAIN_ID,
+        (chain: any) => chain.chainId === POLYGON_POS_CHAIN_ID
       );
       if (polygonChain) {
         setSelectedChain({
@@ -93,17 +95,17 @@ const SelectChainModal = ({
           `https://v2.api.squidrouter.com/v2/tokens?chainId=${selectedChain.id}`,
           {
             headers: headers,
-          },
+          }
         );
 
         const tokenData = await tokenResponse.json();
         const tokenWithBalances = await fetchEVMTokenBalances(
           tokenData.tokens,
-          address,
+          address
         );
 
         const sortedTokens = tokenWithBalances.sort(
-          (a, b) => b.balance - a.balance,
+          (a, b) => b.balance - a.balance
         );
 
         // Update state with the token data for selected chain
@@ -126,12 +128,12 @@ const SelectChainModal = ({
       ? tokenData.filter(
           (token: SquidTokenType) =>
             token.symbol.toLowerCase().includes(searchTerm.toLowerCase()) &&
-            (!hideZeroBalance || (token.balance ?? 0) > 0),
+            (!hideZeroBalance || (token.balance ?? 0) > 0)
         )
       : [];
 
   const filteredChains = chainData.filter((chain: any) =>
-    chain.networkName.toLowerCase().includes(chainSearchTerm.toLowerCase()),
+    chain.networkName.toLowerCase().includes(chainSearchTerm.toLowerCase())
   );
 
   useEffect(() => {
@@ -262,7 +264,10 @@ const SelectChainModal = ({
                 onChange={e => setSearchTerm(e.target.value)}
               />
               <div className='absolute top-2 right-3 border-l border-border pl-2 pt-0.5'>
-                <IconSearch color='currentColor' className='text-muted-foreground' />
+                <IconSearch
+                  color='currentColor'
+                  className='text-muted-foreground'
+                />
               </div>
               {/* <div className='flex items-center gap-2 my-3'>
                 <input
@@ -333,7 +338,10 @@ const SelectChainModal = ({
                   onChange={e => setChainSearchTerm(e.target.value)}
                 />
                 <div className='absolute top-6 right-3 border-l border-border pl-2 pt-0.5'>
-                  <IconSearch color='currentColor' className='text-muted-foreground' />
+                  <IconSearch
+                    color='currentColor'
+                    className='text-muted-foreground'
+                  />
                 </div>
               </div>
               <div

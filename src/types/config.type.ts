@@ -1,5 +1,6 @@
-import { Address, Chain as viemChain } from 'viem';
 import { Chain } from '@reown/appkit/networks';
+import { Address, Chain as viemChain } from 'viem';
+
 import {
   PrivadoContractMethodV1,
   PrivadoContractMethodV2,
@@ -10,6 +11,7 @@ export type EnvConfig = {
   ERC_TOKEN_ADDRESS: string;
   ERC_TOKEN_SYMBOL: string;
   WPOL_TOKEN_ADDRESS: string;
+  NATIVE_TOKEN_ADDRESS: string;
   GRAPHQL_ENDPOINT: string;
   AUTH_BASE_ROUTE: string;
   SCAN_URL: string;
@@ -30,4 +32,6 @@ export type EnvConfig = {
   MINIMUM_DONATION_AMOUNT: number;
   MATCHING_FUND_ADDRESS: string[];
   SQUID_INTEGRATOR_ID: string;
+  PROXY_CONTRACT_ADDRESS: string;
+  BONDING_CURVE_COLLATERAL_TOKEN: string;
 };

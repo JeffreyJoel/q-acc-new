@@ -1,25 +1,43 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
-import "../globals.css";
-import ClientLayout from "../ClientLayout";
-import { NavBar } from "@/components/shared/NavBar";
-import { Footer } from "@/components/shared/Footer";
+import { Anton, IBM_Plex_Mono, IBM_Plex_Sans, Inter } from 'next/font/google';
 
-const geistSans = localFont({
-  src: "../fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "../fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+import type { Metadata } from 'next';
+
+import '../globals.css';
+import { Footer } from '@/components/shared/Footer';
+import { NavBar } from '@/components/shared/NavBar';
+
+import ClientLayout from '../ClientLayout';
+
+import { GoogleTagManager } from '@next/third-parties/google';
+
+const anton = Anton({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-anton',
 });
 
-const title = "Quadratic Acceleration";
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-inter',
+});
+
+const ibmPlexSans = IBM_Plex_Sans({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-ibm-plex-sans',
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-ibm-plex-mono',
+});
+
+const title = 'Quadratic Acceleration';
 const description =
-  "The Quadratic Accelerator is pioneering a novel tokenization protocol that combines the best features of Quadratic Funding (QF) and Augmented Bonding Curves (ABCs).";
-const image = "/images/banners/banner-lg.jpg";
+  'The Quadratic Accelerator is pioneering a novel tokenization protocol that combines the best features of Quadratic Funding (QF) and Augmented Bonding Curves (ABCs).';
+const image = '/images/banners/banner-lg.jpg';
 
 export const metadata: Metadata = {
   title,
@@ -35,7 +53,7 @@ export const metadata: Metadata = {
     ],
   },
   twitter: {
-    card: "summary_large_image",
+    card: 'summary_large_image',
     title,
     description,
     images: [image],
@@ -48,20 +66,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang='en'>
       <head>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel='icon' href='/favicon.ico' />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased dark bg-neutral-900`}
+        className={`${anton.variable} ${ibmPlexSans.variable} ${ibmPlexMono.variable} ${inter.variable} font-ibm antialiased dark bg-qacc-black`}
       >
         <ClientLayout>
-          <NavBar/>
-          <div className="min-h-screen">
-          {children}
-          </div>
-          <Footer/>
+          <NavBar />
+          <div className='min-h-screen'>{children}</div>
+          <Footer />
         </ClientLayout>
+        <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID || ''} />
       </body>
     </html>
   );

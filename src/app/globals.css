@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@plugin "@tailwindcss/typography";
 
 @layer utilities {
   .text-balance {
@@ -78,69 +79,95 @@
 } */
 
 @font-face {
-  font-family: "Tusker Grotesk 4000";
+  font-family: 'Tusker Grotesk 4000';
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url("/fonts/TuskerGrotesk-4500Medium.woff2") format("woff2");
+  src: url('/fonts/TuskerGrotesk-4500Medium.woff2') format('woff2');
 }
 
 @font-face {
-  font-family: "Tusker Grotesk 4000";
+  font-family: 'Tusker Grotesk 4000';
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url("/fonts/TuskerGrotesk-4600SemiBold.woff2") format("woff2");
+  src: url('/fonts/TuskerGrotesk-4600SemiBold.ttf') format('ttf');
 }
 
 @font-face {
-  font-family: "Tusker Grotesk 4000";
+  font-family: 'Tusker Grotesk 4000';
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("/fonts/TuskerGrotesk-4700Bold.woff2") format("woff2");
+  src: url('/fonts/TuskerGrotesk-4700Bold.woff2') format('woff2');
 }
 
 @font-face {
-  font-family: "Tusker Grotesk 6000";
+  font-family: 'Tusker Grotesk 6000';
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url("/fonts/TuskerGrotesk-6500Medium.woff2") format("woff2");
+  src: url('/fonts/TuskerGrotesk-6500Medium.woff2') format('woff2');
 }
 
 @font-face {
-  font-family: "Tusker Grotesk 6000";
+  font-family: 'Tusker Grotesk 6000';
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("/fonts/TuskerGrotesk-6700Bold.woff2") format("woff2");
+  src: url('/fonts/TuskerGrotesk-6700Bold.woff2') format('woff2');
 }
 
 @font-face {
-  font-family: "Tusker Grotesk 8000";
+  font-family: 'Tusker Grotesk 7000';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/TuskerGrotesk-7600Semibold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Tusker Grotesk 7000';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/TuskerGrotesk-7700Bold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Tusker Grotesk 8000';
   font-style: normal;
   font-weight: 700;
   font-display: auto;
-  src: url("/fonts/TuskerGrotesk-8700Bold.woff2") format("woff2");
+  src: url('/fonts/TuskerGrotesk-8700Bold.woff2') format('woff2');
 }
-
+/* 
 .ql-toolbar.ql-snow{
   border-color:var(--neutral-800) !important;
-}
+} */
 
 /* Styling to remove the top and bottom arrows in the number input component */
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-input[type="number"] {
+input[type='number'] {
   -moz-appearance: textfield;
 }
 
-.mYZkQ, .jckSwK, .PillButton-sc-3e1103b4-0 {
+.mYZkQ,
+.jckSwK,
+.PillButton-sc-3e1103b4-0 {
   background: transparent !important;
   /* margin: auto !important; */
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

@@ -2,30 +2,20 @@ import { FC } from 'react';
 export const IconMirror: FC<{
   size?: number;
   color?: string;
-}> = ({
-  size = 24,
-  color = 'currentColor',
-}) => {
+}> = ({ size = 24, color = 'currentColor' }) => {
   return (
     <svg
-      xmlns='http://www.w3.org/2000/svg'
-      width={size}
-      height={size}
+      width='24'
+      height='24'
       viewBox='0 0 24 24'
       fill='none'
+      xmlns='http://www.w3.org/2000/svg'
     >
-      <g clipPath='url(#clip0_1054_184)'>
-        <circle cx='12' cy='12' r='12' fill='#1D1E1F' />
-        <path
-          d='M6.75 10.0161C6.75 6.96966 9.1005 4.5 12 4.5C14.8995 4.5 17.25 6.96966 17.25 10.0161V17.9118C17.25 18.3747 16.8928 18.75 16.4522 18.75H7.5478C7.10719 18.75 6.75 18.3747 6.75 17.9118V10.0161Z'
-          fill={color}
-        />
-      </g>
-      <defs>
-        <clipPath id='clip0_1054_184'>
-          <rect width='24' height='24' fill={color} />
-        </clipPath>
-      </defs>
+      <path
+        d='M6 10.1935C6 6.77295 8.68629 4 12 4C15.3137 4 18 6.77295 18 10.1935V19.0589C18 19.5786 17.5918 20 17.0882 20H6.91177C6.40822 20 6 19.5786 6 19.0589V10.1935Z'
+        fill='#91A0A1'
+        fillOpacity='0.4'
+      />
     </svg>
   );
 };

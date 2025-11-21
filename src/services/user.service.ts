@@ -1,5 +1,13 @@
 import { Address } from 'viem';
+
+import config from '@/config/configuration';
 import { requestGraphQL } from '@/helpers/request';
+import type {
+  IUser,
+  IGivethUser,
+  IProjectUserDonationCapKyc,
+} from '@/types/user.type';
+
 import {
   GET_USER_BY_ADDRESS,
   GET_GIVETH_USER_BY_ADDRESS,
@@ -7,19 +15,13 @@ import {
   PROJECT_USER_DONATION_CAP_KYC,
   REFRESH_USER_GITCOIN_PASSPORT_SCORE,
 } from '../queries/user.query';
-import config from '@/config/configuration';
-import type {
-  IUser,
-  IGivethUser,
-  IProjectUserDonationCapKyc,
-} from '@/types/user.type';
 
 export const fetchUserInfo = async (address: Address) => {
   try {
     const res = await requestGraphQL<{ userByAddress: IUser }>(
       GET_USER_BY_ADDRESS,
       { address },
-      { auth: true },
+      { auth: true }
     );
     return res?.userByAddress;
   } catch (error) {
@@ -35,7 +37,7 @@ export const fetchGivethUserInfo = async (address: string) => {
       {
         url: config.GIVETH_GQL_ENDPOINT,
         auth: true,
-      },
+      }
     );
     return res?.userByAddress;
   } catch (error) {
@@ -48,7 +50,7 @@ export const fetchProjectUserDonationCap = async (projectId: Number) => {
     const res = await requestGraphQL<{ projectUserDonationCap: Number }>(
       PROJECT_USER_DONATION_CAP,
       { projectId },
-      { auth: true },
+      { auth: true }
     );
     return res?.projectUserDonationCap;
   } catch (error) {
@@ -74,7 +76,7 @@ export const refreshUserGitcoinPassportScore = async (address: Address) => {
       { address },
       {
         auth: true,
-      },
+      }
     );
     if (res?.refreshUserScores) {
       res.refreshUserScores.isSignedIn = true;
@@ -87,7 +89,7 @@ export const refreshUserGitcoinPassportScore = async (address: Address) => {
 
 // This is the function you will call to check if a wallet address is sanctioned.
 export const isWalletSanctioned = async (
-  walletAddress: string,
+  walletAddress: string
 ): Promise<boolean> => {
   try {
     const baseURL = 'https://api.trmlabs.com/public/';

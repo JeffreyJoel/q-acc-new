@@ -1,24 +1,27 @@
-"use client";
+'use client';
 
-import { useState, useMemo, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { SearchBar } from "./SearchBar";
-import { LeaderboardItem } from "./LeaderboardItem";
-import { useFetchLeaderBoard } from "@/hooks/useFetchLeaderBoard";
-import { SortDirection, SortField, ILeaderBoardInfo } from "@/services/points.service";
-import { ArrowDownUp } from "lucide-react";
-import { Pagination } from "./Pagination";
-import { useFetchUser } from "@/hooks/useFetchUser";
-import { Spinner } from "../loaders/Spinner";
-import { useAccount } from "wagmi";
-import { Address } from "viem";
-import { UserInfo } from "./UserInfo";
-import { LeaderboardUser } from "@/types/leaderboard";
+import { useState, useMemo, useEffect } from 'react';
+
+import { useFetchLeaderBoard } from '@/hooks/useFetchLeaderBoard';
+import {
+  SortDirection,
+  SortField,
+  ILeaderBoardInfo,
+} from '@/services/points.service';
+import { LeaderboardUser } from '@/types/leaderboard';
+
+import { Spinner } from '../loaders/Spinner';
+
+import { LeaderboardItem } from './LeaderboardItem';
+import { Pagination } from './Pagination';
+import { UserInfo } from './UserInfo';
 
 const LEADERBOARD_STORAGE_KEY = 'leaderboardData';
 const MAX_CACHE_AGE_MS = 1000 * 60 * 7;
 
-type LeaderboardQueryData = ILeaderBoardInfo['getUsersByQaccPoints'] | undefined;
+type LeaderboardQueryData =
+  | ILeaderBoardInfo['getUsersByQaccPoints']
+  | undefined;
 
 interface StoredLeaderboardData {
   timestamp: number;
@@ -38,30 +41,25 @@ const getInitialLeaderboardData = (): LeaderboardQueryData => {
     const parsedItem: StoredLeaderboardData = JSON.parse(storedItem);
 
     if (Date.now() - parsedItem.timestamp < MAX_CACHE_AGE_MS) {
-  
       return parsedItem.data;
     }
   } catch (error) {
-    console.error("Error reading leaderboard from session storage:", error);
+    console.error('Error reading leaderboard from session storage:', error);
     sessionStorage.removeItem(LEADERBOARD_STORAGE_KEY);
   }
   return undefined;
 };
 
 export function PointsTable() {
-  const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortField, setSortField] = useState<SortField>("Rank");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("ASC");
+  const [sortField, setSortField] = useState<SortField>('Rank');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('ASC');
   const [page, setPage] = useState(0);
   const LIMIT = 15;
   const FETCH_ALL_LIMIT = 5000;
-  const { address } = useAccount();
 
-
-  const [initialData] = useState<LeaderboardQueryData>(() => getInitialLeaderboardData());
-
-  const { data: user } = useFetchUser(!!address, address as Address);
+  const [initialData] = useState<LeaderboardQueryData>(() =>
+    getInitialLeaderboardData()
+  );
 
   const { data: leaderboardInfo, isLoading } = useFetchLeaderBoard(
     FETCH_ALL_LIMIT,
@@ -70,44 +68,16 @@ export function PointsTable() {
       field: sortField,
       direction: sortDirection,
     },
-    initialData 
+    initialData
   );
-  
+
   useEffect(() => {
     setPage(0);
-
-  }, [searchQuery, sortField, sortDirection]);
+  }, [sortField, sortDirection]);
 
   const filteredAndSortedUsers = useMemo(() => {
-    if (!leaderboardInfo?.users) {
-      return [];
-    }
-
-    let users = [...leaderboardInfo.users];
-
-    if (searchQuery) {
-      users = users.filter(
-        (u) =>
-          u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          u.walletAddress?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    return users;
-  }, [leaderboardInfo?.users, searchQuery, sortField, sortDirection]);
-
-  const toggleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection((prev) => (prev === "ASC" ? "DESC" : "ASC"));
-    } else {
-      setSortField(field);
-      setSortDirection("DESC");
-    }
-  };
-
-  const handleUserClick = (userAddress: string) => {
-    router.push(`/profile/${userAddress}`);
-  };
+    return leaderboardInfo?.users ?? [];
+  }, [leaderboardInfo?.users]);
 
   const total = filteredAndSortedUsers.length;
   const totalPages = Math.ceil(total / LIMIT);
@@ -118,59 +88,18 @@ export function PointsTable() {
   }, [filteredAndSortedUsers, page, LIMIT]);
 
   return (
-    <div className="flex flex-col">
-      <div className="flex flex-col md:flex-row justify-between gap-4">
-        <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      </div>
+    <div className='flex flex-col'>
+      <UserInfo />
 
-      <UserInfo/>
-
-      <div className="space-y-3 my-6">
-        <h2 className="text-xl font-medium mb-6 font-tusker-8">Leaderboard</h2>
-
-        <div className="grid grid-cols-[40px_1fr_120px_120px] sm:grid-cols-[50px_1fr_150px_150px] gap-4 px-4 py-2">
-          <div className="text-xs sm:text-sm font-bold text-neutral-400 text-center">
-            Rank
-          </div>
-          <div className="text-xs sm:text-sm font-bold text-neutral-400">
-            User
-          </div>
-          <div className="flex items-center justify-end gap-1">
-            <span className="text-xs sm:text-sm font-bold text-gray-400">
-              <span className="hidden sm:inline">q/acc </span>Points
-            </span>
-            <button
-              onClick={() => toggleSort("QaccPoints")}
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              <ArrowDownUp className="w-3 h-3" />
-            </button>
-          </div>
-          <div className="flex items-center justify-end gap-1">
-            <span className="text-xs sm:text-sm font-bold text-gray-400">
-              <span className="hidden sm:inline">Projects </span>Funded
-            </span>
-            <button
-              onClick={() => toggleSort("ProjectsFundedCount")}
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              <ArrowDownUp className="w-3 h-3" />
-            </button>
-          </div>
-        </div>
-
+      <div className='space-y-3 my-4'>
         {isLoading && (
-          <div className="flex justify-center items-center h-full">
+          <div className='flex justify-center items-center h-full'>
             <Spinner size={32} />
           </div>
         )}
 
-        {paginatedUsers.map((item) => (
-          <LeaderboardItem
-            key={item.id}
-            user={item as LeaderboardUser}
-            onUserClick={handleUserClick}
-          />
+        {paginatedUsers.map(item => (
+          <LeaderboardItem key={item.id} user={item as LeaderboardUser} />
         ))}
 
         {totalPages > 1 && (

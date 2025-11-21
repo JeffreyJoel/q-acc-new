@@ -1,4 +1,5 @@
 import { FC, type HTMLAttributes } from 'react';
+
 import { IconCircleCheckFilled } from '@tabler/icons-react';
 
 export enum EligibilityBadgeStatus {

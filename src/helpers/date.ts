@@ -35,7 +35,7 @@ export function formatDateMonthDayYear(isoString: string) {
  */
 export function getDifferenceFromPeriod(
   startDateString: string,
-  yearsToAdd: number,
+  yearsToAdd: number
 ) {
   // Get the current date
   const now = new Date();
@@ -48,7 +48,7 @@ export function getDifferenceFromPeriod(
   const additionalMonths = Math.round((yearsToAdd - fullYears) * 12); // Convert fractional part to months
 
   // Calculate the final date by adding the full years
-  let finalDate = new Date(startDate);
+  const finalDate = new Date(startDate);
   finalDate.setFullYear(finalDate.getFullYear() + fullYears);
 
   // Add the remaining months (if any)
@@ -78,7 +78,7 @@ export function getDifferenceFromPeriod(
     const daysInPreviousMonth = new Date(
       finalDate.getFullYear(),
       finalDate.getMonth(),
-      0,
+      0
     ).getDate();
     diffDays += daysInPreviousMonth;
   }
@@ -153,7 +153,7 @@ export const getAdjustedEndDate = (endDate?: string): string | undefined => {
   if (!endDate) return undefined;
   const adjustedDate = new Date(
     new Date(endDate).getTime() -
-      Number(process.env.NEXT_PUBLIC_ADJUSTED_MINUTES || '10') * 60 * 1000,
+      Number(process.env.NEXT_PUBLIC_ADJUSTED_MINUTES || '10') * 60 * 1000
   );
   return adjustedDate.toISOString();
 };
@@ -213,7 +213,7 @@ export async function getUpcomingRound(allRounds: any): Promise<any | null> {
   // Return the one with the closest start date
   return upcomingRounds.sort(
     (a: any, b: any) =>
-      new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+      new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
   )[0];
 }
 
@@ -221,4 +221,17 @@ export function addCliff(startDateStr: string, cliffMs: number): string {
   const startDate = new Date(startDateStr);
   const cliffDate = new Date(startDate.getTime() + cliffMs);
   return cliffDate.toDateString();
+}
+
+export function formatDateWithOrdinal(date: Date) {
+  const day = date.getDate();
+  const ordinal =
+    day % 10 === 1 && day !== 11
+      ? 'st'
+      : day % 10 === 2 && day !== 12
+        ? 'nd'
+        : day % 10 === 3 && day !== 13
+          ? 'rd'
+          : 'th';
+  return `${date.toLocaleString('default', { month: 'long' })} ${day}${ordinal}, ${date.getFullYear()}`;
 }

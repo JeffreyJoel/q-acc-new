@@ -22,10 +22,9 @@ import {
   bsc,
 } from '@reown/appkit/networks';
 import { polygon as viemPolygon } from 'wagmi/chains';
-// import { polygon, polygonZkEvm } from 'wagmi/chains';
 
-import { EnvConfig } from '@/types/config.type';
 import { PrivadoContractMethodV2 } from '@/lib/constants/privado';
+import { EnvConfig } from '@/types/config.type';
 
 const config: EnvConfig = {
   SUPPORTED_CHAINS: [
@@ -49,11 +48,12 @@ const config: EnvConfig = {
     polygonZkEvm,
     gnosis,
     zksync,
-    bsc,
+    bsc
   ] as const,
   SCAN_URL: 'https://polygonscan.com/',
-  ERC_TOKEN_ADDRESS: '0x0000000000000000000000000000000000000000',
+  ERC_TOKEN_ADDRESS: '0x0000000000000000000000000000000000001010',
   WPOL_TOKEN_ADDRESS: '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270',
+  NATIVE_TOKEN_ADDRESS: '0x0000000000000000000000000000000000001010',
   ERC_TOKEN_SYMBOL: 'POL',
   GRAPHQL_ENDPOINT:
     process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
@@ -80,6 +80,12 @@ const config: EnvConfig = {
   MINIMUM_DONATION_AMOUNT: 10,
   MATCHING_FUND_ADDRESS: [],
   SQUID_INTEGRATOR_ID: 'test-project-4ba94915-f432-4d42-89df-53c6de4dd93e',
+  PROXY_CONTRACT_ADDRESS:
+    process.env.PROXY_CONTRACT_ADDRESS ||
+    '0x84Ed70229D6Fc49d3624a81C8334cC0748ff0f5B',
+  BONDING_CURVE_COLLATERAL_TOKEN:
+    process.env.BONDING_CURVE_COLLATERAL_TOKEN ||
+    '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270', // WPOL
 };
 
 export default config;

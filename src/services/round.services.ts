@@ -4,8 +4,14 @@ import {
   GET_ALL_ROUNDS,
   GET_PROJECT_ROUND_RECORDS,
   GET_QACC_ROUND_STATS,
+  GET_VESTING_SCHEDULES,
 } from '@/queries/round.query';
-import { IEarlyAccessRound, IQaccStats, IQfRound } from '@/types/round.type';
+import {
+  IEarlyAccessRound,
+  IQaccStats,
+  IQfRound,
+  IVestingSchedule,
+} from '@/types/round.type';
 
 export const fetchActiveRoundDetails = async () => {
   try {
@@ -34,7 +40,7 @@ export const fetchAllRoundDetails = async () => {
 export const fetchProjectRoundRecords = async (
   projectId: number,
   qfRoundNumber?: number,
-  earlyAccessRoundNumber?: number,
+  earlyAccessRoundNumber?: number
 ) => {
   try {
     const res = await requestGraphQL<{
@@ -56,6 +62,17 @@ export const fetchQaccRoundStats = async () => {
       qAccStat: IQaccStats;
     }>(GET_QACC_ROUND_STATS, {});
     return res?.qAccStat;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const fetchVestingSchedules = async () => {
+  try {
+    const res = await requestGraphQL<{
+      vestingSchedules: IVestingSchedule[];
+    }>(GET_VESTING_SCHEDULES, {});
+    return res?.vestingSchedules;
   } catch (error) {
     console.error(error);
   }

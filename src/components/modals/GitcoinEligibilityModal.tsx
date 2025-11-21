@@ -1,19 +1,21 @@
-import { useState, type FC } from "react";
-import {
-  EligibilityBadge,
-  EligibilityBadgeStatus,
-} from "../verification-badges/EligibilityBadge";
+import { useState, type FC } from 'react';
 
+import { Address } from 'viem';
+import { useAccount } from 'wagmi';
+
+import { useFetchUser } from '@/hooks/useFetchUser';
 import {
   GitcoinVerificationStatus,
   useGitcoinScore,
-} from "@/hooks/useGitcoinScore";
-import { GitcoinLow } from "../verification/GitcoinLow";
-import { useUpdateSkipVerification } from "@/hooks/useUpdateSkipVerification";
-import { useFetchUser } from "@/hooks/useFetchUser";
-import { useAccount } from "wagmi";
-import { Address } from "viem";
-import { Dialog, DialogContent } from "../ui/dialog";
+} from '@/hooks/useGitcoinScore';
+import { useUpdateSkipVerification } from '@/hooks/useUpdateSkipVerification';
+
+import { Dialog, DialogContent } from '../ui/dialog';
+import { GitcoinLow } from '../verification/GitcoinLow';
+import {
+  EligibilityBadge,
+  EligibilityBadgeStatus,
+} from '../verification-badges/EligibilityBadge';
 
 interface GitcoinEligibilityModalProps {
   isOpen: boolean;
@@ -36,7 +38,7 @@ export const GitcoinEligibilityModal: FC<GitcoinEligibilityModalProps> = ({
     mutate: updateSkipVerification,
     isPending: isSkipVerificationPending,
   } = useUpdateSkipVerification(() => {
-    console.log("Skip verification updated successfully!");
+    console.log('Skip verification updated successfully!');
     onClose();
   });
   const { data: user } = useFetchUser(false, address as Address);
@@ -52,34 +54,34 @@ export const GitcoinEligibilityModal: FC<GitcoinEligibilityModalProps> = ({
   return (
     <Dialog
       open={isOpen}
-      onOpenChange={(open) => {
+      onOpenChange={open => {
         if (!open) onClose();
       }}
     >
-      <DialogContent className="sm:max-w-md bg-neutral-900 rounded-[24px] w-full max-w-md">
-        <div className="">
-          <p className="mt-4 mb-10 text-xl">
+      <DialogContent className='sm:max-w-md bg-neutral-900 rounded-[24px] w-full max-w-md'>
+        <div className=''>
+          <p className='mt-4 mb-10 text-xl'>
             {status === GitcoinVerificationStatus.LOW_SCORE
-              ? "Your Human Passport score is below the 15 threshold."
+              ? 'Your Human Passport score is below the 15 threshold.'
               : "Skip verification means your buy won't infulence the matching pool allocation. Verify with Human Passport score > 15 for infulence."}
           </p>
           {status === GitcoinVerificationStatus.NOT_CHECKED && (
-            <div className="flex gap-4 justify-center">
+            <div className='flex gap-4 justify-center'>
               <div>
                 <button
-                  className="px-6 py-4 rounded-full text-sm font-bold items-center flex gap-2 bg-peach-400  text-black w-full justify-center"
+                  className='px-6 py-4 rounded-full text-sm font-bold items-center flex gap-2 bg-peach-400  text-black w-full justify-center'
                   // loading={isSkipVerificationPending}
                   disabled={user?.skipVerification}
                   onClick={() => updateSkipVerification(true)}
                 >
                   {user?.skipVerification
-                    ? "Verification Skipped "
-                    : "Skip Verification"}
+                    ? 'Verification Skipped '
+                    : 'Skip Verification'}
                 </button>
               </div>
               <div>
                 <button
-                  className="px-6 py-4 rounded-full text-sm font-bold items-center flex gap-2 border-2 border-peach-400  text-peach-400 w-full justify-center"
+                  className='px-6 py-4 rounded-full text-sm font-bold items-center flex gap-2 border-2 border-peach-400  text-peach-400 w-full justify-center'
                   // styleType={ButtonStyle.Solid}
                   // color={ButtonColor.Pink}
                   // loading={isCheckingScore}
@@ -93,7 +95,7 @@ export const GitcoinEligibilityModal: FC<GitcoinEligibilityModalProps> = ({
           {(status === GitcoinVerificationStatus.ANALYSIS_PASS ||
             status === GitcoinVerificationStatus.SCORER_PASS) && (
             <EligibilityBadge
-              className="ml-auto w-fit"
+              className='ml-auto w-fit'
               status={EligibilityBadgeStatus.ELIGIBLE}
             />
           )}

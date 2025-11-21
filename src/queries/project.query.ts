@@ -124,6 +124,7 @@ export const GET_PROJECT_BY_ID = /* GraphQL */ `
         type
         link
       }
+      rank
       verified
       title
       image
@@ -278,6 +279,7 @@ export const GET_PROJECT_BY_SLUG = /* GraphQL */ `
       verified
       totalDonations
       description
+      descriptionSummary
       teaser
       seasonNumber
       batchNumbersWithSafeTransactions
@@ -450,6 +452,7 @@ export const GET_ALL_PROJECTS = /* GraphQL */ `
         slug
         description
         descriptionSummary
+        rank
         creationDate
         updatedAt
         teaser
@@ -463,6 +466,10 @@ export const GET_ALL_PROJECTS = /* GraphQL */ `
         listed
         reviewStatus
         givingBlocksId
+        socialMedia {
+          type
+          link
+        }
         status {
           id
           symbol
@@ -748,6 +755,17 @@ export const UPDATE_DONATION_STATUS = /* GraphQL */ `
       id
       status
       verifyErrorMessage
+    }
+  }
+`;
+
+export const GET_TOKEN_HOLDERS_BY_PROJECT = /* GraphQL */ `
+  query ($projectName: String!) {
+    tokenHoldersByProject(projectName: $projectName) {
+      id
+      projectName
+      address
+      tag
     }
   }
 `;

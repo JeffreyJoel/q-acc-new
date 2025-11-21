@@ -1,16 +1,14 @@
-import { Connector, signMessage as wagmiSignMessage } from '@wagmi/core';
-// import { wagmiAdapter } from '@/config/wagmi';
-import config from '@/config/configuration';
-import { config as wagmiConfig } from '@/providers/PrivyProvider';
-import { Address } from 'viem';
+import { signMessage as wagmiSignMessage } from '@wagmi/core';
 import { ethers } from 'ethers';
+import { Address } from 'viem';
 
-// Removed custom wallet readiness check - Privy handles this internally
+import config from '@/config/configuration';
+import { wagmiConfig } from '@/providers/PrivyProvider';
 
 // Generate Nonce
 export const fetchNonce = async (): Promise<string> => {
   const nonceResponse: any = await fetch(
-    `${config.AUTH_BASE_ROUTE}/nonce`,
+    `${config.AUTH_BASE_ROUTE}/nonce`
   ).then(n => {
     return n.json();
   });
@@ -22,7 +20,7 @@ export const fetchNonce = async (): Promise<string> => {
 export const createSiweMessage = async (
   address: string,
   chainId: number,
-  statement: string,
+  statement: string
 ) => {
   let domain = 'qacc.io';
   try {
@@ -58,18 +56,18 @@ type PrivySignMessageFn = (
 export const signChallengeWithPrivyEmbed = async (
   privySignMessage: PrivySignMessageFn,
   address: string,
-  chainId: number,
+  chainId: number
 ) => {
   const siweMessage: any = await createSiweMessage(
     address!,
     chainId!,
-    'Login into Giveth services',
+    'Login into Giveth services'
   );
 
   const { message, nonce } = siweMessage;
 
   let signature: string;
-  
+
   try {
     const result = await privySignMessage(
       { message },
@@ -78,10 +76,14 @@ export const signChallengeWithPrivyEmbed = async (
     signature = result.signature;
   } catch (error) {
     // Handle specific Privy wallet initialization errors
-    if (error instanceof Error && error.message.includes("Wallet proxy not initialized")) {
-      throw new Error("Embedded wallet is still initializing. Please wait a moment and try again.");
+    if (
+      error instanceof Error &&
+      error.message.includes('Wallet proxy not initialized')
+    ) {
+      throw new Error(
+        'Embedded wallet is still initializing. Please wait a moment and try again.'
+      );
     }
-    // Re-throw other errors
     throw error;
   }
 
@@ -119,12 +121,12 @@ export const signChallengeWithPrivyEmbed = async (
 
 export const signChallengeWithExternalWallet = async (
   address: string,
-  chainId: number,
+  chainId: number
 ) => {
   const siweMessage: any = await createSiweMessage(
     address!,
     chainId!,
-    'Login into Giveth services',
+    'Login into Giveth services'
   );
 
   const { message, nonce } = siweMessage;
@@ -170,17 +172,17 @@ export const getLocalStorageToken = (address: string) => {
   if (typeof window === 'undefined') {
     return null;
   }
-  
+
   try {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
       const tokenObj = JSON.parse(storedToken);
-      
-      const storedAddress = tokenObj.publicAddress ? ethers.getAddress(tokenObj.publicAddress) : null;
+
+      const storedAddress = tokenObj.publicAddress
+        ? ethers.getAddress(tokenObj.publicAddress)
+        : null;
       const checkAddress = ethers.getAddress(address);
-      
-      console.log('Token check - Stored:', storedAddress, 'Current:', checkAddress);
-      
+
       if (storedAddress && storedAddress === checkAddress) {
         if (tokenObj.expiration) {
           const currentTime = Math.floor(Date.now());
@@ -192,7 +194,9 @@ export const getLocalStorageToken = (address: string) => {
         }
         return storedToken;
       } else {
-        console.log('Token address mismatch - not deleting, just returning null');
+        console.log(
+          'Token address mismatch - not deleting, just returning null'
+        );
         return null;
       }
     }
@@ -210,7 +214,7 @@ export const getCurrentUserToken = () => {
   if (typeof window === 'undefined') {
     return null;
   }
-  
+
   try {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {

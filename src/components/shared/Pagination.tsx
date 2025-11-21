@@ -22,9 +22,7 @@ const PaginationItem: React.FC<IPaginationItemProps> = ({
   const baseStyle = 'text-neutral-400 hover:text-white';
   const disabledStyle = 'text-neutral-400 opacity-50';
   const activeStyle = isActive ? 'text-white border-b-2 border-peach-400' : '';
-  const cursorStyle = isDisabled
-    ? 'cursor-not-allowed'
-    : 'cursor-pointer';
+  const cursorStyle = isDisabled ? 'cursor-not-allowed' : 'cursor-pointer';
 
   return (
     <button

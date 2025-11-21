@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
+
 import { refreshUserGitcoinPassportScore } from '@/services/user.service';
 
 export const useFetchUserGitcoinPassportScore = () => {
